@@ -16,7 +16,16 @@ app.use("/api/auth", authRoutes);
 app.use("/api/students", authenticateJWT, studentRoutes);
 app.use("/api/goals", authenticateJWT, goalRoutes);
 
+import { sequelize } from "./models.js";
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-});
+sequelize
+  .sync()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Backend running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to sync database:", err);
+  });

@@ -1,5 +1,5 @@
 import express from "express";
-import { pool } from "../db.js";
+import { Goal } from "../models.js";
 
 const router = express.Router();
 
@@ -7,10 +7,7 @@ const router = express.Router();
 router.patch("/:id", async (req, res) => {
   const { id } = req.params;
   const { is_completed } = req.body;
-  await pool.query("UPDATE goals SET is_completed = ? WHERE id = ?", [
-    is_completed,
-    id,
-  ]);
+  await Goal.update({ is_completed }, { where: { id } });
   res.json({ message: "Goal updated" });
 });
 
