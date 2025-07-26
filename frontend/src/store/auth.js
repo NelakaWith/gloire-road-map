@@ -9,6 +9,7 @@ export const useAuthStore = defineStore("auth", {
   }),
   actions: {
     async login(email, password) {
+      localStorage.removeItem("token");
       const res = await axios.post("/api/auth/login", { email, password });
       this.token = res.data.token;
       localStorage.setItem("token", this.token);

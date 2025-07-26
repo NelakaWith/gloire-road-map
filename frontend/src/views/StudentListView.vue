@@ -4,6 +4,12 @@
       class="flex justify-between items-center max-w-3xl mx-auto py-8 px-4"
     >
       <h2 class="text-2xl font-bold text-indigo-700">Members</h2>
+      <button
+        @click="showLogoutDialog = true"
+        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-4"
+      >
+        Logout
+      </button>
     </header>
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <section class="bg-white rounded-lg shadow p-6">
@@ -39,6 +45,14 @@
           Are you sure you want to delete this student?
         </ConfirmDialog>
         <form @submit.prevent="addStudent" class="flex gap-2">
+          <ConfirmDialog
+            :show="showLogoutDialog"
+            @confirm="confirmLogout"
+            @cancel="showLogoutDialog = false"
+          >
+            Are you sure you want to logout?
+          </ConfirmDialog>
+
           <input
             v-model="newStudent"
             placeholder="Add student"
@@ -69,6 +83,7 @@ const auth = useAuthStore();
 const router = useRouter();
 const students = ref([]);
 const newStudent = ref("");
+const showLogoutDialog = ref(false);
 
 const fetchStudents = async () => {
   const res = await axios.get("/api/students", {
@@ -118,6 +133,12 @@ const confirmDeleteStudent = async () => {
 
 const goToGoals = (studentId) => {
   router.push({ path: "/goals", query: { studentId } });
+};
+
+const confirmLogout = () => {
+  auth.logout();
+  router.push("/login");
+  showLogoutDialog.value = false;
 };
 
 onMounted(async () => {
