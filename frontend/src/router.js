@@ -1,11 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
+
 import LoginView from "./views/LoginView.vue";
-import DashboardView from "./views/DashboardView.vue";
+import StudentListView from "./views/StudentListView.vue";
+import GoalListView from "./views/GoalListView.vue";
 
 const routes = [
-  { path: "/", redirect: "/dashboard" },
+  { path: "/", redirect: "/students" },
   { path: "/login", component: LoginView },
-  { path: "/dashboard", component: DashboardView },
+  { path: "/students", component: StudentListView },
+  { path: "/goals", component: GoalListView },
 ];
 
 const router = createRouter({
