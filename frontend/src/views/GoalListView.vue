@@ -7,7 +7,7 @@
       <router-link
         to="/students"
         class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded shadow"
-        >Go to Students</router-link
+        >Go to Back</router-link
       >
     </header>
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
@@ -15,7 +15,7 @@
         <h3 class="text-lg font-semibold mb-4 text-indigo-600">
           Goals for {{ selectedStudent.name }}
         </h3>
-        <ul class="space-y-2 mb-4">
+        <ul class="space-y-2 mb-4" v-if="goals.length">
           <li
             v-for="goal in goals"
             :key="goal.id"
@@ -37,7 +37,19 @@
             </button>
           </li>
         </ul>
-        <form @submit.prevent="addGoal" class="flex gap-2">
+        <div class="mb-4 flex justify-center">
+          <button
+            @click="showAddGoal = !showAddGoal"
+            class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
+          >
+            {{ showAddGoal ? "Cancel" : "Add Goal" }}
+          </button>
+        </div>
+        <form
+          v-if="showAddGoal"
+          @submit.prevent="addGoal"
+          class="flex gap-2 mb-2"
+        >
           <input
             v-model="newGoal"
             placeholder="Add goal"
@@ -66,6 +78,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useAuthStore } from "../store/auth";
+import { authHeader } from "../utils/authHeader";
 import { useRouter, useRoute } from "vue-router";
 
 const auth = useAuthStore();
@@ -74,6 +87,7 @@ const route = useRoute();
 const selectedStudent = ref(null);
 const goals = ref([]);
 const newGoal = ref("");
+const showAddGoal = ref(false);
 
 const fetchStudentAndGoals = async () => {
   const studentId = route.query.studentId;
@@ -82,12 +96,14 @@ const fetchStudentAndGoals = async () => {
     goals.value = [];
     return;
   }
-  const resStudent = await axios.get(`/api/students`);
+  const resStudent = await axios.get(`/api/students`, {
+    headers: authHeader(),
+  });
   const student = resStudent.data.find((s) => s.id == studentId);
   selectedStudent.value = student;
   if (student) {
     const resGoals = await axios.get(`/api/students/${studentId}/goals`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
+      headers: authHeader(),
     });
     goals.value = resGoals.data;
   } else {
@@ -99,9 +115,10 @@ const addGoal = async () => {
   await axios.post(
     `/api/students/${selectedStudent.value.id}/goals`,
     { title: newGoal.value },
-    { headers: { Authorization: `Bearer ${auth.token}` } }
+    { headers: authHeader() }
   );
   newGoal.value = "";
+  showAddGoal.value = false;
   await fetchStudentAndGoals();
 };
 
@@ -109,7 +126,7 @@ const markGoalDone = async (goalId) => {
   await axios.patch(
     `/api/goals/${goalId}`,
     { is_completed: true },
-    { headers: { Authorization: `Bearer ${auth.token}` } }
+    { headers: authHeader() }
   );
   await fetchStudentAndGoals();
 };

@@ -54,6 +54,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useAuthStore } from "../store/auth";
+import { authHeader } from "../utils/authHeader";
 import { useRouter } from "vue-router";
 
 const auth = useAuthStore();
@@ -63,7 +64,7 @@ const newStudent = ref("");
 
 const fetchStudents = async () => {
   const res = await axios.get("/api/students", {
-    headers: { Authorization: `Bearer ${auth.token}` },
+    headers: authHeader(),
   });
   students.value = res.data;
 };
@@ -72,7 +73,7 @@ const addStudent = async () => {
   await axios.post(
     "/api/students",
     { name: newStudent.value },
-    { headers: { Authorization: `Bearer ${auth.token}` } }
+    { headers: authHeader() }
   );
   newStudent.value = "";
   await fetchStudents();
@@ -84,7 +85,7 @@ const editStudent = async (student) => {
     await axios.patch(
       `/api/students/${student.id}`,
       { name },
-      { headers: { Authorization: `Bearer ${auth.token}` } }
+      { headers: authHeader() }
     );
     await fetchStudents();
   }
@@ -93,7 +94,7 @@ const editStudent = async (student) => {
 const deleteStudent = async (id) => {
   if (confirm("Delete this student?")) {
     await axios.delete(`/api/students/${id}`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
+      headers: authHeader(),
     });
     await fetchStudents();
   }

@@ -113,6 +113,7 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useAuthStore } from "../store/auth";
 import { useRouter } from "vue-router";
+import { authHeader } from "../utils/authHeader";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -124,7 +125,7 @@ const newGoal = ref("");
 
 const fetchStudents = async () => {
   const res = await axios.get("/api/students", {
-    headers: { Authorization: `Bearer ${auth.token}` },
+    headers: authHeader(),
   });
   students.value = res.data;
 };
@@ -132,7 +133,7 @@ const fetchStudents = async () => {
 const selectStudent = async (student) => {
   selectedStudent.value = student;
   const res = await axios.get(`/api/students/${student.id}/goals`, {
-    headers: { Authorization: `Bearer ${auth.token}` },
+    headers: authHeader(),
   });
   goals.value = res.data;
 };
@@ -141,7 +142,7 @@ const addStudent = async () => {
   await axios.post(
     "/api/students",
     { name: newStudent.value },
-    { headers: { Authorization: `Bearer ${auth.token}` } }
+    { headers: authHeader() }
   );
   newStudent.value = "";
   await fetchStudents();
@@ -153,7 +154,7 @@ const editStudent = async (student) => {
     await axios.patch(
       `/api/students/${student.id}`,
       { name },
-      { headers: { Authorization: `Bearer ${auth.token}` } }
+      { headers: authHeader() }
     );
     await fetchStudents();
   }
@@ -162,7 +163,7 @@ const editStudent = async (student) => {
 const deleteStudent = async (id) => {
   if (confirm("Delete this student?")) {
     await axios.delete(`/api/students/${id}`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
+      headers: authHeader(),
     });
     selectedStudent.value = null;
     await fetchStudents();
@@ -173,7 +174,7 @@ const addGoal = async () => {
   await axios.post(
     `/api/students/${selectedStudent.value.id}/goals`,
     { title: newGoal.value },
-    { headers: { Authorization: `Bearer ${auth.token}` } }
+    { headers: authHeader() }
   );
   newGoal.value = "";
   await selectStudent(selectedStudent.value);
@@ -183,7 +184,7 @@ const markGoalDone = async (goalId) => {
   await axios.patch(
     `/api/goals/${goalId}`,
     { is_completed: true },
-    { headers: { Authorization: `Bearer ${auth.token}` } }
+    { headers: authHeader() }
   );
   await selectStudent(selectedStudent.value);
 };
