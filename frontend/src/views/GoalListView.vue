@@ -30,10 +30,17 @@
             >
             <button
               v-if="!goal.is_completed"
-              @click="markGoalDone(goal.id)"
+              @click="markGoalDone(goal.id, true)"
               class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
             >
               Mark Done
+            </button>
+            <button
+              v-else
+              @click="markGoalDone(goal.id, false)"
+              class="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
+            >
+              Reopen
             </button>
           </li>
         </ul>
@@ -122,10 +129,10 @@ const addGoal = async () => {
   await fetchStudentAndGoals();
 };
 
-const markGoalDone = async (goalId) => {
+const markGoalDone = async (goalId, done = true) => {
   await axios.patch(
     `/api/goals/${goalId}`,
-    { is_completed: true },
+    { is_completed: done },
     { headers: authHeader() }
   );
   await fetchStudentAndGoals();
