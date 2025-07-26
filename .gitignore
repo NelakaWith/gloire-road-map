@@ -1,0 +1,30 @@
+# Node
+node_modules/
+.env
+.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite
+/dist
+
+# VSCode
+.vscode/
+
+# MySQL dumps
+mysql/*.sql
+!mysql/schema.sql
+
+# Batch files
+*.bat
+!start-dev.bat
+
+# Misc
+*.log
