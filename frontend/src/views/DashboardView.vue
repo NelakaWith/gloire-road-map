@@ -1,47 +1,110 @@
 <template>
-  <div class="dashboard">
-    <header>
-      <h2>Student Goals Dashboard</h2>
-      <button @click="logout">Logout</button>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-0">
+    <header
+      class="flex justify-between items-center max-w-3xl mx-auto py-8 px-4"
+    >
+      <h2 class="text-2xl font-bold text-indigo-700">
+        Student Goals Dashboard
+      </h2>
+      <button
+        @click="logout"
+        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow"
+      >
+        Logout
+      </button>
     </header>
-    <div class="main">
-      <div class="students">
-        <h3>Students</h3>
-        <ul>
+    <main class="flex flex-col md:flex-row gap-8 max-w-3xl mx-auto px-4">
+      <section class="flex-1 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4 text-indigo-600">Students</h3>
+        <ul class="space-y-2 mb-4">
           <li
             v-for="student in students"
             :key="student.id"
             @click="selectStudent(student)"
-            :class="{
-              selected: selectedStudent && selectedStudent.id === student.id,
-            }"
+            :class="[
+              'flex justify-between items-center p-2 rounded cursor-pointer',
+              selectedStudent && selectedStudent.id === student.id
+                ? 'bg-indigo-100'
+                : 'hover:bg-gray-100',
+            ]"
           >
-            {{ student.name }}
-            <button @click.stop="editStudent(student)">Edit</button>
-            <button @click.stop="deleteStudent(student.id)">Delete</button>
+            <span class="font-medium">{{ student.name }}</span>
+            <div class="space-x-2">
+              <button
+                @click.stop="editStudent(student)"
+                class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+              >
+                Edit
+              </button>
+              <button
+                @click.stop="deleteStudent(student.id)"
+                class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+              >
+                Delete
+              </button>
+            </div>
           </li>
         </ul>
-        <form @submit.prevent="addStudent">
-          <input v-model="newStudent" placeholder="Add student" required />
-          <button type="submit">Add</button>
+        <form @submit.prevent="addStudent" class="flex gap-2">
+          <input
+            v-model="newStudent"
+            placeholder="Add student"
+            required
+            class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <button
+            type="submit"
+            class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
+          >
+            Add
+          </button>
         </form>
-      </div>
-      <div class="goals" v-if="selectedStudent">
-        <h3>Goals for {{ selectedStudent.name }}</h3>
-        <ul>
-          <li v-for="goal in goals" :key="goal.id">
-            <span :class="{ done: goal.is_completed }">{{ goal.title }}</span>
-            <button v-if="!goal.is_completed" @click="markGoalDone(goal.id)">
+      </section>
+      <section
+        v-if="selectedStudent"
+        class="flex-1 bg-white rounded-lg shadow p-6"
+      >
+        <h3 class="text-lg font-semibold mb-4 text-indigo-600">
+          Goals for {{ selectedStudent.name }}
+        </h3>
+        <ul class="space-y-2 mb-4">
+          <li
+            v-for="goal in goals"
+            :key="goal.id"
+            class="flex justify-between items-center p-2 rounded"
+          >
+            <span
+              :class="[
+                'flex-1',
+                goal.is_completed ? 'line-through text-gray-400' : '',
+              ]"
+              >{{ goal.title }}</span
+            >
+            <button
+              v-if="!goal.is_completed"
+              @click="markGoalDone(goal.id)"
+              class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
+            >
               Mark Done
             </button>
           </li>
         </ul>
-        <form @submit.prevent="addGoal">
-          <input v-model="newGoal" placeholder="Add goal" required />
-          <button type="submit">Add</button>
+        <form @submit.prevent="addGoal" class="flex gap-2">
+          <input
+            v-model="newGoal"
+            placeholder="Add goal"
+            required
+            class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <button
+            type="submit"
+            class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
+          >
+            Add
+          </button>
         </form>
-      </div>
-    </div>
+      </section>
+    </main>
   </div>
 </template>
 
@@ -137,44 +200,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style scoped>
-.dashboard {
-  max-width: 900px;
-  margin: 40px auto;
-}
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2em;
-}
-.main {
-  display: flex;
-  gap: 2em;
-}
-.students,
-.goals {
-  flex: 1;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 1em;
-}
-ul {
-  list-style: none;
-  padding: 0;
-}
-li {
-  margin-bottom: 0.5em;
-}
-.selected {
-  background: #f0f0f0;
-}
-.done {
-  text-decoration: line-through;
-  color: #888;
-}
-button {
-  margin-left: 0.5em;
-}
-</style>

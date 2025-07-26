@@ -1,17 +1,37 @@
 <template>
-  <div class="login-container">
-    <h2>Admin Login</h2>
-    <form @submit.prevent="onLogin">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input
-        v-model="password"
-        type="password"
-        placeholder="Password"
-        required
-      />
-      <button type="submit">Login</button>
-      <div v-if="error" class="error">{{ error }}</div>
-    </form>
+  <div
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100"
+  >
+    <div class="w-full max-w-sm bg-white rounded-lg shadow p-8">
+      <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6">
+        Admin Login
+      </h2>
+      <form @submit.prevent="onLogin" class="space-y-4">
+        <input
+          v-model="email"
+          type="email"
+          placeholder="Email"
+          required
+          class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Password"
+          required
+          class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        />
+        <button
+          type="submit"
+          class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 rounded"
+        >
+          Login
+        </button>
+        <div v-if="error" class="text-red-600 text-center mt-2">
+          {{ error }}
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -37,26 +57,4 @@ const onLogin = async () => {
 };
 </script>
 
-<style scoped>
-.login-container {
-  max-width: 350px;
-  margin: 80px auto;
-  padding: 2em;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-input {
-  display: block;
-  width: 100%;
-  margin-bottom: 1em;
-  padding: 0.5em;
-}
-button {
-  width: 100%;
-  padding: 0.7em;
-}
-.error {
-  color: red;
-  margin-top: 1em;
-}
-</style>
+<!-- All styling is now handled by Tailwind utility classes. -->
