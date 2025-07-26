@@ -8,9 +8,9 @@
       </h2>
       <form @submit.prevent="onLogin" class="space-y-4">
         <input
-          v-model="email"
-          type="email"
-          placeholder="Email"
+          v-model="userName"
+          type="text"
+          placeholder="Username"
           required
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
         />
@@ -40,7 +40,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../store/auth";
 
-const email = ref("");
+const userName = ref("");
 const password = ref("");
 const error = ref("");
 const router = useRouter();
@@ -49,7 +49,7 @@ const auth = useAuthStore();
 const onLogin = async () => {
   error.value = "";
   try {
-    await auth.login(email.value, password.value);
+    await auth.login(userName.value, password.value);
     router.push("/");
   } catch (e) {
     error.value = e.response?.data?.message || "Login failed";
