@@ -22,8 +22,3 @@ CREATE TABLE IF NOT EXISTS goals (
   FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
--- Insert sample admin user (email: admin@example.com, password: admin123)
-INSERT INTO users (email, password_hash) VALUES (
-  'admin@example.com',
-  '$2b$10$wH6QwQwQwQwQwQwQwQwQwOQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw' -- bcrypt hash for 'admin123'
-);
