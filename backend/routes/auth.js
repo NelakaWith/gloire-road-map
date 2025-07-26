@@ -19,6 +19,8 @@ router.post("/register", async (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
   const { userName, password } = req.body;
+  console.log("Login attempt:", req.body);
+
   if (!userName || !password) {
     return res
       .status(400)

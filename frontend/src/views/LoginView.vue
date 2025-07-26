@@ -49,6 +49,11 @@ const auth = useAuthStore();
 const onLogin = async () => {
   error.value = "";
   try {
+    console.log("Login attempt:", {
+      userName: userName.value,
+      password: password.value,
+    });
+
     await auth.login(userName.value, password.value);
     router.push("/");
   } catch (e) {
