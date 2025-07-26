@@ -42,8 +42,21 @@
             >
               Reopen
             </button>
+            <button
+              @click="openDeleteDialog(goal.id)"
+              class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded ml-2"
+            >
+              Delete
+            </button>
           </li>
         </ul>
+        <ConfirmDialog
+          :show="showDeleteDialog"
+          @confirm="confirmDeleteGoal"
+          @cancel="showDeleteDialog = false"
+        >
+          Are you sure you want to delete this goal?
+        </ConfirmDialog>
         <div class="mb-4 flex justify-center">
           <button
             @click="showAddGoal = !showAddGoal"
@@ -87,6 +100,7 @@ import axios from "axios";
 import { useAuthStore } from "../store/auth";
 import { authHeader } from "../utils/authHeader";
 import { useRouter, useRoute } from "vue-router";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -136,6 +150,23 @@ const markGoalDone = async (goalId, done = true) => {
     { headers: authHeader() }
   );
   await fetchStudentAndGoals();
+};
+
+const showDeleteDialog = ref(false);
+let goalIdToDelete = null;
+const openDeleteDialog = (goalId) => {
+  goalIdToDelete = goalId;
+  showDeleteDialog.value = true;
+};
+const confirmDeleteGoal = async () => {
+  if (goalIdToDelete) {
+    await axios.delete(`/api/goals/${goalIdToDelete}`, {
+      headers: authHeader(),
+    });
+    await fetchStudentAndGoals();
+  }
+  showDeleteDialog.value = false;
+  goalIdToDelete = null;
 };
 
 onMounted(async () => {

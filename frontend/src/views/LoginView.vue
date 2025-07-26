@@ -50,7 +50,7 @@ const onLogin = async () => {
   error.value = "";
   try {
     await auth.login(email.value, password.value);
-    router.push("/dashboard");
+    router.push("/");
   } catch (e) {
     error.value = e.response?.data?.message || "Login failed";
   }
