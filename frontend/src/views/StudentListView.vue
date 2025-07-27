@@ -42,7 +42,7 @@
           @confirm="confirmDeleteStudent"
           @cancel="showDeleteDialog = false"
         >
-          Are you sure you want to delete this student?
+          Are you sure you want to delete this member?
         </ConfirmDialog>
         <form @submit.prevent="addStudent" class="flex gap-2">
           <ConfirmDialog

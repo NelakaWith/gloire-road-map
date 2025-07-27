@@ -19,7 +19,8 @@
           <li
             v-for="goal in goals"
             :key="goal.id"
-            class="flex justify-between items-center p-2 rounded"
+            class="flex justify-between items-center p-2 rounded cursor-pointer hover:bg-gray-100"
+            @click="openGoalModal(goal, 'view')"
           >
             <span
               :class="[
@@ -30,26 +31,30 @@
             >
             <button
               v-if="!goal.is_completed"
-              @click="markGoalDone(goal.id, true)"
+              @click.stop="markGoalDone(goal.id, true)"
               class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
             >
               Mark Done
             </button>
             <button
               v-else
-              @click="markGoalDone(goal.id, false)"
+              @click.stop="markGoalDone(goal.id, false)"
               class="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
             >
               Reopen
             </button>
-            <button
-              @click="openDeleteDialog(goal.id)"
-              class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded ml-2"
-            >
-              Delete
-            </button>
           </li>
         </ul>
+        <GoalModal
+          v-if="showGoalModal"
+          :show="showGoalModal"
+          :mode="goalModalMode"
+          :goal="selectedGoal"
+          @close="closeGoalModal"
+          @save="handleSaveGoal"
+          @edit="openGoalModal(selectedGoal, 'edit')"
+          @delete="handleDeleteGoal"
+        />
         <ConfirmDialog
           :show="showDeleteDialog"
           @confirm="confirmDeleteGoal"
@@ -59,30 +64,12 @@
         </ConfirmDialog>
         <div class="mb-4 flex justify-center">
           <button
-            @click="showAddGoal = !showAddGoal"
+            @click="openGoalModal(null, 'add')"
             class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
           >
-            {{ showAddGoal ? "Cancel" : "Add Goal" }}
+            Add Goal
           </button>
         </div>
-        <form
-          v-if="showAddGoal"
-          @submit.prevent="addGoal"
-          class="flex gap-2 mb-2"
-        >
-          <input
-            v-model="newGoal"
-            placeholder="Add goal"
-            required
-            class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-          />
-          <button
-            type="submit"
-            class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
-          >
-            Add
-          </button>
-        </form>
       </section>
       <section
         v-else
@@ -100,6 +87,7 @@ import axios from "axios";
 import { useAuthStore } from "../store/auth";
 import { authHeader } from "../utils/authHeader";
 import { useRouter, useRoute } from "vue-router";
+import GoalModal from "../components/GoalModal.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 const auth = useAuthStore();
@@ -107,8 +95,9 @@ const router = useRouter();
 const route = useRoute();
 const selectedStudent = ref(null);
 const goals = ref([]);
-const newGoal = ref("");
-const showAddGoal = ref(false);
+const showGoalModal = ref(false);
+const goalModalMode = ref("view");
+const selectedGoal = ref(null);
 
 const fetchStudentAndGoals = async () => {
   const studentId = route.query.studentId;
@@ -132,15 +121,52 @@ const fetchStudentAndGoals = async () => {
   }
 };
 
-const addGoal = async () => {
-  await axios.post(
-    `/api/students/${selectedStudent.value.id}/goals`,
-    { title: newGoal.value },
-    { headers: authHeader() }
-  );
-  newGoal.value = "";
-  showAddGoal.value = false;
+const openGoalModal = (goal, mode) => {
+  if (goal && goal.id) {
+    // fetch full goal details
+    axios
+      .get(`/api/goals/${goal.id}`, { headers: authHeader() })
+      .then((res) => {
+        selectedGoal.value = res.data;
+        goalModalMode.value = mode;
+        showGoalModal.value = true;
+      });
+  } else {
+    selectedGoal.value = null;
+    goalModalMode.value = mode;
+    showGoalModal.value = true;
+  }
+};
+const closeGoalModal = () => {
+  showGoalModal.value = false;
+  selectedGoal.value = null;
+};
+const handleSaveGoal = async (goalData) => {
+  if (goalModalMode.value === "add") {
+    await axios.post(
+      `/api/goals`,
+      {
+        student_id: selectedStudent.value.id,
+        ...goalData,
+      },
+      { headers: authHeader() }
+    );
+  } else if (goalModalMode.value === "edit" && selectedGoal.value) {
+    await axios.patch(`/api/goals/${selectedGoal.value.id}`, goalData, {
+      headers: authHeader(),
+    });
+  }
   await fetchStudentAndGoals();
+  closeGoalModal();
+};
+const handleDeleteGoal = async () => {
+  if (selectedGoal.value) {
+    await axios.delete(`/api/goals/${selectedGoal.value.id}`, {
+      headers: authHeader(),
+    });
+    await fetchStudentAndGoals();
+    closeGoalModal();
+  }
 };
 
 const markGoalDone = async (goalId, done = true) => {
