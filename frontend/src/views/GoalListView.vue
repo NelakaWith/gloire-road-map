@@ -53,11 +53,11 @@
           @close="closeGoalModal"
           @save="handleSaveGoal"
           @edit="openGoalModal(selectedGoal, 'edit')"
-          @delete="handleDeleteGoal"
+          @delete="showDeleteDialog = true"
         />
         <ConfirmDialog
           :show="showDeleteDialog"
-          @confirm="confirmDeleteGoal"
+          @confirm="handleDeleteGoal"
           @cancel="showDeleteDialog = false"
         >
           Are you sure you want to delete this goal?
@@ -98,6 +98,7 @@ const goals = ref([]);
 const showGoalModal = ref(false);
 const goalModalMode = ref("view");
 const selectedGoal = ref(null);
+const showDeleteDialog = ref(false);
 
 const fetchStudentAndGoals = async () => {
   const studentId = route.query.studentId;
@@ -141,6 +142,7 @@ const closeGoalModal = () => {
   showGoalModal.value = false;
   selectedGoal.value = null;
 };
+
 const handleSaveGoal = async (goalData) => {
   if (goalModalMode.value === "add") {
     await axios.post(
@@ -159,12 +161,14 @@ const handleSaveGoal = async (goalData) => {
   await fetchStudentAndGoals();
   closeGoalModal();
 };
+
 const handleDeleteGoal = async () => {
   if (selectedGoal.value) {
     await axios.delete(`/api/goals/${selectedGoal.value.id}`, {
       headers: authHeader(),
     });
     await fetchStudentAndGoals();
+    showDeleteDialog.value = false;
     closeGoalModal();
   }
 };
@@ -176,23 +180,6 @@ const markGoalDone = async (goalId, done = true) => {
     { headers: authHeader() }
   );
   await fetchStudentAndGoals();
-};
-
-const showDeleteDialog = ref(false);
-let goalIdToDelete = null;
-const openDeleteDialog = (goalId) => {
-  goalIdToDelete = goalId;
-  showDeleteDialog.value = true;
-};
-const confirmDeleteGoal = async () => {
-  if (goalIdToDelete) {
-    await axios.delete(`/api/goals/${goalIdToDelete}`, {
-      headers: authHeader(),
-    });
-    await fetchStudentAndGoals();
-  }
-  showDeleteDialog.value = false;
-  goalIdToDelete = null;
 };
 
 onMounted(async () => {
