@@ -43,11 +43,31 @@
                 Edit
               </button>
               <button
+                class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center"
+                title="Delete"
+                @click.stop="openDeleteDialog(goal)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"
+                  />
+                </svg>
+              </button>
+              <button
                 v-if="!goal.is_completed"
                 @click.stop="markGoalDone(goal.id, true)"
                 class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
               >
-                Mark Done
+                Mark as Done
               </button>
               <button
                 v-else
@@ -194,6 +214,11 @@ const markGoalDone = async (goalId, done = true) => {
     { headers: authHeader() }
   );
   await fetchStudentAndGoals();
+};
+
+const openDeleteDialog = (goal) => {
+  selectedGoal.value = goal;
+  showDeleteDialog.value = true;
 };
 
 onMounted(async () => {
