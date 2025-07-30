@@ -47,7 +47,18 @@ jobs:
             cd ~/gloire-road-map/frontend
             npm install
             npm run build
+
+            # Ensure NGINX live folder exists and is owned by www-data
+            sudo mkdir -p /var/www/gloire-road-map-live
+            sudo chown -R www-data:www-data /var/www/gloire-road-map-live
+
+            # Copy build to NGINX live folder
+            sudo rm -rf /var/www/gloire-road-map-live/*
+            sudo cp -r dist/* /var/www/gloire-road-map-live/
+            sudo chown -R www-data:www-data /var/www/gloire-road-map-live
+
             # (Optional) Run DB migrations if you have a script
             mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} ${{ secrets.DB_NAME }} < backend/migrations/dump.sql
+
             # (Optional) Restart nginx if using static hosting
-            # sudo systemctl reload nginx
+            sudo systemctl reload nginx
