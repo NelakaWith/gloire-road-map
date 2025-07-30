@@ -48,6 +48,6 @@ jobs:
             npm install
             npm run build
             # (Optional) Run DB migrations if you have a script
-            mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} ${{ secrets.DB_NAME }} < backend/migrations/2025-07-add-goal-fields.sql
+            mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} ${{ secrets.DB_NAME }} < backend/migrations/dump.sql
             # (Optional) Restart nginx if using static hosting
             # sudo systemctl reload nginx
