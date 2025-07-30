@@ -22,27 +22,41 @@
             class="flex justify-between items-center p-2 rounded cursor-pointer hover:bg-gray-100"
             @click="openGoalModal(goal, 'view')"
           >
-            <span
-              :class="[
-                'flex-1',
-                goal.is_completed ? 'line-through text-gray-400' : '',
-              ]"
-              >{{ goal.title }}</span
-            >
-            <button
-              v-if="!goal.is_completed"
-              @click.stop="markGoalDone(goal.id, true)"
-              class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
-            >
-              Mark Done
-            </button>
-            <button
-              v-else
-              @click.stop="markGoalDone(goal.id, false)"
-              class="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
-            >
-              Reopen
-            </button>
+            <div class="flex-1">
+              <div
+                :class="[
+                  'font-semibold text-xl',
+                  goal.is_completed ? 'line-through text-gray-400' : '',
+                ]"
+              >
+                {{ goal.title }}
+              </div>
+              <span v-if="goal.target_date" class="text-gray-500 text-sm italic"
+                >ETA: {{ goal.target_date }}</span
+              >
+            </div>
+            <div class="flex gap-2 items-center">
+              <button
+                class="text-xs bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded"
+                @click.stop="openGoalModal(goal, 'edit')"
+              >
+                Edit
+              </button>
+              <button
+                v-if="!goal.is_completed"
+                @click.stop="markGoalDone(goal.id, true)"
+                class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
+              >
+                Mark Done
+              </button>
+              <button
+                v-else
+                @click.stop="markGoalDone(goal.id, false)"
+                class="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
+              >
+                Reopen
+              </button>
+            </div>
           </li>
         </ul>
         <GoalModal

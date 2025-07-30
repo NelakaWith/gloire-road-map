@@ -59,7 +59,8 @@
           <span class="font-semibold">Title:</span> {{ form.title }}
         </div>
         <div class="mb-2">
-          <span class="font-semibold">Description:</span> {{ form.description }}
+          <span class="font-semibold">Description:</span>
+          {{ form.description ? form.description : "-" }}
         </div>
         <div class="mb-2">
           <span class="font-semibold">Target Date:</span>
