@@ -42,7 +42,7 @@ jobs:
           script: |
             cd ~/gloire-road-map/backend
             npm install
-            pm2 restart index.js || pm2 start index.js --name gloire-backend
+            pm2 restart server.js || pm2 start server.js --name gloire-backend
             cd ~/gloire-road-map/frontend
             npm install
             npm run build
