@@ -1,0 +1,53 @@
+name: Deploy to DigitalOcean Droplet
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Copy files to droplet via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          source: .
+          target: ~/gloire-road-map
+          rm: true
+
+      - name: Run deploy script on droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            cd ~/gloire-road-map/backend
+            npm install
+            pm2 restart index.js || pm2 start index.js --name gloire-backend
+            cd ~/gloire-road-map/frontend
+            npm install
+            npm run build
+            # (Optional) Run DB migrations if you have a script
+            mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} ${{ secrets.DB_NAME }} < backend/migrations/2025-07-add-goal-fields.sql
+            # (Optional) Restart nginx if using static hosting
+            # sudo systemctl reload nginx
