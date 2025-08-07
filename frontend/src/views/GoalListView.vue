@@ -7,7 +7,7 @@
       <router-link
         to="/students"
         class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded shadow"
-        >Go to Back</router-link
+        >Back to Students</router-link
       >
     </header>
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
