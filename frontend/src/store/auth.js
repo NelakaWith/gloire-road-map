@@ -10,17 +10,39 @@ export const useAuthStore = defineStore("auth", {
   actions: {
     async login(userName, password) {
       localStorage.removeItem("token");
-      const res = await axios.post("/api/auth/login", { userName, password });
-      this.token = res.data.token;
-      localStorage.setItem("token", this.token);
-      await this.fetchMe();
+      try {
+        const res = await axios.post("/api/auth/login", { userName, password });
+        this.token = res.data.token;
+        localStorage.setItem("token", this.token);
+        await this.fetchMe();
+        return { success: true };
+      } catch (err) {
+        // normalize error message for UI
+        const message =
+          err.response?.data?.message || err.message || "Login failed";
+        // ensure token cleared on failure
+        this.token = "";
+        localStorage.removeItem("token");
+        return { success: false, message };
+      }
     },
     async fetchMe() {
       if (!this.token) return;
-      const res = await axios.get("/api/auth/me", {
-        headers: authHeader(),
-      });
-      this.user = res.data;
+      try {
+        const res = await axios.get("/api/auth/me", {
+          headers: authHeader(),
+        });
+        this.user = res.data;
+        return { success: true, user: this.user };
+      } catch (err) {
+        // token might be invalid/expired
+        this.user = null;
+        this.token = "";
+        localStorage.removeItem("token");
+        const message =
+          err.response?.data?.message || err.message || "Failed to fetch user";
+        return { success: false, message };
+      }
     },
     logout() {
       this.token = "";
