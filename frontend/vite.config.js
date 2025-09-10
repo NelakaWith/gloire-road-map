@@ -1,9 +1,15 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [vue(), tailwindcss()],
+  plugins: [vue()],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern-compiler", // Use modern Sass API
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {
