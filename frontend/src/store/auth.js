@@ -7,6 +7,9 @@ export const useAuthStore = defineStore("auth", {
     token: localStorage.getItem("token") || "",
     user: null,
   }),
+  getters: {
+    isAuthenticated: (state) => !!state.token,
+  },
   actions: {
     async login(userName, password) {
       localStorage.removeItem("token");
