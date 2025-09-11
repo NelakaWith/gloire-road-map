@@ -1,7 +1,9 @@
 <template>
   <div class="rm-login">
     <Card class="w-1/4">
-      <template #title> Login </template>
+      <template #title>
+        <span class="text-3xl font-bold my-2">Login</span>
+      </template>
       <template #content>
         <Form
           v-slot="$form"
@@ -10,7 +12,9 @@
           @submit="onLogin"
         >
           <div class="flex flex-col gap-2">
-            <Message v-if="error" severity="error">{{ error }}</Message>
+            <Message v-if="error" severity="error" class="my-2">{{
+              error
+            }}</Message>
             <div class="flex flex-col gap-1">
               <label for="username">Username</label>
               <InputText
@@ -33,8 +37,13 @@
               />
             </div>
 
-            <div class="flex flex-col gap-1">
-              <Button label="Login" icon="pi pi-sign-in" type="submit" />
+            <div class="flex flex-col gap-1 my-2">
+              <Button
+                severity="primary"
+                label="Login"
+                icon="pi pi-sign-in"
+                type="submit"
+              />
             </div>
           </div>
         </Form>
