@@ -50,13 +50,6 @@ A local-only goal-tracking system for an admin to manage student goals. Runs ful
 
 ---
 
-## Default Admin Login
-
-- Email: admin@example.com
-- Password: admin123
-
----
-
 ## Troubleshooting
 
 - If MySQL does not start, check XAMPP or Windows Services.
