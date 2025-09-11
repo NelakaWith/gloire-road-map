@@ -11,6 +11,7 @@ import Column from "primevue/column";
 import Tooltip from "primevue/tooltip";
 import ToastService from "primevue/toastservice";
 import { Form } from "@primevue/forms";
+import Menubar from "primevue/menubar";
 
 export default function registerPrime(app) {
   // Components
@@ -25,6 +26,7 @@ export default function registerPrime(app) {
   app.component("DataTable", DataTable);
   app.component("Column", Column);
   app.component("Form", Form);
+  app.component("Menubar", Menubar);
 
   // Directives and services
   app.directive("tooltip", Tooltip);

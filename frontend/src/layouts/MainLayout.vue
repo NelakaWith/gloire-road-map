@@ -1,35 +1,32 @@
 <template>
   <div class="main-layout">
     <!-- Header/Navigation -->
-    <header class="main-header">
-      <nav class="nav-container">
+    <Menubar>
+      <template #start>
         <div class="nav-brand">
           <h1 class="brand-title">Gloire Road Map</h1>
         </div>
+      </template>
+      <template #end>
+        <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
+        <router-link to="/profile" class="nav-link">Profile</router-link>
 
-        <div class="nav-links">
-          <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
-          <router-link to="/profile" class="nav-link">Profile</router-link>
-        </div>
-
-        <div class="nav-user">
-          <Button
-            icon="pi pi-user"
-            text
-            rounded
-            @click="toggleUserMenu"
-            aria-label="User menu"
-          />
-          <Button
-            icon="pi pi-sign-out"
-            text
-            rounded
-            @click="logout"
-            aria-label="Logout"
-          />
-        </div>
-      </nav>
-    </header>
+        <Button
+          icon="pi pi-user"
+          text
+          rounded
+          @click="toggleUserMenu"
+          aria-label="User menu"
+        />
+        <Button
+          icon="pi pi-sign-out"
+          text
+          rounded
+          @click="logout"
+          aria-label="Logout"
+        />
+      </template>
+    </Menubar>
 
     <!-- Main Content Area -->
     <main class="main-content">
@@ -65,16 +62,7 @@ const logout = async () => {
 
 <style scoped>
 .main-layout {
-  @apply min-h-screen bg-gray-50 flex flex-col;
-}
-
-.main-header {
-  @apply bg-white shadow-sm border-b border-gray-200;
-}
-
-.nav-container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  @apply flex items-center justify-between h-16;
+  @apply min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col;
 }
 
 .nav-brand {
@@ -86,7 +74,7 @@ const logout = async () => {
 }
 
 .nav-links {
-  @apply hidden md:flex space-x-8;
+  @apply hidden md:flex space-x-8 mr-4;
 }
 
 .nav-link {
@@ -104,7 +92,7 @@ const logout = async () => {
 }
 
 .main-content {
-  @apply flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8;
+  @apply flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8;
 }
 
 .main-footer {

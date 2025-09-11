@@ -1,15 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-0">
+  <div class="py-0">
     <header
       class="flex justify-between items-center max-w-3xl mx-auto py-8 px-4"
     >
-      <h2 class="text-2xl font-bold text-indigo-700">Members</h2>
-      <button
-        @click="showLogoutDialog = true"
-        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-4"
-      >
-        Logout
-      </button>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Members</h2>
     </header>
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <section class="bg-white rounded-lg shadow p-6">

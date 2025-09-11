@@ -57,7 +57,7 @@
 }
 
 .dashboard-title {
-  @apply text-3xl font-bold text-gray-900 mb-2;
+  @apply text-2xl font-bold text-gray-900 mb-2;
 }
 
 .dashboard-subtitle {
