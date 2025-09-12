@@ -6,19 +6,32 @@
     class="w-1/4"
     @hide="onHide"
   >
-    <Form @submit="handleSubmit">
+    <Form
+      v-slot="$form"
+      :initialValues="initialValues"
+      :resolver="resolver"
+      @submit="handleSubmit"
+    >
       <div class="flex flex-col gap-2">
         <label for="memberName" class="text-sm font-medium text-gray-700">
           Member Name
         </label>
-        <InputText
-          id="memberName"
-          name="memberName"
-          :class="{ 'p-invalid': nameError }"
-          placeholder="Enter member name"
-          autofocus
-        />
-        <small v-if="nameError" class="text-red-500">{{ nameError }}</small>
+        <div>
+          <InputText
+            id="memberName"
+            name="memberName"
+            placeholder="Enter member name"
+            autofocus
+            fluid
+          />
+          <Message
+            v-if="$form.memberName?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+            >{{ $form.memberName.error?.message }}</Message
+          >
+        </div>
       </div>
 
       <div class="flex justify-end gap-2 pt-4">
@@ -40,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { reactive, computed, watch } from "vue";
 
 const props = defineProps({
   show: {
@@ -59,8 +72,26 @@ const props = defineProps({
 
 const emit = defineEmits(["update:show", "save", "cancel"]);
 
-const memberName = ref("");
-const nameError = ref("");
+const initialValues = reactive({
+  memberName: "",
+});
+
+const resolver = ({ values }) => {
+  const errors = {};
+
+  if (!values.memberName || !values.memberName.trim()) {
+    errors.memberName = [{ message: "Member name is required." }];
+  } else if (values.memberName.trim().length < 2) {
+    errors.memberName = [
+      { message: "Member name must be at least 2 characters." },
+    ];
+  }
+
+  return {
+    values,
+    errors,
+  };
+};
 
 const visible = computed({
   get: () => props.show,
@@ -72,34 +103,17 @@ watch(
   () => props.member,
   (newMember) => {
     if (newMember) {
-      memberName.value = newMember.name || "";
-      nameError.value = "";
+      initialValues.memberName = newMember.name || "";
     }
   },
   { immediate: true }
 );
 
-const validateName = () => {
-  nameError.value = "";
-
-  if (!memberName.value.trim()) {
-    nameError.value = "Member name is required";
-    return false;
-  }
-
-  if (memberName.value.trim().length < 2) {
-    nameError.value = "Member name must be at least 3 characters";
-    return false;
-  }
-
-  return true;
-};
-
-const handleSubmit = () => {
-  if (validateName()) {
+const handleSubmit = ({ valid, values }) => {
+  if (valid) {
     emit("save", {
       id: props.member?.id,
-      name: memberName.value.trim(),
+      name: values.memberName,
     });
   }
 };
@@ -110,8 +124,7 @@ const onCancel = () => {
 
 const onHide = () => {
   // Reset form when dialog is hidden
-  memberName.value = "";
-  nameError.value = "";
+  initialValues.memberName = "";
   emit("update:show", false);
 };
 </script>
