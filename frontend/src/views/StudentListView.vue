@@ -36,7 +36,6 @@
             <InputText
               v-model="newStudent"
               placeholder="Add a member"
-              required
               class="flex-1"
             />
             <Button type="submit" label="Add" icon="pi pi-plus" />
@@ -147,12 +146,6 @@ const confirmDeleteStudent = async () => {
 
 const goToGoals = (studentId) => {
   router.push({ path: "/goals", query: { studentId } });
-};
-
-const confirmLogout = () => {
-  auth.logout();
-  router.push("/login");
-  showLogoutDialog.value = false;
 };
 
 onMounted(async () => {
