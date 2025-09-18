@@ -17,7 +17,7 @@
           <li
             v-for="goal in goals"
             :key="goal.id"
-            class="flex justify-between items-center p-2 rounded cursor-pointer hover:bg-gray-100"
+            class="flex justify-between items-center py-2 px-4 rounded-lg cursor-pointer hover:bg-gray-100"
             @click="openGoalModal(goal, 'view')"
           >
             <div class="flex-1">
@@ -34,46 +34,37 @@
               >
             </div>
             <div class="flex gap-2 items-center">
-              <button
-                class="text-xs bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded"
+              <Button
                 @click.stop="openGoalModal(goal, 'edit')"
+                title="Edit"
+                icon="pi pi-pencil"
+                severity="warning"
+                size="small"
               >
-                Edit
-              </button>
-              <button
-                class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center"
+              </Button>
+              <Button
                 title="Delete"
                 @click.stop="openDeleteDialog(goal)"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"
-                  />
-                </svg>
-              </button>
-              <button
+                icon="pi pi-trash"
+                severity="danger"
+                size="small"
+              ></Button>
+              <Button
                 v-if="!goal.is_completed"
                 @click.stop="markGoalDone(goal.id, true)"
-                class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
+                severity="info"
+                icon="pi pi-check"
+                size="small"
               >
-                Mark as Done
-              </button>
-              <button
+              </Button>
+              <Button
                 v-else
                 @click.stop="markGoalDone(goal.id, false)"
-                class="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
+                severity="secondary"
+                icon="pi pi-undo"
+                size="small"
               >
-                Reopen
-              </button>
+              </Button>
             </div>
           </li>
         </ul>

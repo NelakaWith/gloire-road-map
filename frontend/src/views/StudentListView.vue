@@ -12,7 +12,7 @@
             <li
               v-for="student in students"
               :key="student.id"
-              class="flex justify-between items-center p-2 rounded hover:bg-gray-100 cursor-pointer"
+              class="flex justify-between items-center py-2 px-4 rounded-lg hover:bg-gray-100 cursor-pointer"
               @click="goToGoals(student.id)"
             >
               <span class="font-medium">{{ student.name }}</span>

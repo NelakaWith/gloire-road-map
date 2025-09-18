@@ -6,7 +6,7 @@
     @hide="onHide"
   >
     <template #header>
-      <h3 class="text-lg font-bold mb-0 text-indigo-700">
+      <h3 class="text-lg font-bold mb-0">
         <span v-if="mode === 'view'">Goal Details</span>
         <span v-else-if="mode === 'edit'">Edit Goal</span>
         <span v-else>Add Goal</span>
