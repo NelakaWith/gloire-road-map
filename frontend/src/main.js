@@ -20,8 +20,18 @@ app.use(PrimeVue, {
     },
   },
 });
-app.use(createPinia());
+const pinia = createPinia();
+app.use(pinia);
 app.use(router);
 // register primevue components globally
 registerPrime(app);
+
+// Validate saved token on app startup (call /me) so UI stays in sync after refresh
+import { useAuthStore } from "./store/auth";
+const authStore = useAuthStore(pinia);
+if (authStore.token) {
+  // fire and forget; router.beforeEach also validates when navigating
+  authStore.fetchMe().catch(() => {});
+}
+
 app.mount("#app");

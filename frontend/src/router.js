@@ -65,9 +65,14 @@ const router = createRouter({
 });
 
 // Navigation guard for authentication
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+
+  // If we have a token but no user loaded, try to validate it via /me
+  if (authStore.token && !authStore.user) {
+    await authStore.fetchMe();
+  }
 
   if (requiresAuth && !authStore.isAuthenticated) {
     next("/auth/login");
