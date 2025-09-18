@@ -78,7 +78,6 @@
           </li>
         </ul>
         <GoalModal
-          v-if="showGoalModal"
           :show="showGoalModal"
           :mode="goalModalMode"
           :goal="selectedGoal"
@@ -86,6 +85,7 @@
           @save="handleSaveGoal"
           @edit="openGoalModal(selectedGoal, 'edit')"
           @delete="showDeleteDialog = true"
+          @update:show="showGoalModal = $event"
         />
         <ConfirmDialog
           :show="showDeleteDialog"

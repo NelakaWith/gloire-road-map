@@ -1,5 +1,7 @@
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
+import Textarea from "primevue/textarea";
+import DatePicker from "primevue/datepicker";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import Message from "primevue/message";
@@ -18,6 +20,8 @@ export default function registerPrime(app) {
   app.component("Card", Card);
   app.component("InputText", InputText);
   app.component("Password", Password);
+  app.component("Textarea", Textarea);
+  app.component("DatePicker", DatePicker);
   app.component("Button", Button);
   app.component("Message", Message);
   app.component("Dialog", Dialog);

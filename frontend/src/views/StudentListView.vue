@@ -78,7 +78,6 @@ const auth = useAuthStore();
 const router = useRouter();
 const students = ref([]);
 const newStudent = ref("");
-const showLogoutDialog = ref(false);
 const showEditModal = ref(false);
 const editingStudent = ref(null);
 const editLoading = ref(false);
