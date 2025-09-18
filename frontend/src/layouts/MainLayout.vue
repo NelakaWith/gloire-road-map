@@ -9,7 +9,7 @@
       </template>
       <template #end>
         <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
-        <router-link to="/profile" class="nav-link">Profile</router-link>
+        <!-- <router-link to="/profile" class="nav-link">Profile</router-link> -->
 
         <Button
           icon="pi pi-user"

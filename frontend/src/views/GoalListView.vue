@@ -1,20 +1,18 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-0">
     <header
-      class="flex justify-between items-center max-w-3xl mx-auto py-8 px-4"
+      class="flex justify-start items-center max-w-3xl mx-auto py-8 px-4 mb-2"
     >
-      <h2 class="text-2xl font-bold text-indigo-700">Goals</h2>
       <router-link
         to="/students"
-        class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded shadow"
-        >Back to Students</router-link
+        class="flex items-center text-gray-600 hover:text-gray-900"
       >
+        <i class="pi pi-chevron-left mr-2"></i>
+      </router-link>
+      <h2 class="text-2xl font-bold text-gray-900">Goals</h2>
     </header>
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <section v-if="selectedStudent" class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold mb-4 text-indigo-600">
-          Goals for {{ selectedStudent.name }}
-        </h3>
         <ul class="space-y-2 mb-4" v-if="goals.length">
           <li
             v-for="goal in goals"
@@ -97,12 +95,12 @@
           Are you sure you want to delete this goal?
         </ConfirmDialog>
         <div class="mb-4 flex justify-center">
-          <button
+          <Button
+            type="submit"
+            label="Add a Goal"
+            icon="pi pi-plus"
             @click="openGoalModal(null, 'add')"
-            class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
-          >
-            Add Goal
-          </button>
+          />
         </div>
       </section>
       <section
