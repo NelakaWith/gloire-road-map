@@ -4,30 +4,32 @@
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <Card class="p-6">
         <template #content>
-          <ul class="space-y-2 mb-4">
-            <li
-              v-for="student in students"
-              :key="student.id"
-              class="flex justify-between items-center py-2 px-4 rounded-lg hover:bg-gray-100 cursor-pointer"
-              @click="goToGoals(student.id)"
-            >
-              <span class="font-medium">{{ student.name }}</span>
-              <div class="space-x-2">
-                <Button
-                  @click.stop="editStudent(student)"
-                  size="small"
-                  severity="info"
-                  label="Edit"
-                />
-                <Button
-                  @click.stop="openDeleteDialog(student.id)"
-                  size="small"
-                  severity="danger"
-                  label="Delete"
-                />
-              </div>
-            </li>
-          </ul>
+          <div class="scrollable-panel">
+            <ul class="space-y-2 mb-4">
+              <li
+                v-for="student in students"
+                :key="student.id"
+                class="flex justify-between items-center py-2 px-4 rounded-lg hover:bg-gray-100 cursor-pointer"
+                @click="goToGoals(student.id)"
+              >
+                <span class="font-medium">{{ student.name }}</span>
+                <div class="space-x-2">
+                  <Button
+                    @click.stop="editStudent(student)"
+                    size="small"
+                    severity="info"
+                    label="Edit"
+                  />
+                  <Button
+                    @click.stop="openDeleteDialog(student.id)"
+                    size="small"
+                    severity="danger"
+                    label="Delete"
+                  />
+                </div>
+              </li>
+            </ul>
+          </div>
           <form @submit.prevent="addStudent" class="flex gap-2">
             <InputText
               v-model="newStudent"

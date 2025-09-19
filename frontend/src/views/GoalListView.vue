@@ -2,94 +2,100 @@
   <div class="pb-4">
     <PageHeader title="Goals" :showBack="true" backTo="/students" />
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
-      <section v-if="selectedStudent" class="bg-white rounded-lg shadow p-6">
-        <ul class="space-y-2 mb-4" v-if="goals.length">
-          <li
-            v-for="goal in goals"
-            :key="goal.id"
-            class="flex justify-between items-center py-2 px-4 rounded-lg cursor-pointer hover:bg-gray-100"
-            @click="openGoalModal(goal, 'view')"
-          >
-            <div class="flex-1">
-              <div
-                :class="[
-                  'font-semibold text-xl',
-                  goal.is_completed ? 'line-through text-gray-400' : '',
-                ]"
+      <Card v-if="selectedStudent" class="p-6">
+        <template #content>
+          <div class="scrollable-panel">
+            <ul class="space-y-2 mb-4" v-if="goals.length">
+              <li
+                v-for="goal in goals"
+                :key="goal.id"
+                class="flex justify-between items-center py-2 px-4 rounded-lg cursor-pointer hover:bg-gray-100"
+                @click="openGoalModal(goal, 'view')"
               >
-                {{ goal.title }}
-              </div>
-              <span v-if="goal.target_date" class="text-gray-500 text-sm italic"
-                >ETA: {{ goal.target_date }}</span
-              >
-            </div>
-            <div class="flex gap-2 items-center">
-              <Button
-                @click.stop="openGoalModal(goal, 'edit')"
-                title="Edit"
-                icon="pi pi-pencil"
-                severity="warning"
-                size="small"
-              >
-              </Button>
-              <Button
-                title="Delete"
-                @click.stop="openDeleteDialog(goal)"
-                icon="pi pi-trash"
-                severity="danger"
-                size="small"
-              ></Button>
-              <Button
-                v-if="!goal.is_completed"
-                @click.stop="markGoalDone(goal.id, true)"
-                severity="info"
-                icon="pi pi-check"
-                size="small"
-              >
-              </Button>
-              <Button
-                v-else
-                @click.stop="markGoalDone(goal.id, false)"
-                severity="secondary"
-                icon="pi pi-undo"
-                size="small"
-              >
-              </Button>
-            </div>
-          </li>
-        </ul>
-        <GoalModal
-          :show="showGoalModal"
-          :mode="goalModalMode"
-          :goal="selectedGoal"
-          @close="closeGoalModal"
-          @save="handleSaveGoal"
-          @edit="openGoalModal(selectedGoal, 'edit')"
-          @delete="showDeleteDialog = true"
-          @update:show="showGoalModal = $event"
-        />
-        <ConfirmDialog
-          :show="showDeleteDialog"
-          @confirm="handleDeleteGoal"
-          @cancel="showDeleteDialog = false"
-        >
-          Are you sure you want to delete this goal?
-        </ConfirmDialog>
-        <div class="mb-4 flex justify-center">
-          <Button
-            type="submit"
-            label="Add a Goal"
-            icon="pi pi-plus"
-            @click="openGoalModal(null, 'add')"
+                <div class="flex-1">
+                  <div
+                    :class="[
+                      'font-semibold text-xl',
+                      goal.is_completed ? 'line-through text-gray-400' : '',
+                    ]"
+                  >
+                    {{ goal.title }}
+                  </div>
+                  <span
+                    v-if="goal.target_date"
+                    class="text-gray-500 text-sm italic"
+                    >ETA: {{ goal.target_date }}</span
+                  >
+                </div>
+                <div class="flex gap-2 items-center">
+                  <Button
+                    @click.stop="openGoalModal(goal, 'edit')"
+                    title="Edit"
+                    icon="pi pi-pencil"
+                    severity="warning"
+                    size="small"
+                  >
+                  </Button>
+                  <Button
+                    title="Delete"
+                    @click.stop="openDeleteDialog(goal)"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    size="small"
+                  ></Button>
+                  <Button
+                    v-if="!goal.is_completed"
+                    @click.stop="markGoalDone(goal.id, true)"
+                    severity="info"
+                    icon="pi pi-check"
+                    size="small"
+                  >
+                  </Button>
+                  <Button
+                    v-else
+                    @click.stop="markGoalDone(goal.id, false)"
+                    severity="secondary"
+                    icon="pi pi-undo"
+                    size="small"
+                  >
+                  </Button>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <GoalModal
+            :show="showGoalModal"
+            :mode="goalModalMode"
+            :goal="selectedGoal"
+            @close="closeGoalModal"
+            @save="handleSaveGoal"
+            @edit="openGoalModal(selectedGoal, 'edit')"
+            @delete="showDeleteDialog = true"
+            @update:show="showGoalModal = $event"
           />
-        </div>
-      </section>
-      <section
-        v-else
-        class="bg-white rounded-lg shadow p-6 text-center text-gray-500"
-      >
-        <p>Select a student from the Students page to view and add goals.</p>
-      </section>
+          <ConfirmDialog
+            :show="showDeleteDialog"
+            @confirm="handleDeleteGoal"
+            @cancel="showDeleteDialog = false"
+          >
+            Are you sure you want to delete this goal?
+          </ConfirmDialog>
+          <div class="flex justify-center">
+            <Button
+              type="submit"
+              label="Add a Goal"
+              icon="pi pi-plus"
+              @click="openGoalModal(null, 'add')"
+            />
+          </div>
+        </template>
+      </Card>
+      <Card v-else class="p-6 text-center text-gray-500">
+        <template #content>
+          <p>Select a student from the Students page to view and add goals.</p>
+        </template>
+      </Card>
     </main>
   </div>
 </template>

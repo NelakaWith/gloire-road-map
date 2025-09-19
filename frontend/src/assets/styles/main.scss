@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .scrollable-panel {
+    overflow-y: auto;
+    max-height: calc(100vh - 21rem);
+  }
+}
