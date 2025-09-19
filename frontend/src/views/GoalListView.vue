@@ -1,14 +1,6 @@
 <template>
   <div class="pb-4">
-    <header class="flex justify-start items-center max-w-3xl mx-auto p-4 mb-2">
-      <router-link
-        to="/students"
-        class="flex items-center text-gray-600 hover:text-gray-900"
-      >
-        <i class="pi pi-chevron-left mr-2"></i>
-      </router-link>
-      <h2 class="text-2xl font-bold text-gray-900">Goals</h2>
-    </header>
+    <PageHeader title="Goals" :showBack="true" backTo="/students" />
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <section v-if="selectedStudent" class="bg-white rounded-lg shadow p-6">
         <ul class="space-y-2 mb-4" v-if="goals.length">
@@ -110,6 +102,7 @@ import { authHeader } from "../utils/authHeader";
 import { useRouter, useRoute } from "vue-router";
 import GoalModal from "../components/GoalModal.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import PageHeader from "../components/PageHeader.vue";
 
 const auth = useAuthStore();
 const router = useRouter();

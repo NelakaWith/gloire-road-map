@@ -1,8 +1,6 @@
 <template>
   <div class="pb-4">
-    <header class="flex justify-between items-center max-w-3xl mx-auto p-4">
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">Members</h2>
-    </header>
+    <PageHeader title="Members" />
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <Card class="p-6">
         <template #content>
@@ -68,6 +66,7 @@ import { authHeader } from "../utils/authHeader";
 import { useRouter } from "vue-router";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import EditMemberModal from "../components/EditMemberModal.vue";
+import PageHeader from "../components/PageHeader.vue";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Card from "primevue/card";
