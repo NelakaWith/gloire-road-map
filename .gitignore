@@ -28,3 +28,4 @@ mysql/*.sql
 
 # Misc
 *.log
+db/seed_data.sql

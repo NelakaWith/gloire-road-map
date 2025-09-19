@@ -7,27 +7,13 @@
 
     <div class="dashboard-grid">
       <Card class="dashboard-card">
-        <template #title>Students</template>
+        <template #title>Members</template>
         <template #content>
-          <p class="card-text">
-            Manage your students and track their progress.
-          </p>
+          <p class="card-text">Manage members and track their progress.</p>
           <Button
-            label="View Students"
+            label="View Members"
             icon="pi pi-users"
             @click="$router.push('/students')"
-          />
-        </template>
-      </Card>
-
-      <Card class="dashboard-card">
-        <template #title>Goals</template>
-        <template #content>
-          <p class="card-text">Set and monitor learning goals.</p>
-          <Button
-            label="View Goals"
-            icon="pi pi-flag"
-            @click="$router.push('/goals')"
           />
         </template>
       </Card>
