@@ -1,32 +1,7 @@
 <template>
   <div class="main-layout">
     <!-- Header/Navigation -->
-    <Menubar>
-      <template #start>
-        <div class="nav-brand">
-          <h1 class="brand-title">Gloire Road Map</h1>
-        </div>
-      </template>
-      <template #end>
-        <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
-        <!-- <router-link to="/profile" class="nav-link">Profile</router-link> -->
-
-        <Button
-          icon="pi pi-user"
-          text
-          rounded
-          @click="toggleUserMenu"
-          aria-label="User menu"
-        />
-        <Button
-          icon="pi pi-sign-out"
-          text
-          rounded
-          @click="logout"
-          aria-label="Logout"
-        />
-      </template>
-    </Menubar>
+    <AppHeader @toggle-user-menu="toggleUserMenu" @logout="logout" />
 
     <!-- Main Content Area -->
     <main class="main-content">
@@ -45,6 +20,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../store/auth";
+import AppHeader from "../components/AppHeader.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -60,7 +36,7 @@ const logout = async () => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="postcss">
 .main-layout {
   @apply min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col;
 }

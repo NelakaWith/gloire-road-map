@@ -1,8 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-0">
-    <header
-      class="flex justify-start items-center max-w-3xl mx-auto py-8 px-4 mb-2"
-    >
+  <div class="pb-4">
+    <header class="flex justify-start items-center max-w-3xl mx-auto p-4 mb-2">
       <router-link
         to="/students"
         class="flex items-center text-gray-600 hover:text-gray-900"
