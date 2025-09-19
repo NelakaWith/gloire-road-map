@@ -54,7 +54,7 @@
                   <Button
                     v-else
                     @click.stop="markGoalDone(goal.id, false)"
-                    severity="secondary"
+                    severity="warn"
                     icon="pi pi-undo"
                     size="small"
                   >
@@ -71,16 +71,9 @@
             @close="closeGoalModal"
             @save="handleSaveGoal"
             @edit="openGoalModal(selectedGoal, 'edit')"
-            @delete="showDeleteDialog = true"
+            @delete="openDeleteDialog(selectedGoal)"
             @update:show="showGoalModal = $event"
           />
-          <ConfirmDialog
-            :show="showDeleteDialog"
-            @confirm="handleDeleteGoal"
-            @cancel="showDeleteDialog = false"
-          >
-            Are you sure you want to delete this goal?
-          </ConfirmDialog>
           <div class="flex justify-center">
             <Button
               type="submit"
@@ -107,8 +100,8 @@ import { useAuthStore } from "../store/auth";
 import { authHeader } from "../utils/authHeader";
 import { useRouter, useRoute } from "vue-router";
 import GoalModal from "../components/GoalModal.vue";
-import ConfirmDialog from "../components/ConfirmDialog.vue";
 import PageHeader from "../components/PageHeader.vue";
+import { useConfirm } from "primevue/useconfirm";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -118,7 +111,8 @@ const goals = ref([]);
 const showGoalModal = ref(false);
 const goalModalMode = ref("view");
 const selectedGoal = ref(null);
-const showDeleteDialog = ref(false);
+
+const confirm = useConfirm();
 
 const fetchStudentAndGoals = async () => {
   const studentId = route.query.studentId;
@@ -182,17 +176,6 @@ const handleSaveGoal = async (goalData) => {
   closeGoalModal();
 };
 
-const handleDeleteGoal = async () => {
-  if (selectedGoal.value) {
-    await axios.delete(`/api/goals/${selectedGoal.value.id}`, {
-      headers: authHeader(),
-    });
-    await fetchStudentAndGoals();
-    showDeleteDialog.value = false;
-    closeGoalModal();
-  }
-};
-
 const markGoalDone = async (goalId, done = true) => {
   await axios.patch(
     `/api/goals/${goalId}`,
@@ -204,7 +187,29 @@ const markGoalDone = async (goalId, done = true) => {
 
 const openDeleteDialog = (goal) => {
   selectedGoal.value = goal;
-  showDeleteDialog.value = true;
+  confirm.require({
+    message: "Are you sure you want to delete this goal?",
+    header: "Confirm",
+    icon: "pi pi-exclamation-triangle",
+    rejectProps: {
+      label: "Cancel",
+      severity: "secondary",
+      outlined: true,
+    },
+    acceptProps: {
+      label: "Delete",
+      severity: "danger",
+    },
+    accept: async () => {
+      if (selectedGoal.value && selectedGoal.value.id) {
+        await axios.delete(`/api/goals/${selectedGoal.value.id}`, {
+          headers: authHeader(),
+        });
+        await fetchStudentAndGoals();
+        closeGoalModal();
+      }
+    },
+  });
 };
 
 onMounted(async () => {

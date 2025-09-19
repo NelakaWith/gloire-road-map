@@ -30,7 +30,7 @@
               </li>
             </ul>
           </div>
-          <form @submit.prevent="addStudent" class="flex gap-2">
+          <form @submit.prevent="addStudent" class="flex gap-2 mt-2">
             <InputText
               v-model="newStudent"
               placeholder="Add a member"
@@ -41,13 +41,6 @@
         </template>
       </Card>
     </main>
-    <ConfirmDialog
-      :show="showDeleteDialog"
-      @confirm="confirmDeleteStudent"
-      @cancel="showDeleteDialog = false"
-    >
-      Are you sure you want to delete this member?
-    </ConfirmDialog>
 
     <EditMemberModal
       :show="showEditModal"
@@ -66,12 +59,9 @@ import axios from "axios";
 import { useAuthStore } from "../store/auth";
 import { authHeader } from "../utils/authHeader";
 import { useRouter } from "vue-router";
-import ConfirmDialog from "../components/ConfirmDialog.vue";
+import { useConfirm } from "primevue/useconfirm";
 import EditMemberModal from "../components/EditMemberModal.vue";
 import PageHeader from "../components/PageHeader.vue";
-import Button from "primevue/button";
-import InputText from "primevue/inputtext";
-import Card from "primevue/card";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -125,21 +115,27 @@ const handleEditCancel = () => {
   editingStudent.value = null;
 };
 
-const showDeleteDialog = ref(false);
-let studentIdToDelete = null;
+const confirm = useConfirm();
+
 const openDeleteDialog = (id) => {
-  studentIdToDelete = id;
-  showDeleteDialog.value = true;
-};
-const confirmDeleteStudent = async () => {
-  if (studentIdToDelete) {
-    await axios.delete(`/api/students/${studentIdToDelete}`, {
-      headers: authHeader(),
-    });
-    await fetchStudents();
-  }
-  showDeleteDialog.value = false;
-  studentIdToDelete = null;
+  confirm.require({
+    message: "Are you sure you want to delete this member?",
+    header: "Confirm",
+    icon: "pi pi-exclamation-triangle",
+    rejectProps: {
+      label: "Cancel",
+      severity: "secondary",
+      outlined: true,
+    },
+    acceptProps: {
+      label: "Delete",
+      severity: "danger",
+    },
+    accept: async () => {
+      await axios.delete(`/api/students/${id}`, { headers: authHeader() });
+      await fetchStudents();
+    },
+  });
 };
 
 const goToGoals = (studentId) => {

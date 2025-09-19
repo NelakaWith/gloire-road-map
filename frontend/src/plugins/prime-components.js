@@ -11,9 +11,12 @@ import Calendar from "primevue/calendar";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Tooltip from "primevue/tooltip";
-import ToastService from "primevue/toastservice";
 import { Form } from "@primevue/forms";
 import Menubar from "primevue/menubar";
+import ConfirmDialog from "primevue/confirmdialog";
+
+import ToastService from "primevue/toastservice";
+import ConfirmationService from "primevue/confirmationservice";
 
 export default function registerPrime(app) {
   // Components
@@ -31,10 +34,12 @@ export default function registerPrime(app) {
   app.component("Column", Column);
   app.component("Form", Form);
   app.component("Menubar", Menubar);
+  app.component("ConfirmDialog", ConfirmDialog);
 
   // Directives and services
   app.directive("tooltip", Tooltip);
   app.use(ToastService);
+  app.use(ConfirmationService);
 }
 
 // You can expand this list as you add more PrimeVue components to the app.
