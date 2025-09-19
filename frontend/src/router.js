@@ -8,7 +8,7 @@ import MainLayout from "./layouts/MainLayout.vue";
 // Views
 import LoginView from "./views/LoginView.vue";
 import DashboardView from "./views/DashboardView.vue";
-import StudentListView from "./views/StudentListView.vue";
+import StudentListView from "./views/MemberListView.vue";
 import GoalListView from "./views/GoalListView.vue";
 
 const routes = [

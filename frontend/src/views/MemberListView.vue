@@ -1,8 +1,6 @@
 <template>
-  <div class="py-0">
-    <header
-      class="flex justify-between items-center max-w-3xl mx-auto py-8 px-4"
-    >
+  <div class="pb-4 flex-1">
+    <header class="flex justify-between items-center max-w-3xl mx-auto p-4">
       <h2 class="text-2xl font-bold text-gray-900 mb-2">Members</h2>
     </header>
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
