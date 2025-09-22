@@ -1,0 +1,120 @@
+name: Deploy
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Create GitHub Deployment
+        id: create_deployment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: process.env.GITHUB_REF || github.ref,
+              required_contexts: [],
+              environment: 'production',
+              auto_merge: false,
+              description: 'Deployment triggered by CI',
+              transient_environment: false
+            });
+            return response.data.id;
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Copy files to droplet via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          source: .
+          target: ~/gloire-road-map
+          rm: true
+
+      - name: Run deploy script on droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            cd ~/gloire-road-map/backend
+            npm install
+            pm2 restart server.js || pm2 start server.js --name gloire-backend
+            cd ~/gloire-road-map/frontend
+            npm install
+            npm run build
+
+            # Ensure NGINX live folder exists and is owned by www-data
+            sudo mkdir -p /var/www/gloire-road-map-live
+            sudo chown -R www-data:www-data /var/www/gloire-road-map-live
+
+            # Copy build to NGINX live folder
+            sudo rm -rf /var/www/gloire-road-map-live/*
+            sudo cp -r dist/* /var/www/gloire-road-map-live/
+            sudo chown -R www-data:www-data /var/www/gloire-road-map-live
+
+            # (Optional) Run DB migrations if you have a script
+            mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} ${{ secrets.DB_NAME }} < backend/migrations/dump.sql
+
+            # (Optional) Restart nginx if using static hosting
+            sudo systemctl reload nginx
+
+      - name: Mark deployment as successful
+        if: ${{ success() }}
+        uses: actions/github-script@v6
+        env:
+          DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
+        with:
+          script: |
+            const deploymentId = process.env.DEPLOYMENT_ID;
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: Number(deploymentId),
+              state: 'success',
+              description: 'Deployment succeeded',
+              environment: 'production'
+            });
+
+      - name: Mark deployment as failed
+        if: ${{ failure() }}
+        uses: actions/github-script@v6
+        env:
+          DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
+        with:
+          script: |
+            const deploymentId = process.env.DEPLOYMENT_ID;
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: Number(deploymentId),
+              state: 'failure',
+              description: 'Deployment failed',
+              environment: 'production'
+            });
