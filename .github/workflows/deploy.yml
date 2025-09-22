@@ -5,28 +5,32 @@ on:
   push:
     tags:
       - "v*"
+  release:
+    types: [published, created]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      DEPLOY_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+      DEPLOY_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name) || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
 
       - name: Create GitHub Deployment
         id: create_deployment
         uses: actions/github-script@v6
         with:
           script: |
+            const ref = process.env.DEPLOY_TAG || github.ref;
             const response = await github.rest.repos.createDeployment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: process.env.GITHUB_REF || github.ref,
+              ref: ref,
               required_contexts: [],
               environment: 'production',
               auto_merge: false,
