@@ -34,6 +34,8 @@ A local-only goal-tracking system for an admin to manage student goals. Runs ful
   - `mysql -u root -p < mysql/schema.sql`
 - This creates tables and a sample admin user (email: admin@example.com, password: admin123)
 
+Note: for security, please change the default admin password after installing — the README includes the original default for convenience during local development only.
+
 ### 3. Install Dependencies
 
 - Open a terminal in `frontend/` and run: `npm install`
@@ -50,10 +52,23 @@ A local-only goal-tracking system for an admin to manage student goals. Runs ful
 
 ---
 
-## Default Admin Login
+## Current status and notes
 
-- Email: admin@example.com
-- Password: admin123
+- UI: The frontend uses Vue 3 + PrimeVue components. Modal forms (add/edit) were migrated to PrimeVue Form with in-file resolvers and initial values. The app header/navigation was extracted to `frontend/src/components/AppHeader.vue` and there is a reusable `PageHeader.vue` used across views. A global PrimeVue `ConfirmDialog` and `ConfirmationService` are installed so confirmation prompts work consistently.
+- Styling: Tailwind CSS + PostCSS is used. A `.scrollable-panel` utility exists for lists that need internal scrolling.
+- Database: The MySQL schema was updated to add extra fields for goals (description, target_date, setup_date, updated_at). The provided seed data was extended to include those columns. Run the schema import before applying the seed file.
+- Commit policy / tooling: Commitizen + commitlint + Husky are configured. PRs are validated by a workflow (`.github/workflows/pr-check.yml`) which enforces Conventional Commit-style PR titles and runs commitlint on PR commits.
+- Release & deploy: semantic-release is configured and the CI release workflow creates tags and releases. Deployments are performed by `.github/workflows/deploy.yml` which now triggers on tag pushes (tags starting with `v*`), manual dispatch, and GitHub Release events (created/published). The deploy workflow creates a GitHub Deployment and reports status; it then copies the repo to the configured droplet and runs the deploy script (see the workflow for details). If deployments don't run, check repository Actions permissions or use a PAT stored in secrets if organization policies block write access for the default token.
+
+How to trigger a deploy
+
+- Push a semantic-release tag (example: v1.2.3) or publish a GitHub Release — the deploy workflow listens for tag pushes and release.created/release.published events.
+- Ensure the repository's Actions settings allow workflows to use the GITHUB_TOKEN for write operations, or set a PAT in secrets and update the workflow to use it.
+
+Security & local-deploy notes
+
+- This project is intended for local/offline development and testing. The default admin password is included in the README for convenience; change it immediately on any environment exposed beyond your machine.
+- The deploy workflow copies files and runs commands on a remote server via SSH using secrets (`DROPLET_HOST`, `DROPLET_USER`, `DROPLET_SSH_KEY`). Keep these secrets secure and rotate keys as needed.
 
 ---
 
