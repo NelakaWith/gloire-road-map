@@ -1,16 +1,39 @@
 name: Deploy
 
 on:
+  workflow_dispatch: {}
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Create GitHub Deployment
+        id: create_deployment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: process.env.GITHUB_REF || github.ref,
+              required_contexts: [],
+              environment: 'production',
+              auto_merge: false,
+              description: 'Deployment triggered by CI',
+              transient_environment: false
+            });
+            return response.data.id;
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -61,3 +84,37 @@ jobs:
 
             # (Optional) Restart nginx if using static hosting
             sudo systemctl reload nginx
+
+      - name: Mark deployment as successful
+        if: ${{ success() }}
+        uses: actions/github-script@v6
+        env:
+          DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
+        with:
+          script: |
+            const deploymentId = process.env.DEPLOYMENT_ID;
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: Number(deploymentId),
+              state: 'success',
+              description: 'Deployment succeeded',
+              environment: 'production'
+            });
+
+      - name: Mark deployment as failed
+        if: ${{ failure() }}
+        uses: actions/github-script@v6
+        env:
+          DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
+        with:
+          script: |
+            const deploymentId = process.env.DEPLOYMENT_ID;
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: Number(deploymentId),
+              state: 'failure',
+              description: 'Deployment failed',
+              environment: 'production'
+            });
