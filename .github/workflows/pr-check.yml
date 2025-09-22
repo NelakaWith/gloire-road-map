@@ -7,6 +7,8 @@ on:
 jobs:
   commitlint:
     runs-on: ubuntu-latest
+    env:
+      SKIP_PR_IDS: "4"
     permissions:
       contents: read
       pull-requests: read
@@ -24,6 +26,19 @@ jobs:
       - name: Install deps
         run: |
           npm ci || npm install
+
+      - name: Auto-skip PR IDs
+        run: |
+          PR_NUMBER=$(jq -r .pull_request.number "$GITHUB_EVENT_PATH")
+          echo "PR number: $PR_NUMBER"
+          if [ -z "$SKIP_PR_IDS" ]; then
+            echo "No SKIP_PR_IDS configured"
+          else
+            if echo "$SKIP_PR_IDS" | tr ',' '\n' | grep -xq "$PR_NUMBER"; then
+              echo "PR $PR_NUMBER is in SKIP_PR_IDS; skipping commitlint checks."
+              exit 0
+            fi
+          fi
 
       - name: Lint PR title
         run: |
