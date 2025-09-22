@@ -26,16 +26,20 @@ jobs:
           npm ci || npm install
 
       - name: Skip PR check token
+        id: check_skip
         run: |
           PR_TITLE=$(jq -r .pull_request.title "$GITHUB_EVENT_PATH")
           SKIP_TOKEN='[skip pr-check]'
           echo "PR title: $PR_TITLE"
           if echo "$PR_TITLE" | grep -Fq "$SKIP_TOKEN"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skip token found in PR title; skipping commitlint checks."
-            exit 0
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Lint PR title
+        if: ${{ steps.check_skip.outputs.skip != 'true' }}
         run: |
           PR_TITLE=$(jq -r .pull_request.title "$GITHUB_EVENT_PATH")
           echo "PR title: $PR_TITLE"
@@ -48,6 +52,7 @@ jobs:
       # skip token removed from here (moved earlier)
 
       - name: Run commitlint on PR commits
+        if: ${{ steps.check_skip.outputs.skip != 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
