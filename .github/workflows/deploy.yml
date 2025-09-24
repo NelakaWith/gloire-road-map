@@ -14,6 +14,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     env:
       DEPLOY_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name) || '' }}
@@ -45,18 +48,23 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const ref = process.env.DEPLOY_TAG || github.ref;
-            const response = await github.rest.repos.createDeployment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: ref,
-              required_contexts: [],
-              environment: 'production',
-              auto_merge: false,
-              description: 'Deployment triggered by CI',
-              transient_environment: false
-            });
-            return response.data.id;
+            try {
+              const ref = process.env.DEPLOY_TAG || github.ref;
+              const response = await github.rest.repos.createDeployment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: ref,
+                required_contexts: [],
+                environment: 'production',
+                auto_merge: false,
+                description: 'Deployment triggered by CI',
+                transient_environment: false
+              });
+              return String(response.data.id || '');
+            } catch (err) {
+              core && core.info && core.info('Create deployment failed: ' + String(err));
+              return '';
+            }
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -109,7 +117,7 @@ jobs:
             sudo systemctl reload nginx
 
       - name: Mark deployment as successful
-        if: ${{ success() }}
+        if: ${{ success() && steps.create_deployment.outputs.result != '' }}
         uses: actions/github-script@v6
         env:
           DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
@@ -126,7 +134,7 @@ jobs:
             });
 
       - name: Mark deployment as failed
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.create_deployment.outputs.result != '' }}
         uses: actions/github-script@v6
         env:
           DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
