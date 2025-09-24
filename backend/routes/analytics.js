@@ -1,5 +1,9 @@
 import express from "express";
-import { getOverview, getCompletions } from "../services/analytics.js";
+import {
+  getOverview,
+  getCompletions,
+  getByStudent,
+} from "../services/analytics.js";
 
 const router = express.Router();
 
@@ -14,6 +18,13 @@ router.get("/overview", async (req, res) => {
 router.get("/completions", async (req, res) => {
   const { start_date, end_date, group_by } = req.query;
   const rows = await getCompletions({ start_date, end_date, group_by });
+  res.json(rows);
+});
+
+// GET /api/analytics/by-student?start_date=&end_date=&limit=&offset=
+router.get("/by-student", async (req, res) => {
+  const { start_date, end_date, limit = 50, offset = 0 } = req.query;
+  const rows = await getByStudent({ start_date, end_date, limit, offset });
   res.json(rows);
 });
 
