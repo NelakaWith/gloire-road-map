@@ -48,8 +48,10 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const core = require('@actions/core');
             try {
               const ref = process.env.DEPLOY_TAG || github.ref;
+              console.log('Creating deployment for ref:', ref);
               const response = await github.rest.repos.createDeployment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -60,10 +62,15 @@ jobs:
                 description: 'Deployment triggered by CI',
                 transient_environment: false
               });
-              return String(response.data.id || '');
+              const id = response && response.data && response.data.id ? String(response.data.id) : '';
+              console.log('Create deployment response id:', id);
+              console.log('Full response data:', JSON.stringify(response.data || {}));
+              core.setOutput('result', id);
+              if (!id) throw new Error('createDeployment returned empty id');
+              return id;
             } catch (err) {
-              core && core.info && core.info('Create deployment failed: ' + String(err));
-              return '';
+              console.error('Create deployment failed:', String(err));
+              throw err;
             }
 
       - name: Set up Node.js
@@ -96,7 +103,7 @@ jobs:
           script: |
             cd ~/gloire-road-map/backend
             npm install
-            pm2 restart server.js || pm2 start server.js --name  gloire-road-map-backend
+            pm2 restart server.js || pm2 start server.js --name gloire-road-map-backend
             cd ~/gloire-road-map/frontend
             npm install
             npm run build
