@@ -46,7 +46,10 @@ Deliver an admin-facing Analytics dashboard showing KPIs and time-series of goal
 - GET `/api/analytics/by-student`
   - params: `start_date?`, `end_date?`, `limit?`, `offset?`
   - response: `[{ student_id, student_name, completions, avg_days }]`
-- [ ] Add parameter validation and sane defaults (last 90 days if no dates)
+- [x] Add parameter validation and sane defaults (last 90 days if no dates)
+
+  > Note: server now parses and validates date inputs, defaults start/end to the last 90 days when missing or invalid, validates `group_by` (day|week|month), and clamps `limit`/`offset` for `/by-student`. Route-level unit tests were added to cover these behaviors.
+
 - [ ] Add short TTL caching for heavy aggregations (e.g., 60–300s) using Redis or in-memory cache
 
 ## Backend — queries & implementation notes
