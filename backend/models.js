@@ -52,6 +52,7 @@ export const Goal = sequelize.define(
     setup_date: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
     updated_at: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
     is_completed: { type: DataTypes.BOOLEAN, defaultValue: false },
+    completed_at: { type: DataTypes.DATE, allowNull: true },
     created_at: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
   },
   {

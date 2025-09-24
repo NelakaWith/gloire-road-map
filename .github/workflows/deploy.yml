@@ -7,19 +7,38 @@ on:
       - "v*"
   release:
     types: [published, created]
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     env:
       DEPLOY_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name) || '' }}
     steps:
+      - name: Determine DEPLOY_TAG from latest release (when triggered by Release workflow)
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Query the repository for the most recent release and export its tag
+            const latest = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const tag = latest.data.tag_name;
+            require('fs').appendFileSync(process.env.GITHUB_ENV, `DEPLOY_TAG=${tag}\n`);
+            console.log(`Determined DEPLOY_TAG=${tag}`);
+            return tag;
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+          ref: ${{ env.DEPLOY_TAG != '' && env.DEPLOY_TAG || (github.event_name == 'release' && github.event.release.tag_name || github.ref) }}
 
       - name: Create GitHub Deployment
         id: create_deployment
