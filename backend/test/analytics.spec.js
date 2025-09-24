@@ -12,6 +12,7 @@ vi.mock("../models.js", () => {
 
 import { sequelize } from "../models.js";
 import { getOverview, getCompletions } from "../services/analytics.js";
+import { getByStudent } from "../services/analytics.js";
 
 describe("analytics service", () => {
   beforeEach(() => {
@@ -35,6 +36,16 @@ describe("analytics service", () => {
     ];
     sequelize.query.mockResolvedValueOnce(mockRows);
     const rows = await getCompletions({ group_by: "week" });
+    expect(rows).toEqual(mockRows);
+  });
+
+  it("getByStudent returns aggregated student rows with defaults", async () => {
+    const mockRows = [
+      { student_id: 1, student_name: "A", completions: 3, avg_days: 2.5 },
+      { student_id: 2, student_name: "B", completions: 1, avg_days: 4.0 },
+    ];
+    sequelize.query.mockResolvedValueOnce(mockRows);
+    const rows = await getByStudent({});
     expect(rows).toEqual(mockRows);
   });
 });

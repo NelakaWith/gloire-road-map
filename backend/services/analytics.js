@@ -55,3 +55,38 @@ export async function getCompletions({
   });
   return rows;
 }
+
+export async function getByStudent({
+  start_date = null,
+  end_date = null,
+  limit = 50,
+  offset = 0,
+} = {}) {
+  const whereParts = ["g.completed_at IS NOT NULL"];
+  const replacements = { limit: Number(limit), offset: Number(offset) };
+  if (start_date) {
+    whereParts.push("g.completed_at >= :start");
+    replacements.start = start_date;
+  }
+  if (end_date) {
+    whereParts.push("g.completed_at <= :end");
+    replacements.end = end_date;
+  }
+
+  const sql = `
+    SELECT s.id AS student_id, s.name AS student_name, COUNT(*) AS completions,
+      ROUND(AVG(TIMESTAMPDIFF(SECOND, g.created_at, g.completed_at))/86400,2) AS avg_days
+    FROM goals g
+    JOIN students s ON s.id = g.student_id
+    WHERE ${whereParts.join(" AND ")}
+    GROUP BY s.id, s.name
+    ORDER BY completions DESC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  const rows = await sequelize.query(sql, {
+    replacements,
+    type: sequelize.QueryTypes.SELECT,
+  });
+  return rows;
+}
