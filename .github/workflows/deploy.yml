@@ -96,7 +96,7 @@ jobs:
           script: |
             cd ~/gloire-road-map/backend
             npm install
-            pm2 restart server.js || pm2 start server.js --name gloire-backend
+            pm2 restart server.js || pm2 start server.js --name  gloire-road-map-backend
             cd ~/gloire-road-map/frontend
             npm install
             npm run build
@@ -123,15 +123,24 @@ jobs:
           DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
         with:
           script: |
-            const deploymentId = process.env.DEPLOYMENT_ID;
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: Number(deploymentId),
-              state: 'success',
-              description: 'Deployment succeeded',
-              environment: 'production'
-            });
+            try {
+              const raw = process.env.DEPLOYMENT_ID;
+              const deploymentId = Number(raw);
+              if (!raw || Number.isNaN(deploymentId) || deploymentId <= 0) {
+                console.log('No valid deployment id found, skipping createDeploymentStatus (success)');
+                return;
+              }
+              await github.rest.repos.createDeploymentStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deploymentId,
+                state: 'success',
+                description: 'Deployment succeeded',
+                environment: 'production'
+              });
+            } catch (err) {
+              console.log('createDeploymentStatus (success) skipped due to error:', String(err));
+            }
 
       - name: Mark deployment as failed
         if: ${{ failure() && steps.create_deployment.outputs.result != '' }}
@@ -140,12 +149,21 @@ jobs:
           DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
         with:
           script: |
-            const deploymentId = process.env.DEPLOYMENT_ID;
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: Number(deploymentId),
-              state: 'failure',
-              description: 'Deployment failed',
-              environment: 'production'
-            });
+            try {
+              const raw = process.env.DEPLOYMENT_ID;
+              const deploymentId = Number(raw);
+              if (!raw || Number.isNaN(deploymentId) || deploymentId <= 0) {
+                console.log('No valid deployment id found, skipping createDeploymentStatus (failure)');
+                return;
+              }
+              await github.rest.repos.createDeploymentStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deploymentId,
+                state: 'failure',
+                description: 'Deployment failed',
+                environment: 'production'
+              });
+            } catch (err) {
+              console.log('createDeploymentStatus (failure) skipped due to error:', String(err));
+            }
