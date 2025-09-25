@@ -2,6 +2,7 @@ import express from "express";
 import {
   getOverview,
   getCompletions,
+  getThroughput,
   getByStudent,
 } from "../services/analytics.js";
 
@@ -110,6 +111,40 @@ router.get("/by-student", async (req, res) => {
       limit,
       offset,
     });
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET /api/analytics/throughput?group_by=day|week|month&start_date=&end_date=
+router.get("/throughput", async (req, res) => {
+  try {
+    let start = parseDateSafe(req.query.start_date);
+    let end = parseDateSafe(req.query.end_date);
+    if (!start || !end) {
+      const def = defaultRangeLastNDays(90);
+      if (!start) start = def.start;
+      if (!end) end = def.end;
+    }
+    if (new Date(start) > new Date(end)) {
+      return res
+        .status(400)
+        .json({ message: "start_date must be <= end_date" });
+    }
+    const allowed = new Set(["day", "week", "month"]);
+    const group_by =
+      req.query.group_by && allowed.has(req.query.group_by)
+        ? req.query.group_by
+        : "month";
+
+    const rows = await getThroughput({
+      start_date: start,
+      end_date: end,
+      group_by,
+    });
+    // Zero-fill missing buckets: the service returns all labels present in data; caller may want continuous buckets.
     res.json(rows);
   } catch (err) {
     console.error(err);

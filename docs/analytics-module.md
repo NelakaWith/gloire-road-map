@@ -19,12 +19,12 @@ Deliver an admin-facing Analytics dashboard showing KPIs and time-series of goal
 
 The following list prioritizes metrics to implement first for the MVP dashboard. Each item includes a one-line rationale and a suggested endpoint/query target to implement quickly.
 
-1. Goals created vs goals completed per period (conversion rate)
+1. Goals created vs goals completed per period (conversion rate) - DONE
 
 - Rationale: Gives immediate insight into throughput and backlog trends.
 - Suggested endpoint: GET /api/analytics/throughput?group_by=day|week|month
 
-2. Completion rate per period + rolling averages
+2. Completion rate per period + rolling averages - DONE
 
 - Rationale: Shows trend direction and smooths volatility for product decisions.
 - Suggested: extend `/api/analytics/throughput` to include completion_rate and optional rolling window parameter.
