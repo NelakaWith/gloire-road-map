@@ -29,7 +29,7 @@ The following list prioritizes metrics to implement first for the MVP dashboard.
 - Rationale: Shows trend direction and smooths volatility for product decisions.
 - Suggested: extend `/api/analytics/throughput` to include completion_rate and optional rolling window parameter.
 
-3. Time-to-complete distribution (mean, median, p90, histogram)
+3. Time-to-complete distribution (mean, median, p90, histogram) - DONE
 
 - Rationale: Reveals central tendency and tail behavior; useful for SLAs and planning.
 - Suggested endpoint: GET /api/analytics/time-to-complete
