@@ -51,6 +51,11 @@ const routes = [
         name: "Goals",
         component: GoalListView,
       },
+      {
+        path: "analytics",
+        name: "Analytics",
+        component: () => import("./views/AnalyticsView.vue"),
+      },
       // Add more main routes here (dashboard, profile, etc.)
     ],
   },

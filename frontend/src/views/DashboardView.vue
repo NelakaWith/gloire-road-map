@@ -19,10 +19,14 @@
       </Card>
 
       <Card class="dashboard-card">
-        <template #title>Progress</template>
+        <template #title>Analytics</template>
         <template #content>
           <p class="card-text">Track overall progress and achievements.</p>
-          <Button label="View Progress" icon="pi pi-chart-line" />
+          <Button
+            label="View Analytics"
+            icon="pi pi-chart-line"
+            @click="$router.push('/analytics')"
+          />
         </template>
       </Card>
     </div>
