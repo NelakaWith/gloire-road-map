@@ -15,6 +15,62 @@ Deliver an admin-facing Analytics dashboard showing KPIs and time-series of goal
 - [ ] API endpoints return JSON matching contract below and are covered by unit tests
 - [ ] Queries perform under acceptable latency on staging (<= 500ms for typical ranges)
 
+## Prioritized analytics (recommended implementation order)
+
+The following list prioritizes metrics to implement first for the MVP dashboard. Each item includes a one-line rationale and a suggested endpoint/query target to implement quickly.
+
+1. Goals created vs goals completed per period (conversion rate)
+
+- Rationale: Gives immediate insight into throughput and backlog trends.
+- Suggested endpoint: GET /api/analytics/throughput?group_by=day|week|month
+
+2. Completion rate per period + rolling averages
+
+- Rationale: Shows trend direction and smooths volatility for product decisions.
+- Suggested: extend `/api/analytics/throughput` to include completion_rate and optional rolling window parameter.
+
+3. Time-to-complete distribution (mean, median, p90, histogram)
+
+- Rationale: Reveals central tendency and tail behavior; useful for SLAs and planning.
+- Suggested endpoint: GET /api/analytics/time-to-complete
+
+4. Backlog and age-of-open-goals (0-7, 8-30, 31-90, 90+ days)
+
+- Rationale: Helps prioritize stale or at-risk goals for intervention.
+- Suggested endpoint: GET /api/analytics/backlog
+
+5. Overdue goals and on-time completion rate
+
+- Rationale: Measures effectiveness against deadlines and highlights problems.
+- Suggested endpoint: GET /api/analytics/overdue
+
+6. Active students / Monthly Active Students (MAS)
+
+- Rationale: Engagement metric to track whether students are using the system.
+- Suggested endpoint: GET /api/analytics/active-students?group_by=month
+
+7. Top students (by completions, by avg time-to-complete, completion rate)
+
+- Rationale: Identifies high performers and those needing help; useful for recognition.
+- Suggested endpoint: extend existing `/api/analytics/by-student` with sort options.
+
+8. Cohort retention (students created in month X -> % completing by 30/60/90 days)
+
+- Rationale: Measures onboarding and long-term engagement.
+- Suggested endpoint: GET /api/analytics/cohort-retention?cohort_by=month&window=30
+
+9. Goal throughput velocity (completions per week/month per student or cohort)
+
+- Rationale: Useful for capacity planning and trend detection.
+- Suggested endpoint: GET /api/analytics/velocity
+
+10. Change over time for average goals per student
+
+- Rationale: Tracks depth of usage per student; indicates product stickiness.
+- Suggested endpoint: GET /api/analytics/avg-goals-per-student?group_by=month
+
+Implementing items 1–4 gives the biggest immediate ROI for the dashboard MVP. Items 5–7 provide useful operational KPIs next, and items 8–10 are higher-effort but valuable for retention and capacity planning.
+
 ## Database / Migration
 
 - [x] Ensure `goals.completed_at` exists and is nullable
