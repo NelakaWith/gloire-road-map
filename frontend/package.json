@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.3",
@@ -19,19 +20,8 @@
     "vue-router": "^4.3.0",
     "chart.js": "^4.4.0",
     "vue-chartjs": "^5.1.1",
-    "chartjs-adapter-date-fns": "^2.0.0",
-    "date-fns": "^2.31.0"
-  },
-  "devDependencies": {
-    "@vue/test-utils": "^2.3.0",
-    "jsdom": "^22.1.0",
-    "vitest": "^0.34.0"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest"
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.3.9",
@@ -44,6 +34,6 @@
     "vite": "^5.2.8",
     "@vue/test-utils": "^2.3.0",
     "jsdom": "^22.1.0",
-    "vitest": "^0.34.0"
+    "vitest": "^3.2.4"
   }
 }
