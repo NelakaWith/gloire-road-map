@@ -22,7 +22,10 @@ import {
   PointElement,
   LinearScale,
   CategoryScale,
+  TimeScale,
+  Filler,
 } from "chart.js";
+// import "chartjs-adapter-date-fns";
 
 ChartJS.register(
   Title,
@@ -31,7 +34,9 @@ ChartJS.register(
   LineElement,
   PointElement,
   LinearScale,
-  CategoryScale
+  CategoryScale,
+  TimeScale,
+  Filler
 );
 
 const props = defineProps({
@@ -58,6 +63,27 @@ const chartData = computed(() => {
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  plugins: {
+    tooltip: {
+      callbacks: {
+        label(context) {
+          const v = context.parsed.y;
+          return `Completions: ${v}`;
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      type: "time",
+      time: {
+        unit: "week",
+        tooltipFormat: "PP",
+      },
+      title: { display: true, text: "Date" },
+    },
+    y: { title: { display: true, text: "Completions" } },
+  },
 };
 
 // Local registration wrapper
