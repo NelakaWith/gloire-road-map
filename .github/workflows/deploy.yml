@@ -64,6 +64,32 @@ jobs:
               const id = response && response.data && response.data.id ? String(response.data.id) : '';
               console.log('Create deployment response id:', id);
               console.log('Full response data:', JSON.stringify(response.data || {}));
+              // Export a clean numeric id to GITHUB_ENV so later steps can read it reliably
+              try {
+                require('fs').appendFileSync(process.env.GITHUB_ENV, `DEPLOYMENT_ID=${id}\n`);
+                console.log('Exported DEPLOYMENT_ID to GITHUB_ENV');
+              } catch (e) {
+                console.warn('Failed to write DEPLOYMENT_ID to GITHUB_ENV:', String(e));
+              }
+              // Mark the deployment as in_progress so the GitHub UI doesn't show it as "Ready to deploy (idle)"
+              try {
+                const numericId = Number(id);
+                if (numericId && !Number.isNaN(numericId)) {
+                  console.log('Setting deployment status to in_progress for id:', numericId);
+                  await github.rest.repos.createDeploymentStatus({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    deployment_id: numericId,
+                    state: 'in_progress',
+                    description: 'Deployment started by CI',
+                    environment: 'production'
+                  });
+                } else {
+                  console.log('Skipping in_progress status: invalid deployment id');
+                }
+              } catch (err) {
+                console.error('Failed to set in_progress status:', String(err));
+              }
               core.setOutput('result', id);
               if (!id) throw new Error('createDeployment returned empty id');
               return id;
@@ -147,9 +173,11 @@ jobs:
         with:
           script: |
             try {
-              const raw = process.env.DEPLOYMENT_ID;
-              const deploymentId = Number(raw);
-              if (!raw || Number.isNaN(deploymentId) || deploymentId <= 0) {
+              const raw = process.env.DEPLOYMENT_ID || '';
+              // Strip any non-digit characters (handles quoted values like "3060155420")
+              const digits = String(raw).replace(/\D/g, '');
+              const deploymentId = Number(digits);
+              if (!digits || Number.isNaN(deploymentId) || deploymentId <= 0) {
                 console.log('No valid deployment id found, skipping createDeploymentStatus (success)');
                 return;
               }
@@ -173,9 +201,10 @@ jobs:
         with:
           script: |
             try {
-              const raw = process.env.DEPLOYMENT_ID;
-              const deploymentId = Number(raw);
-              if (!raw || Number.isNaN(deploymentId) || deploymentId <= 0) {
+              const raw = process.env.DEPLOYMENT_ID || '';
+              const digits = String(raw).replace(/\D/g, '');
+              const deploymentId = Number(digits);
+              if (!digits || Number.isNaN(deploymentId) || deploymentId <= 0) {
                 console.log('No valid deployment id found, skipping createDeploymentStatus (failure)');
                 return;
               }
