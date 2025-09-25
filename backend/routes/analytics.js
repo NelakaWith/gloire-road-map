@@ -3,6 +3,7 @@ import {
   getOverview,
   getCompletions,
   getThroughput,
+  getBacklog,
   getByStudent,
 } from "../services/analytics.js";
 
@@ -146,6 +147,22 @@ router.get("/throughput", async (req, res) => {
     });
     // Zero-fill missing buckets: the service returns all labels present in data; caller may want continuous buckets.
     res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET /api/analytics/backlog?as_of=YYYY-MM-DD&top_n=10
+router.get("/backlog", async (req, res) => {
+  try {
+    const as_of = parseDateSafe(req.query.as_of) || null;
+    let top_n = Number(req.query.top_n ?? 10);
+    if (Number.isNaN(top_n) || top_n < 1) top_n = 10;
+    if (top_n > 100) top_n = 100;
+
+    const data = await getBacklog({ as_of, top_n });
+    res.json(data);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

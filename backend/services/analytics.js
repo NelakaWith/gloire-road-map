@@ -288,3 +288,106 @@ export async function getThroughput({
 
   return series;
 }
+
+export async function getBacklog({ as_of = null, top_n = 10 } = {}) {
+  // as_of is expected as YYYY-MM-DD; default to today if not provided
+  const asOfDate = as_of || new Date().toISOString().slice(0, 10);
+  let limit = Number(top_n) || 10;
+  if (limit < 1) limit = 10;
+  const MAX_TOP = 100;
+  if (limit > MAX_TOP) limit = MAX_TOP;
+
+  const replacements = { as_of: asOfDate, top_n: limit };
+
+  // Open as of : as created on or before as_of and not completed on or before as_of
+  const whereOpen = `DATE(created_at) <= :as_of AND (completed_at IS NULL OR DATE(completed_at) > :as_of)`;
+
+  const sqlTotal = `SELECT COUNT(*) AS total_open FROM goals WHERE ${whereOpen}`;
+  const sqlOverdue = `SELECT COUNT(*) AS overdue FROM goals WHERE ${whereOpen} AND target_date IS NOT NULL AND DATE(target_date) < :as_of`;
+  const sqlAvgDays = `SELECT ROUND(AVG(DATEDIFF(:as_of, DATE(created_at))),2) AS avg_days_open FROM goals WHERE ${whereOpen}`;
+
+  const sqlByAge = `
+    SELECT bucket, COUNT(*) AS count FROM (
+      SELECT CASE
+        WHEN DATEDIFF(:as_of, DATE(created_at)) <= 7 THEN '0-7'
+        WHEN DATEDIFF(:as_of, DATE(created_at)) <= 30 THEN '8-30'
+        WHEN DATEDIFF(:as_of, DATE(created_at)) <= 90 THEN '31-90'
+        ELSE '90+' END AS bucket
+      FROM goals
+      WHERE ${whereOpen}
+    ) t
+    GROUP BY bucket
+    ORDER BY FIELD(bucket,'0-7','8-30','31-90','90+')
+  `;
+
+  const sqlTopStudents = `
+    SELECT s.id AS student_id, s.name AS student_name, COUNT(*) AS open_count
+    FROM goals g
+    JOIN students s ON s.id = g.student_id
+    WHERE ${whereOpen}
+    GROUP BY s.id, s.name
+    ORDER BY open_count DESC
+    LIMIT :top_n
+  `;
+
+  // Run queries in parallel
+  const [totalRows, overdueRows, avgRows, ageRows, topRows] = await Promise.all(
+    [
+      sequelize.query(sqlTotal, {
+        replacements,
+        type: sequelize.QueryTypes.SELECT,
+      }),
+      sequelize.query(sqlOverdue, {
+        replacements,
+        type: sequelize.QueryTypes.SELECT,
+      }),
+      sequelize.query(sqlAvgDays, {
+        replacements,
+        type: sequelize.QueryTypes.SELECT,
+      }),
+      sequelize.query(sqlByAge, {
+        replacements,
+        type: sequelize.QueryTypes.SELECT,
+      }),
+      sequelize.query(sqlTopStudents, {
+        replacements,
+        type: sequelize.QueryTypes.SELECT,
+      }),
+    ]
+  );
+
+  const total_open =
+    (totalRows && totalRows[0] && Number(totalRows[0].total_open)) || 0;
+  const overdue =
+    (overdueRows && overdueRows[0] && Number(overdueRows[0].overdue)) || 0;
+  const avg_days_open =
+    avgRows && avgRows[0] && avgRows[0].avg_days_open !== null
+      ? Number(avgRows[0].avg_days_open)
+      : null;
+
+  // Normalize age buckets to ensure all buckets present
+  const bucketsOrder = ["0-7", "8-30", "31-90", "90+"];
+  const ageMap = new Map();
+  for (const r of ageRows || []) {
+    ageMap.set(r.bucket, Number(r.count || 0));
+  }
+  const open_by_age = bucketsOrder.map((b) => ({
+    bucket: b,
+    count: ageMap.get(b) || 0,
+  }));
+
+  const top_students = (topRows || []).map((r) => ({
+    student_id: r.student_id,
+    student_name: r.student_name,
+    open_count: Number(r.open_count),
+  }));
+
+  return {
+    as_of: asOfDate,
+    total_open,
+    overdue,
+    avg_days_open,
+    open_by_age,
+    top_students,
+  };
+}
