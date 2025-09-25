@@ -18,6 +18,10 @@
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },
+  "optionalDependencies": {
+    "chart.js": "^4.4.0",
+    "vue-chartjs": "^5.1.1"
+  },
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.3.9",
     "@vitejs/plugin-vue": "^5.0.4",
