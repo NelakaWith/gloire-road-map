@@ -56,6 +56,101 @@ export async function getCompletions({
   return rows;
 }
 
+export async function getTimeToComplete({
+  start_date = null,
+  end_date = null,
+  buckets = null,
+} = {}) {
+  // Default histogram buckets
+  const defaultBuckets = [
+    { key: "0-1", min: 0, max: 1 },
+    { key: "2-7", min: 2, max: 7 },
+    { key: "8-30", min: 8, max: 30 },
+    { key: "31-90", min: 31, max: 90 },
+    { key: "90+", min: 91, max: Number.MAX_SAFE_INTEGER },
+  ];
+  const histBuckets = buckets || defaultBuckets;
+
+  const whereParts = ["completed_at IS NOT NULL", "created_at IS NOT NULL"];
+  const replacements = {};
+  if (start_date) {
+    whereParts.push("DATE(completed_at) >= :start");
+    replacements.start = start_date;
+  }
+  if (end_date) {
+    whereParts.push("DATE(completed_at) <= :end");
+    replacements.end = end_date;
+  }
+
+  const sql = `
+      SELECT TIMESTAMPDIFF(SECOND, created_at, completed_at)/86400.0 AS days
+      FROM goals
+      WHERE ${whereParts.join(" AND ")}
+    `;
+
+  const rows = await sequelize.query(sql, {
+    replacements,
+    type: sequelize.QueryTypes.SELECT,
+  });
+
+  const daysArr = (rows || [])
+    .map((r) => Number(r.days))
+    .filter((d) => Number.isFinite(d) && d >= 0);
+  const count = daysArr.length;
+  if (count === 0) {
+    return {
+      count: 0,
+      mean_days: null,
+      median_days: null,
+      p90_days: null,
+      histogram: histBuckets.map((b) => ({ bucket: b.key, count: 0 })),
+    };
+  }
+
+  // mean
+  const mean = daysArr.reduce((s, v) => s + v, 0) / count;
+
+  // median and percentiles: sort
+  const sorted = daysArr.slice().sort((a, b) => a - b);
+  const median =
+    count % 2 === 1
+      ? sorted[(count - 1) / 2]
+      : (sorted[count / 2 - 1] + sorted[count / 2]) / 2;
+
+  // p90 (90th percentile): linear interpolation using rank = 0.9*(n-1)
+  const rank = 0.9 * (count - 1);
+  const lower = Math.floor(rank);
+  const upper = Math.ceil(rank);
+  const weight = rank - lower;
+  const p90 =
+    upper === lower
+      ? sorted[rank]
+      : sorted[lower] * (1 - weight) + sorted[upper] * weight;
+
+  // histogram
+  const histCounts = histBuckets.map((b) => 0);
+  for (const d of sorted) {
+    for (let i = 0; i < histBuckets.length; i++) {
+      const b = histBuckets[i];
+      if (d >= b.min && d <= b.max) {
+        histCounts[i]++;
+        break;
+      }
+    }
+  }
+
+  return {
+    count,
+    mean_days: Number(mean.toFixed(2)),
+    median_days: Number(median.toFixed(2)),
+    p90_days: Number(p90.toFixed(2)),
+    histogram: histBuckets.map((b, i) => ({
+      bucket: b.key,
+      count: histCounts[i],
+    })),
+  };
+}
+
 export async function getByStudent({
   start_date = null,
   end_date = null,

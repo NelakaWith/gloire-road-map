@@ -5,6 +5,7 @@ import {
   getThroughput,
   getBacklog,
   getOverdue,
+  getTimeToComplete,
   getByStudent,
 } from "../services/analytics.js";
 
@@ -179,6 +180,32 @@ router.get("/overdue", async (req, res) => {
     const as_of = parseDateSafe(req.query.as_of) || null;
     const data = await getOverdue({ start_date: start, end_date: end, as_of });
     res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET /api/analytics/time-to-complete?start_date=&end_date=&buckets=
+router.get("/time-to-complete", async (req, res) => {
+  try {
+    let start = parseDateSafe(req.query.start_date);
+    let end = parseDateSafe(req.query.end_date);
+    if (!start || !end) {
+      const def = defaultRangeLastNDays(90);
+      if (!start) start = def.start;
+      if (!end) end = def.end;
+    }
+    if (new Date(start) > new Date(end)) {
+      return res
+        .status(400)
+        .json({ message: "start_date must be <= end_date" });
+    }
+    const result = await getTimeToComplete({
+      start_date: start,
+      end_date: end,
+    });
+    res.json(result);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

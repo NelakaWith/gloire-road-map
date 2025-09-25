@@ -39,7 +39,7 @@ The following list prioritizes metrics to implement first for the MVP dashboard.
 - Rationale: Helps prioritize stale or at-risk goals for intervention.
 - Suggested endpoint: GET /api/analytics/backlog
 
-5. Overdue goals and on-time completion rate
+5. Overdue goals and on-time completion rate - DONE
 
 - Rationale: Measures effectiveness against deadlines and highlights problems.
 - Suggested endpoint: GET /api/analytics/overdue
