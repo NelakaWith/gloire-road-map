@@ -73,11 +73,11 @@ Deliver an admin-facing Analytics dashboard showing KPIs and time-series of goal
 
 ## Frontend — UI components
 
-- [ ] `AnalyticsView.vue` — main page with filter bar and charts
-- [ ] `KPICards.vue` — shows numeric KPIs
-- [ ] `TimeSeriesChart.vue` — line/area chart (ApexCharts or Chart.js)
-- [ ] `StudentBarChart.vue` — top students bar chart
-- [ ] `FiltersPanel.vue` — date range picker, student selector, group_by
+- [x] `AnalyticsView.vue` — main page with filter bar and charts
+- [x] `KPICards.vue` — shows numeric KPIs
+- [x] `TimeSeriesChart.vue` — line/area chart (ApexCharts or Chart.js)
+- [x] `StudentBarChart.vue` — top students bar chart
+- [x] `FiltersPanel.vue` — date range picker, student selector, group_by
 - UX defaults: show last 90 days on first load; allow quick presets (30/90/365)
 
 ## Tests & QA
@@ -101,7 +101,7 @@ Deliver an admin-facing Analytics dashboard showing KPIs and time-series of goal
 
 1. Implement DB migration and run on staging
 2. [x] Implement backend endpoints and unit tests
-3. Implement frontend MVP and run manual QA on staging
+3. [x] Implement frontend MVP and run manual QA on staging
 4. Measure performance; add aggregation/caching if needed
 5. Release to production behind feature flag (or admin-only route)
 
