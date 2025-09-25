@@ -18,7 +18,9 @@
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
     "chart.js": "^4.4.0",
-    "vue-chartjs": "^5.1.1"
+    "vue-chartjs": "^5.1.1",
+    "chartjs-adapter-date-fns": "^2.0.0",
+    "date-fns": "^2.31.0"
   },
   "devDependencies": {
     "@vue/test-utils": "^2.3.0",
