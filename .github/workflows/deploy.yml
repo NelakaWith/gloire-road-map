@@ -48,7 +48,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const core = require('@actions/core');
             try {
               const ref = process.env.DEPLOY_TAG || github.ref;
               console.log('Creating deployment for ref:', ref);
