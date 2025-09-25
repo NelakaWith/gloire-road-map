@@ -98,3 +98,53 @@ From that chart and the KPI cards the admin can quickly see whether throughput i
 
 - If the deployment shows as idle: inspect the Actions create-deployment step logs and check repository environment protections (approvals) in Settings → Environments.
 - If builds fail during CI: view the Actions log for the failing step; common causes are missing secrets or node module audit/fetch warnings (update packages as needed).
+
+---
+
+## Full app case study — end-to-end usage
+
+This case study walks through a typical complete workflow using the full app (Admin + Student + Analytics) and shows how the analytics features support operational decisions.
+
+Scenario: A training program admin onboards a new cohort of 50 students and wants to monitor progress over the first 90 days.
+
+1. Onboarding
+
+- Admin creates 50 student accounts (or imports via CSV) and assigns each an initial set of goals (2–5 per student) with target dates spread over the next 90 days.
+- Expected metric: initial `total_goals` = ~150–250.
+
+2. Week 1 — early adoption monitoring
+
+- Students start completing small goals. Admin checks the Analytics page and sets the date range to the first 7 days.
+- Key views: throughput (created vs completed), top students, backlog age buckets.
+- Operational action: identify students with 0 completions and send a reminder email or schedule a mentor check-in.
+
+3. Week 4 — intervention and SLA measurement
+
+- Admin filters analytics to the last 30 days, examines time-to-complete distribution and p90 metric. If p90 exceeds SLA (e.g., 21 days), investigate goal complexity or mentoring gaps.
+- Key views: time-to-complete histogram, overdue rate, top students by completions.
+- Operational action: create a focused intervention for students whose average time-to-complete is in the top quartile.
+
+4. Month 3 — retention and cohort comparison
+
+- Admin compares cohorts (month-over-month) to measure retention: % of students who completed at least one goal in the last 30 days.
+- Key views: cohort retention (planned extension), monthly active students (MAS), average goals per active student.
+- Operational action: promote high-performing students, iterate onboarding content for cohorts with low retention.
+
+5. Ongoing operations & deploys
+
+- CI deploys updates to the app. The deploy workflow records a GitHub Deployment and sets statuses as the run progresses; if your environment requires approvals, the deployment will wait until released.
+- Admins can rely on the analytics dashboard to watch the impact of product changes (e.g., a UI tweak to the goal creation flow) by comparing pre/post-release throughput and completion-rate changes.
+
+Metrics to watch (examples)
+
+- Total goals, completed goals, completion rate (pct)
+- Throughput: created vs completed per day/week/month
+- Backlog: open goals and age buckets (0–7, 8–30, 31–90, 90+ days)
+- Time-to-complete: median, mean, p90 and histogram
+- Overdue rate and on-time completion percentage
+
+How analytics informs decisions
+
+- Quickly identify cohorts or students needing attention (low completions, high avg days-to-complete).
+- Measure effectiveness of interventions (mentor outreach, reminders) by tracking throughput before and after.
+- Use p90 and histograms to set realistic SLAs and prioritise product investments that reduce completion friction.
