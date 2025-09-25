@@ -13,7 +13,7 @@ yarn-error.log*
 Thumbs.db
 
 # Vite
-/dist
+*/dist
 
 # VSCode
 .vscode/
