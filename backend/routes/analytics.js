@@ -4,6 +4,7 @@ import {
   getCompletions,
   getThroughput,
   getBacklog,
+  getOverdue,
   getByStudent,
 } from "../services/analytics.js";
 
@@ -162,6 +163,21 @@ router.get("/backlog", async (req, res) => {
     if (top_n > 100) top_n = 100;
 
     const data = await getBacklog({ as_of, top_n });
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET /api/analytics/overdue?start_date=&end_date=&as_of=
+router.get("/overdue", async (req, res) => {
+  try {
+    let start = parseDateSafe(req.query.start_date);
+    let end = parseDateSafe(req.query.end_date);
+    // as_of uses parseDateSafe semantics but can be omitted
+    const as_of = parseDateSafe(req.query.as_of) || null;
+    const data = await getOverdue({ start_date: start, end_date: end, as_of });
     res.json(data);
   } catch (err) {
     console.error(err);

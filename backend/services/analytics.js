@@ -391,3 +391,75 @@ export async function getBacklog({ as_of = null, top_n = 10 } = {}) {
     top_students,
   };
 }
+
+export async function getOverdue({
+  start_date = null,
+  end_date = null,
+  as_of = null,
+} = {}) {
+  // as_of defaults to today for open overdue count
+  const asOfDate = as_of || new Date().toISOString().slice(0, 10);
+
+  const replacements = { as_of: asOfDate };
+  if (start_date) replacements.start = start_date;
+  if (end_date) replacements.end = end_date;
+
+  // Open overdue as of as_of
+  const sqlOpenOverdue = `
+    SELECT COUNT(*) AS open_overdue
+    FROM goals
+    WHERE is_completed = 0
+      AND target_date IS NOT NULL
+      AND DATE(target_date) < :as_of
+  `;
+
+  // On-time completion rate for completed goals in range (if start/end provided)
+  const sqlCompleted = `
+    SELECT COUNT(*) AS completed_count,
+           SUM(CASE WHEN completed_at <= target_date THEN 1 ELSE 0 END) AS completed_on_time
+    FROM goals
+    WHERE completed_at IS NOT NULL
+      AND target_date IS NOT NULL
+      ${
+        start_date && end_date
+          ? "AND DATE(completed_at) BETWEEN :start AND :end"
+          : ""
+      }
+  `;
+
+  const [openRows, completedRows] = await Promise.all([
+    sequelize.query(sqlOpenOverdue, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    }),
+    sequelize.query(sqlCompleted, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    }),
+  ]);
+
+  const open_overdue =
+    (openRows && openRows[0] && Number(openRows[0].open_overdue)) || 0;
+  const completed_count =
+    (completedRows &&
+      completedRows[0] &&
+      Number(completedRows[0].completed_count)) ||
+    0;
+  const completed_on_time =
+    (completedRows &&
+      completedRows[0] &&
+      Number(completedRows[0].completed_on_time)) ||
+    0;
+  const on_time_rate =
+    completed_count > 0
+      ? Number((completed_on_time / completed_count).toFixed(4))
+      : null;
+
+  return {
+    as_of: asOfDate,
+    open_overdue,
+    completed_count,
+    completed_on_time,
+    on_time_rate,
+  };
+}

@@ -34,7 +34,7 @@ The following list prioritizes metrics to implement first for the MVP dashboard.
 - Rationale: Reveals central tendency and tail behavior; useful for SLAs and planning.
 - Suggested endpoint: GET /api/analytics/time-to-complete
 
-4. Backlog and age-of-open-goals (0-7, 8-30, 31-90, 90+ days)
+4. Backlog and age-of-open-goals (0-7, 8-30, 31-90, 90+ days) - DONE
 
 - Rationale: Helps prioritize stale or at-risk goals for intervention.
 - Suggested endpoint: GET /api/analytics/backlog
@@ -74,7 +74,7 @@ Implementing items 1–4 gives the biggest immediate ROI for the dashboard MVP. 
 ## Database / Migration
 
 - [x] Ensure `goals.completed_at` exists and is nullable
-- [ ] Add indexes:
+- [x] Add indexes:
   - `idx_goals_created_at` on `(created_at)`
   - `idx_goals_completed_at` on `(completed_at)`
   - `idx_goals_completed_flag_date` on `(is_completed, completed_at)`
