@@ -6,19 +6,27 @@ export async function getOverview({ start_date = null, end_date = null } = {}) {
     SELECT
       (SELECT COUNT(*) FROM goals) AS total_goals,
       (SELECT COUNT(*) FROM goals WHERE is_completed = 1) AS completed_goals,
-      (SELECT ROUND(AVG(TIMESTAMPDIFF(SECOND, created_at, completed_at))/86400,2) FROM goals WHERE completed_at IS NOT NULL AND created_at IS NOT NULL) AS avg_days_to_complete
+      -- Use GREATEST(...,0) to avoid negative intervals (protect against bad data)
+      (SELECT ROUND(AVG(GREATEST(TIMESTAMPDIFF(SECOND, created_at, completed_at), 0))/86400,2)
+         FROM goals WHERE completed_at IS NOT NULL AND created_at IS NOT NULL) AS avg_days_to_complete
   `;
 
   const rows = await sequelize.query(sql, {
     type: sequelize.QueryTypes.SELECT,
   });
-  return (
-    rows[0] || {
-      total_goals: 0,
-      completed_goals: 0,
-      avg_days_to_complete: null,
-    }
-  );
+  const r = rows[0] || {
+    total_goals: 0,
+    completed_goals: 0,
+    avg_days_to_complete: null,
+  };
+
+  // compute percentage complete (0 if no goals)
+  const total = Number(r.total_goals || 0);
+  const completed = Number(r.completed_goals || 0);
+  r.pct_complete =
+    total > 0 ? Number(((completed / total) * 100).toFixed(2)) : 0;
+
+  return r;
 }
 
 export async function getCompletions({
