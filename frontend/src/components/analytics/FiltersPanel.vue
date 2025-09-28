@@ -1,16 +1,16 @@
 <template>
   <Card>
     <template #content>
-      <div class="flex items-center gap-4">
-        <div>
+      <div class="flex items-center gap-4 w-full">
+        <div class="flex flex-col gap-1">
           <label class="text-sm font-medium text-gray-700">Start</label>
           <DatePicker v-model="start" :showIcon="true" class="block" />
         </div>
-        <div>
+        <div class="flex flex-col gap-1">
           <label class="text-sm font-medium text-gray-700">End</label>
           <DatePicker v-model="end" :showIcon="true" class="block" />
         </div>
-        <div>
+        <div class="flex flex-col gap-1">
           <label class="text-sm font-medium text-gray-700">Group</label>
           <Dropdown
             v-model="group"

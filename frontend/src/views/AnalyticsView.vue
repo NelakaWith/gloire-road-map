@@ -1,7 +1,11 @@
 <template>
   <div class="p-4">
-    <PageHeader title="Analytics" :showBack="true" />
-    <main class="flex flex-col gap-4 max-w-3xl mx-auto px-4">
+    <PageHeader
+      title="Analytics"
+      :showBack="true"
+      containerClass="flex justify-between items-center max-w-6xl mx-auto p-4"
+    />
+    <main class="flex flex-col gap-4 max-w-6xl mx-auto px-4">
       <FiltersPanel
         :initial-start="initialStart"
         :initial-end="initialEnd"

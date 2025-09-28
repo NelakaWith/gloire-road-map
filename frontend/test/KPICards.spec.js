@@ -13,13 +13,15 @@ describe("KPICards", () => {
 
     const wrapper = mount(KPICards, { props: { kpis } });
     const text = wrapper.text();
-    expect(text).toContain("total_goals");
+    // labels
+    expect(text).toContain("Total goals");
+    expect(text).toContain("Completed goals");
+    expect(text).toContain("Percent complete");
+    expect(text).toContain("Avg days to complete");
+    // values
     expect(text).toContain("10");
-    expect(text).toContain("completed_goals");
     expect(text).toContain("7");
-    // pct_complete in component is appended with "%"
     expect(text).toContain("70%");
-    expect(text).toContain("avg_days_to_complete");
     expect(text).toContain("12");
   });
 });

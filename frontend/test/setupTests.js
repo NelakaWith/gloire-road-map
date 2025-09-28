@@ -142,6 +142,18 @@ try {
   config.global.components = config.global.components || {};
   config.global.components.DatePicker = PrimeDatePicker;
   config.global.components.Dropdown = PrimeDropdown;
+  const PrimeCard = {
+    name: "Card",
+    template: `<div class="pv-card"><slot name="title"></slot><slot name="content"></slot><slot /></div>`,
+  };
+  const PrimeButton = {
+    name: "Button",
+    props: ["label", "icon"],
+    emits: ["click"],
+    template: `<button @click="$emit('click')"><i v-if="icon" :class="icon"></i> {{label}}</button>`,
+  };
+  config.global.components.Card = PrimeCard;
+  config.global.components.Button = PrimeButton;
 } catch (e) {
   // ignore - this best-effort setup should not block tests if something can't be required
 }
