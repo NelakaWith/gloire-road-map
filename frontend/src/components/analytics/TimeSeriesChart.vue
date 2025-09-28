@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 bg-white rounded shadow">
     <div class="text-gray-600 mb-2">Completions (group: {{ groupBy }})</div>
-    <div style="height: 360px">
+    <div class="w-full h-96">
       <Line :data="plainChartData" :options="plainChartOptions" />
     </div>
     <div v-if="!chartData" class="text-sm text-gray-500">No data</div>
@@ -125,8 +125,6 @@ const chartOptions = computed(() => {
   };
 });
 
-// Provide plain JS copies (non-proxied) because vue-chartjs clones data and
-// can error when given reactive proxies.
 const plainChartData = computed(() => {
   const d = chartData.value;
   return d ? JSON.parse(JSON.stringify(d)) : { labels: [], datasets: [] };

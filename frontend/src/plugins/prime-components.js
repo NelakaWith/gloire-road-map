@@ -2,7 +2,7 @@ import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import DatePicker from "primevue/datepicker";
-import Dropdown from "primevue/dropdown";
+import Dropdown from "primevue/select";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import Message from "primevue/message";
