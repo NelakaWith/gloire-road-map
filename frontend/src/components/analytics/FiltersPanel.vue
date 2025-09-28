@@ -3,11 +3,11 @@
     <template #content>
       <div class="flex items-center gap-4 w-full">
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700">Start</label>
+          <label class="text-sm font-medium text-gray-700">From</label>
           <DatePicker v-model="start" :showIcon="true" class="block" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700">End</label>
+          <label class="text-sm font-medium text-gray-700">To</label>
           <DatePicker v-model="end" :showIcon="true" class="block" />
         </div>
         <div class="flex flex-col gap-1">
