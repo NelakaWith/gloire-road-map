@@ -1,17 +1,15 @@
 <template>
   <div class="p-4">
-    <PageHeader title="Analytics" />
-    <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
+    <PageHeader title="Analytics" :showBack="true" />
+    <main class="flex flex-col gap-4 max-w-3xl mx-auto px-4">
       <FiltersPanel
         :initial-start="initialStart"
         :initial-end="initialEnd"
         v-model:groupBy="groupBy"
         @change="onFiltersChange"
       />
-
       <KPICards :kpis="kpis" />
-
-      <div class="grid gap-4 mt-4">
+      <div class="grid gap-4">
         <div class="col-12 md:col-8">
           <TimeSeriesChart :series="completionsSeries" :group-by="groupBy" />
         </div>

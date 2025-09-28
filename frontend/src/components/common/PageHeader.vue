@@ -18,10 +18,15 @@
 </template>
 
 <script setup>
+import router from "../../router";
+
 const props = defineProps({
   title: { type: String, required: true },
   showBack: { type: Boolean, default: false },
-  backTo: { type: String, default: "/students" },
+  backTo: {
+    type: String,
+    default: router.options.history.base || "/dashboard",
+  },
   containerClass: {
     type: String,
     default: "flex justify-between items-center max-w-3xl mx-auto p-4",

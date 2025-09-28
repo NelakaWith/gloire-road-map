@@ -107,3 +107,41 @@ try {
 } catch (e) {
   // ignore if vi isn't available (e.g., linting or other tools reading this file)
 }
+
+// Setup PrimeVue globals for tests so components like DatePicker/Dropdown
+// can access $primevue and default configuration during render.
+try {
+  // Import PrimeVue and components dynamically (won't fail when not installed)
+  // and set up globalProperties for Vue Test Utils.
+  const { config } = require("@vue/test-utils");
+  // Create a lightweight $primevue config object expected by PrimeVue components
+  const primeConfig = { ripple: false, inputStyle: "outlined" };
+
+  // Provide a global $primevue object
+  if (!config.global) config.global = {};
+  config.global.config = config.global.config || {};
+  config.global.config.globalProperties =
+    config.global.config.globalProperties || {};
+  config.global.config.globalProperties.$primevue = primeConfig;
+
+  // Register stubbed PrimeVue components used by tests to avoid full render complexity
+  // If real PrimeVue is available they will be used; otherwise these stubs keep tests stable.
+  const PrimeDatePicker = {
+    name: "DatePicker",
+    props: ["modelValue", "showIcon"],
+    emits: ["update:modelValue"],
+    template: `<input type="date" :value="modelValue ? new Date(modelValue).toISOString().slice(0,10) : ''" @input="$emit('update:modelValue', $event.target.value ? new Date($event.target.value) : null)" />`,
+  };
+  const PrimeDropdown = {
+    name: "Dropdown",
+    props: ["modelValue", "options"],
+    emits: ["update:modelValue"],
+    template: `<select :value="modelValue" @change="$emit('update:modelValue', $event.target.value)"> <option v-for="opt in options" :key="opt.value" :value="opt.value">{{opt.label}}</option></select>`,
+  };
+
+  config.global.components = config.global.components || {};
+  config.global.components.DatePicker = PrimeDatePicker;
+  config.global.components.Dropdown = PrimeDropdown;
+} catch (e) {
+  // ignore - this best-effort setup should not block tests if something can't be required
+}

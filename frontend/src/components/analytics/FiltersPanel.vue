@@ -2,44 +2,59 @@
   <div class="p-4 bg-white rounded shadow flex items-center gap-4">
     <div>
       <label class="text-sm text-gray-600">Start</label>
-      <input
-        type="date"
-        v-model="startStr"
-        class="block"
-        @change="emitChange"
-      />
+      <DatePicker v-model="start" :showIcon="true" class="block" />
     </div>
     <div>
       <label class="text-sm text-gray-600">End</label>
-      <input type="date" v-model="endStr" class="block" @change="emitChange" />
+      <DatePicker v-model="end" :showIcon="true" class="block" />
     </div>
     <div>
       <label class="text-sm text-gray-600">Group</label>
-      <select v-model="group" @change="emitChange">
-        <option value="day">Day</option>
-        <option value="week">Week</option>
-        <option value="month">Month</option>
-      </select>
+      <Dropdown
+        v-model="group"
+        :options="groupOptions"
+        optionLabel="label"
+        optionValue="value"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from "vue";
+
 const props = defineProps({ initialStart: Date, initialEnd: Date });
 const emit = defineEmits(["change", "update:groupBy"]);
-const startStr = ref(
-  props.initialStart ? props.initialStart.toISOString().slice(0, 10) : ""
-);
-const endStr = ref(
-  props.initialEnd ? props.initialEnd.toISOString().slice(0, 10) : ""
-);
+
+// use Date objects directly (PrimeVue DatePicker binds to Date)
+const start = ref(props.initialStart || null);
+const end = ref(props.initialEnd || null);
 const group = ref("week");
 
-function emitChange() {
-  const start = new Date(startStr.value);
-  const end = new Date(endStr.value);
+const groupOptions = [
+  { label: "Day", value: "day" },
+  { label: "Week", value: "week" },
+  { label: "Month", value: "month" },
+];
+
+// update when props change
+watch(
+  () => props.initialStart,
+  (v) => {
+    start.value = v || null;
+  }
+);
+watch(
+  () => props.initialEnd,
+  (v) => {
+    end.value = v || null;
+  }
+);
+
+// emit when any filter changes
+watch([start, end, group], () => {
+  // ensure we emit Dates (or null) to match previous contract
   emit("update:groupBy", group.value);
-  emit("change", { start, end, group: group.value });
-}
+  emit("change", { start: start.value, end: end.value, group: group.value });
+});
 </script>
