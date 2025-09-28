@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import KPICards from "../src/components/KPICards.vue";
+import KPICards from "../src/components/analytics/KPICards.vue";
 
 describe("KPICards", () => {
   it("renders KPI keys and formatted values", () => {

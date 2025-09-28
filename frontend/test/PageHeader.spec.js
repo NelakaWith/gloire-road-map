@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import PageHeader from "../src/components/PageHeader.vue";
+import PageHeader from "../src/components/common/PageHeader.vue";
 import { h } from "vue";
 
 describe("PageHeader", () => {

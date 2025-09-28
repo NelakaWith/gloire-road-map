@@ -100,7 +100,7 @@ import { useAuthStore } from "../store/auth";
 import { authHeader } from "../utils/authHeader";
 import { useRouter, useRoute } from "vue-router";
 import GoalModal from "../components/GoalModal.vue";
-import PageHeader from "../components/PageHeader.vue";
+import PageHeader from "../components/common/PageHeader.vue";
 import { useConfirm } from "primevue/useconfirm";
 
 const auth = useAuthStore();

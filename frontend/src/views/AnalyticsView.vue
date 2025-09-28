@@ -1,24 +1,25 @@
 <template>
   <div class="p-4">
     <PageHeader title="Analytics" />
+    <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
+      <FiltersPanel
+        :initial-start="initialStart"
+        :initial-end="initialEnd"
+        v-model:groupBy="groupBy"
+        @change="onFiltersChange"
+      />
 
-    <FiltersPanel
-      :initial-start="initialStart"
-      :initial-end="initialEnd"
-      v-model:groupBy="groupBy"
-      @change="onFiltersChange"
-    />
+      <KPICards :kpis="kpis" />
 
-    <KPICards :kpis="kpis" />
-
-    <div class="grid gap-4 mt-4">
-      <div class="col-12 md:col-8">
-        <TimeSeriesChart :series="completionsSeries" :group-by="groupBy" />
+      <div class="grid gap-4 mt-4">
+        <div class="col-12 md:col-8">
+          <TimeSeriesChart :series="completionsSeries" :group-by="groupBy" />
+        </div>
+        <div class="col-12 md:col-4">
+          <StudentBarChart :students="byStudent" />
+        </div>
       </div>
-      <div class="col-12 md:col-4">
-        <StudentBarChart :students="byStudent" />
-      </div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -26,11 +27,11 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { authHeader } from "../utils/authHeader";
-import PageHeader from "../components/PageHeader.vue";
-import KPICards from "../components/KPICards.vue";
-import TimeSeriesChart from "../components/TimeSeriesChart.vue";
-import StudentBarChart from "../components/StudentBarChart.vue";
-import FiltersPanel from "../components/FiltersPanel.vue";
+import PageHeader from "../components/common/PageHeader.vue";
+import KPICards from "../components/analytics/KPICards.vue";
+import TimeSeriesChart from "../components/analytics/TimeSeriesChart.vue";
+import StudentBarChart from "../components/analytics/TopStudents.vue";
+import FiltersPanel from "../components/analytics/FiltersPanel.vue";
 
 const kpis = ref({
   total_goals: 0,

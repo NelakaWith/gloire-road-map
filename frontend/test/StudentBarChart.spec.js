@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import StudentBarChart from "../src/components/StudentBarChart.vue";
+import StudentBarChart from "../src/components/analytics/TopStudents.vue";
 
 describe("StudentBarChart", () => {
   it("shows No data when students prop is empty", () => {

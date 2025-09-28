@@ -61,7 +61,7 @@ import { authHeader } from "../utils/authHeader";
 import { useRouter } from "vue-router";
 import { useConfirm } from "primevue/useconfirm";
 import EditMemberModal from "../components/EditMemberModal.vue";
-import PageHeader from "../components/PageHeader.vue";
+import PageHeader from "../components/common/PageHeader.vue";
 
 const auth = useAuthStore();
 const router = useRouter();

@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import FiltersPanel from "../src/components/FiltersPanel.vue";
+import FiltersPanel from "../src/components/analytics/FiltersPanel.vue";
 
 describe("FiltersPanel", () => {
   it("emits change and update:groupBy when inputs change", async () => {

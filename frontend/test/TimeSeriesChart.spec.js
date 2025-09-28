@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import TimeSeriesChart from "../src/components/TimeSeriesChart.vue";
+import TimeSeriesChart from "../src/components/analytics/TimeSeriesChart.vue";
 import { Line } from "vue-chartjs";
 
 describe("TimeSeriesChart", () => {
