@@ -75,6 +75,8 @@ try {
         destroy() {}
         static register() {}
       },
+      // minimal registerables array used by code that calls ChartJS.register(...registerables)
+      registerables: [],
       Title: {},
       Tooltip: {},
       Legend: {},
@@ -93,6 +95,7 @@ try {
         destroy() {}
         static register() {}
       },
+      registerables: [],
       Title: {},
       Tooltip: {},
       Legend: {},

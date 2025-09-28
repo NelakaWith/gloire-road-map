@@ -2,40 +2,19 @@
   <div class="p-4 bg-white rounded shadow">
     <div class="text-gray-600 mb-2">Completions (group: {{ groupBy }})</div>
     <div class="w-full h-96">
-      <Line :data="plainChartData" :options="plainChartOptions" />
+      <canvas ref="canvasRef" class="w-full h-full" v-if="chartData" />
     </div>
     <div v-if="!chartData" class="text-sm text-gray-500">No data</div>
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { Line } from "vue-chartjs";
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
 import "chartjs-adapter-date-fns";
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  TimeScale,
-  Filler,
-} from "chart.js";
+import { Chart as ChartJS, registerables } from "chart.js";
 
-ChartJS.register(
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  TimeScale,
-  Filler
-);
+// register all default chart.js components (controllers, elements, scales, plugins)
+ChartJS.register(...registerables);
 
 const props = defineProps({
   series: { type: Array, default: () => [] },
@@ -134,4 +113,89 @@ const plainChartOptions = computed(() => {
   const o = chartOptions.value;
   return o ? JSON.parse(JSON.stringify(o)) : {};
 });
+
+// Canvas & Chart instance (using Chart.js directly instead of vue-chartjs)
+const canvasRef = ref(null);
+let chartInstance = null;
+
+function createChart() {
+  if (!canvasRef.value) return;
+  const ctx = canvasRef.value.getContext("2d");
+  if (!ctx) return;
+  // destroy existing
+  if (chartInstance) {
+    try {
+      chartInstance.destroy();
+    } catch (e) {
+      // ignore
+    }
+    chartInstance = null;
+  }
+
+  chartInstance = new ChartJS(ctx, {
+    type: "line",
+    data: plainChartData.value,
+    options: plainChartOptions.value,
+  });
+}
+
+// Watch for data/options changes and update or recreate the chart as needed
+watch(
+  [plainChartData, plainChartOptions],
+  async ([d, o]) => {
+    const hasData =
+      d &&
+      ((Array.isArray(d.datasets) && d.datasets.length > 0) ||
+        (d.labels && d.labels.length > 0));
+
+    if (!hasData) {
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+      return;
+    }
+
+    if (!chartInstance) {
+      // ensure DOM painted
+      await nextTick();
+      createChart();
+      // trigger an extra resize after mount/layout changes
+      window.dispatchEvent(new Event("resize"));
+      return;
+    }
+
+    // update existing chart
+    chartInstance.data = d;
+    chartInstance.options = o;
+    chartInstance.update();
+  },
+  { deep: true }
+);
+
+onMounted(() => {
+  if (
+    plainChartData.value &&
+    ((plainChartData.value.datasets && plainChartData.value.datasets.length) ||
+      (plainChartData.value.labels && plainChartData.value.labels.length))
+  ) {
+    createChart();
+    // give Chart.js one more resize after layout settles
+    setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+  }
+});
+
+onUnmounted(() => {
+  if (chartInstance) {
+    try {
+      chartInstance.destroy();
+    } catch (e) {
+      // ignore
+    }
+    chartInstance = null;
+  }
+});
+
+// Expose internals for unit tests (harmless in production)
+defineExpose({ plainChartData, plainChartOptions });
 </script>

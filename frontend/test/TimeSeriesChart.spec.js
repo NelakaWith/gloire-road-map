@@ -1,7 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
 import TimeSeriesChart from "../src/components/analytics/TimeSeriesChart.vue";
-import { Line } from "vue-chartjs";
 
 describe("TimeSeriesChart", () => {
   it("renders chart with data", async () => {
@@ -29,9 +28,7 @@ describe("TimeSeriesChart", () => {
       { label: "Period B", completions: 7 },
     ];
     const wrapper = mount(TimeSeriesChart, { props: { series } });
-    const line = wrapper.findComponent(Line);
-    expect(line.exists()).toBe(true);
-    const dataProp = line.props("data");
+    const dataProp = wrapper.vm.plainChartData;
     expect(dataProp).toBeTruthy();
     // category labels should be present
     expect(dataProp.labels).toEqual(["Period A", "Period B"]);
@@ -45,9 +42,7 @@ describe("TimeSeriesChart", () => {
       { label: "2025-01-08", completions: 6 },
     ];
     const wrapper = mount(TimeSeriesChart, { props: { series } });
-    const line = wrapper.findComponent(Line);
-    expect(line.exists()).toBe(true);
-    const dataProp = line.props("data");
+    const dataProp = wrapper.vm.plainChartData;
     expect(dataProp).toBeTruthy();
     const points = dataProp.datasets[0].data;
     expect(Array.isArray(points)).toBe(true);
