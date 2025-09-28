@@ -18,14 +18,12 @@
 </template>
 
 <script setup>
-import router from "../../router";
-
 const props = defineProps({
   title: { type: String, required: true },
   showBack: { type: Boolean, default: false },
   backTo: {
     type: String,
-    default: router.options.history.base || "/dashboard",
+    default: "/dashboard",
   },
   containerClass: {
     type: String,

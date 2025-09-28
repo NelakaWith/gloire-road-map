@@ -1,6 +1,6 @@
 <template>
   <div class="pb-4">
-    <PageHeader title="Members" />
+    <PageHeader title="Members" showBack="true" />
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <Card class="p-6">
         <template #content>

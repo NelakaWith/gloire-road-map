@@ -1,23 +1,27 @@
 <template>
-  <div class="p-4 bg-white rounded shadow flex items-center gap-4">
-    <div>
-      <label class="text-sm text-gray-600">Start</label>
-      <DatePicker v-model="start" :showIcon="true" class="block" />
-    </div>
-    <div>
-      <label class="text-sm text-gray-600">End</label>
-      <DatePicker v-model="end" :showIcon="true" class="block" />
-    </div>
-    <div>
-      <label class="text-sm text-gray-600">Group</label>
-      <Dropdown
-        v-model="group"
-        :options="groupOptions"
-        optionLabel="label"
-        optionValue="value"
-      />
-    </div>
-  </div>
+  <Card>
+    <template #content>
+      <div class="flex items-center gap-4">
+        <div>
+          <label class="text-sm font-medium text-gray-700">Start</label>
+          <DatePicker v-model="start" :showIcon="true" class="block" />
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-700">End</label>
+          <DatePicker v-model="end" :showIcon="true" class="block" />
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-700">Group</label>
+          <Dropdown
+            v-model="group"
+            :options="groupOptions"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
+      </div>
+    </template>
+  </Card>
 </template>
 
 <script setup>
