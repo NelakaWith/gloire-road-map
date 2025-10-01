@@ -12,7 +12,16 @@
                 class="flex justify-between items-center py-2 px-4 rounded-lg hover:bg-gray-100 cursor-pointer"
                 @click="goToGoals(student.id)"
               >
-                <span class="font-medium">{{ student.name }}</span>
+                <div class="flex items-center">
+                  <div
+                    class="flex items-center gap-1 mr-4 rounded-full px-4 py-1 bg-yellow-100 text-yellow-800"
+                  >
+                    <i class="pi pi-trophy"></i>
+                    <span class="font-bold">{{ student.points }}</span>
+                  </div>
+                  <span class="font-medium">{{ student.name }}</span>
+                </div>
+
                 <div class="space-x-2">
                   <Button
                     @click.stop="editStudent(student)"

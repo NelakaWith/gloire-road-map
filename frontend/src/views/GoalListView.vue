@@ -1,6 +1,6 @@
 <template>
   <div class="pb-4">
-    <PageHeader title="Goals" :showBack="true" backTo="/members" />
+    <PageHeader :title="pageTitle" :showBack="true" backTo="/members" />
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <Card v-if="selectedStudent" class="p-6">
         <template #content>
@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { useAuthStore } from "../store/auth";
 import { authHeader } from "../utils/authHeader";
@@ -106,13 +106,19 @@ import { useConfirm } from "primevue/useconfirm";
 const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const confirm = useConfirm();
 const selectedStudent = ref(null);
 const goals = ref([]);
 const showGoalModal = ref(false);
 const goalModalMode = ref("view");
 const selectedGoal = ref(null);
-
-const confirm = useConfirm();
+const pageTitle = computed(() => {
+  if (selectedStudent.value && selectedStudent.value.name) {
+    const first = selectedStudent.value.name.split(" ")[0];
+    return `${first}'s Goals`;
+  }
+  return "Goals";
+});
 
 const fetchStudentAndGoals = async () => {
   const studentId = route.query.studentId;
