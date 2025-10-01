@@ -1,8 +1,9 @@
 // routes/points.js
-const express = require("express");
+
+import express from "express";
+import { getPointsLeaderboard } from "../services/points.js";
+import { authenticateJWT } from "../middleware/auth.js";
 const router = express.Router();
-const { getPointsLeaderboard } = require("../services/points");
-const { authenticateJWT } = require("../middleware/auth");
 
 // GET /api/points/leaderboard
 router.get("/leaderboard", authenticateJWT, async (req, res) => {
@@ -16,4 +17,4 @@ router.get("/leaderboard", authenticateJWT, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

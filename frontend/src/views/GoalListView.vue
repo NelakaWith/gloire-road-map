@@ -1,6 +1,6 @@
 <template>
   <div class="pb-4">
-    <PageHeader title="Goals" :showBack="true" backTo="/students" />
+    <PageHeader title="Goals" :showBack="true" backTo="/members" />
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <Card v-if="selectedStudent" class="p-6">
         <template #content>
