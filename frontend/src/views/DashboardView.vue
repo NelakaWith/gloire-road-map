@@ -13,7 +13,7 @@
           <Button
             label="View Members"
             icon="pi pi-users"
-            @click="$router.push('/students')"
+            @click="$router.push('/members')"
           />
         </template>
       </Card>

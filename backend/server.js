@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.js";
 import studentRoutes from "./routes/students.js";
 import goalRoutes from "./routes/goals.js";
 import analyticsRoutes from "./routes/analytics.js";
+import pointsRoutes from "./routes/points.js";
 import { authenticateJWT } from "./middleware/auth.js";
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/students", authenticateJWT, studentRoutes);
 app.use("/api/goals", authenticateJWT, goalRoutes);
 app.use("/api/analytics", authenticateJWT, analyticsRoutes);
+app.use("/api/points", pointsRoutes);
 
 import { sequelize } from "./models.js";
 
