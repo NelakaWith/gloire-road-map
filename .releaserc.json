@@ -19,7 +19,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version --workspaces"
+        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version && cd frontend && npm version ${nextRelease.version} --no-git-tag-version && cd ../backend && npm version ${nextRelease.version} --no-git-tag-version"
       }
     ],
     [
