@@ -20,7 +20,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../store/auth";
-import AppHeader from "../components/AppHeader.vue";
+import AppHeader from "../components/common/AppHeader.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -36,7 +36,7 @@ const logout = async () => {
 };
 </script>
 
-<style scoped lang="postcss">
+<style scoped lang="scss">
 .main-layout {
   @apply min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col;
 }

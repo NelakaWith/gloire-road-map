@@ -33,6 +33,7 @@ export const Student = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
+    points: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     created_at: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
   },
   {
@@ -40,6 +41,25 @@ export const Student = sequelize.define(
     timestamps: false,
   }
 );
+// PointsLog model for audit/history
+export const PointsLog = sequelize.define(
+  "PointsLog",
+  {
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    student_id: { type: DataTypes.INTEGER, allowNull: false },
+    points: { type: DataTypes.INTEGER, allowNull: false },
+    reason: { type: DataTypes.STRING, allowNull: true },
+    related_goal_id: { type: DataTypes.INTEGER, allowNull: true },
+    created_at: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+  },
+  {
+    tableName: "points_log",
+    timestamps: false,
+  }
+);
+
+Student.hasMany(PointsLog, { foreignKey: "student_id" });
+PointsLog.belongsTo(Student, { foreignKey: "student_id" });
 
 export const Goal = sequelize.define(
   "Goal",

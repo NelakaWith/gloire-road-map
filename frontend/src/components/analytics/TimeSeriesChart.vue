@@ -1,0 +1,228 @@
+<template>
+  <div class="p-4 bg-white rounded shadow">
+    <div class="text-gray-600 mb-2">Completions (group: {{ groupBy }})</div>
+    <div class="w-full h-96" ref="wrapperRef">
+      <canvas ref="canvasRef" class="w-full h-full" v-if="chartData" />
+    </div>
+    <div v-if="!chartData" class="text-sm text-gray-500">No data</div>
+  </div>
+</template>
+
+<script setup>
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
+import "chartjs-adapter-date-fns";
+import { Chart as ChartJS, registerables } from "chart.js";
+
+// register all default chart.js components (controllers, elements, scales, plugins)
+ChartJS.register(...registerables);
+
+const props = defineProps({
+  series: { type: Array, default: () => [] },
+  groupBy: { type: String, default: "week" },
+});
+
+const chartData = computed(() => {
+  if (!props.series || props.series.length === 0) return null;
+
+  // Determine whether labels are parseable as dates
+  const firstLabel = props.series[0] && props.series[0].label;
+  const isDate = firstLabel && !Number.isNaN(Date.parse(firstLabel));
+
+  // If labels are dates, provide {x,y} points to let time scale parse them
+  if (isDate) {
+    return {
+      datasets: [
+        {
+          label: "Completions",
+          data: props.series.map((r) => ({ x: r.label, y: r.completions })),
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59,130,246,0.2)",
+          fill: true,
+        },
+      ],
+    };
+  }
+
+  // Fallback to category labels
+  return {
+    labels: props.series.map((r) => r.label),
+    datasets: [
+      {
+        label: "Completions",
+        data: props.series.map((r) => r.completions),
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59,130,246,0.2)",
+        fill: true,
+      },
+    ],
+  };
+});
+
+const chartOptions = computed(() => {
+  if (!chartData.value) return {};
+
+  // detect if using time scale by checking first dataset point
+  const firstDataset = chartData.value.datasets && chartData.value.datasets[0];
+  const usingTime =
+    firstDataset &&
+    firstDataset.data &&
+    firstDataset.data[0] &&
+    firstDataset.data[0].x;
+
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label(context) {
+            const v =
+              context.parsed && context.parsed.y !== undefined
+                ? context.parsed.y
+                : context.parsed;
+            return `Completions: ${v}`;
+          },
+        },
+      },
+    },
+    scales: usingTime
+      ? {
+          x: {
+            type: "time",
+            time: {
+              unit: "week",
+              tooltipFormat: "PP",
+            },
+            title: { display: true, text: "Date" },
+          },
+          y: { title: { display: true, text: "Completions" } },
+        }
+      : {
+          x: { title: { display: true, text: "Period" } },
+          y: { title: { display: true, text: "Completions" } },
+        },
+  };
+});
+
+const plainChartData = computed(() => {
+  const d = chartData.value;
+  return d ? JSON.parse(JSON.stringify(d)) : { labels: [], datasets: [] };
+});
+
+const plainChartOptions = computed(() => {
+  const o = chartOptions.value;
+  return o ? JSON.parse(JSON.stringify(o)) : {};
+});
+
+// Canvas & Chart instance (using Chart.js directly instead of vue-chartjs)
+const canvasRef = ref(null);
+const wrapperRef = ref(null);
+let chartInstance = null;
+let resizeObserver = null;
+
+function createChart() {
+  if (!canvasRef.value) return;
+  const ctx = canvasRef.value.getContext("2d");
+  if (!ctx) return;
+  // destroy existing
+  if (chartInstance) {
+    try {
+      chartInstance.destroy();
+    } catch (e) {
+      // ignore
+    }
+    chartInstance = null;
+  }
+
+  chartInstance = new ChartJS(ctx, {
+    type: "line",
+    data: plainChartData.value,
+    options: plainChartOptions.value,
+  });
+}
+
+// Watch for data/options changes and update or recreate the chart as needed
+watch(
+  [plainChartData, plainChartOptions],
+  async ([d, o]) => {
+    const hasData =
+      d &&
+      ((Array.isArray(d.datasets) && d.datasets.length > 0) ||
+        (d.labels && d.labels.length > 0));
+
+    if (!hasData) {
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+      return;
+    }
+
+    if (!chartInstance) {
+      // ensure DOM painted
+      await nextTick();
+      createChart();
+      // ensure Chart.js measures the correct size
+      if (chartInstance && typeof chartInstance.resize === "function")
+        chartInstance.resize();
+      return;
+    }
+
+    // update existing chart
+    chartInstance.data = d;
+    chartInstance.options = o;
+    chartInstance.update();
+  },
+  { deep: true }
+);
+
+onMounted(() => {
+  if (
+    plainChartData.value &&
+    ((plainChartData.value.datasets && plainChartData.value.datasets.length) ||
+      (plainChartData.value.labels && plainChartData.value.labels.length))
+  ) {
+    createChart();
+    // give Chart.js one more resize after layout settles
+    setTimeout(() => {
+      if (chartInstance && typeof chartInstance.resize === "function")
+        chartInstance.resize();
+    }, 50);
+
+    // attach ResizeObserver to wrapper to resize chart efficiently on container changes
+    if (typeof ResizeObserver !== "undefined" && wrapperRef.value) {
+      resizeObserver = new ResizeObserver(() => {
+        if (chartInstance && typeof chartInstance.resize === "function")
+          chartInstance.resize();
+      });
+      try {
+        resizeObserver.observe(wrapperRef.value);
+      } catch (e) {
+        // ignore observer errors in unusual environments
+      }
+    }
+  }
+});
+
+onUnmounted(() => {
+  if (chartInstance) {
+    try {
+      chartInstance.destroy();
+    } catch (e) {
+      // ignore
+    }
+    chartInstance = null;
+  }
+  if (resizeObserver) {
+    try {
+      resizeObserver.disconnect();
+    } catch (e) {
+      // ignore
+    }
+    resizeObserver = null;
+  }
+});
+
+// Expose internals for unit tests (harmless in production)
+defineExpose({ plainChartData, plainChartOptions });
+</script>

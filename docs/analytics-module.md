@@ -9,37 +9,37 @@ Deliver an admin-facing Analytics dashboard showing KPIs and time-series of goal
 ## Acceptance criteria
 
 - [ ] Dashboard page accessible to authorized users only
-- [ ] Overview KPIs: total goals, completed goals, completion rate, average days-to-complete
-- [ ] Time-series chart (day/week/month) for completions within selected range
-- [ ] Top N students by completions (bar chart or table)
-- [ ] API endpoints return JSON matching contract below and are covered by unit tests
+- [x] Overview KPIs: total goals, completed goals, completion rate, average days-to-complete
+- [x] Time-series chart (day/week/month) for completions within selected range
+- [x] Top N students by completions (bar chart or table)
+- [x] API endpoints return JSON matching contract below and are covered by unit tests
 - [ ] Queries perform under acceptable latency on staging (<= 500ms for typical ranges)
 
 ## Prioritized analytics (recommended implementation order)
 
 The following list prioritizes metrics to implement first for the MVP dashboard. Each item includes a one-line rationale and a suggested endpoint/query target to implement quickly.
 
-1. Goals created vs goals completed per period (conversion rate) - DONE
+1. Goals created vs goals completed per period (conversion rate) - ✅
 
 - Rationale: Gives immediate insight into throughput and backlog trends.
 - Suggested endpoint: GET /api/analytics/throughput?group_by=day|week|month
 
-2. Completion rate per period + rolling averages - DONE
+2. Completion rate per period + rolling averages - ✅
 
 - Rationale: Shows trend direction and smooths volatility for product decisions.
 - Suggested: extend `/api/analytics/throughput` to include completion_rate and optional rolling window parameter.
 
-3. Time-to-complete distribution (mean, median, p90, histogram) - DONE
+3. Time-to-complete distribution (mean, median, p90, histogram) - ✅
 
 - Rationale: Reveals central tendency and tail behavior; useful for SLAs and planning.
 - Suggested endpoint: GET /api/analytics/time-to-complete
 
-4. Backlog and age-of-open-goals (0-7, 8-30, 31-90, 90+ days) - DONE
+4. Backlog and age-of-open-goals (0-7, 8-30, 31-90, 90+ days) - ✅
 
 - Rationale: Helps prioritize stale or at-risk goals for intervention.
 - Suggested endpoint: GET /api/analytics/backlog
 
-5. Overdue goals and on-time completion rate - DONE
+5. Overdue goals and on-time completion rate - ✅
 
 - Rationale: Measures effectiveness against deadlines and highlights problems.
 - Suggested endpoint: GET /api/analytics/overdue
@@ -49,7 +49,7 @@ The following list prioritizes metrics to implement first for the MVP dashboard.
 - Rationale: Engagement metric to track whether students are using the system.
 - Suggested endpoint: GET /api/analytics/active-students?group_by=month
 
-7. Top students (by completions, by avg time-to-complete, completion rate)
+7. Top students (by completions, by avg time-to-complete, completion rate) - ✅
 
 - Rationale: Identifies high performers and those needing help; useful for recognition.
 - Suggested endpoint: extend existing `/api/analytics/by-student` with sort options.
@@ -93,15 +93,13 @@ Implementing items 1–4 gives the biggest immediate ROI for the dashboard MVP. 
 ## Backend — API endpoints
 
 - [x] Implement endpoints (protected by existing auth middleware):
-- GET `/api/analytics/overview`
-  - params: `start_date?`, `end_date?`
-  - response: `{ total_goals, completed_goals, pct_complete, avg_days_to_complete }`
-- GET `/api/analytics/completions`
-  - params: `start_date?`, `end_date?`, `group_by=day|week|month` (default `week`)
-  - response: `[{ label, completions }]`
-- GET `/api/analytics/by-student`
-  - params: `start_date?`, `end_date?`, `limit?`, `offset?`
-  - response: `[{ student_id, student_name, completions, avg_days }]`
+  - [x] GET `/api/analytics/overview`
+  - [x] GET `/api/analytics/completions`
+  - [x] GET `/api/analytics/by-student`
+  - [x] GET `/api/analytics/throughput`
+  - [x] GET `/api/analytics/backlog`
+  - [x] GET `/api/analytics/overdue`
+  - [x] GET `/api/analytics/time-to-complete`
 - [x] Add parameter validation and sane defaults (last 90 days if no dates)
 
   > Note: server now parses and validates date inputs, defaults start/end to the last 90 days when missing or invalid, validates `group_by` (day|week|month), and clamps `limit`/`offset` for `/by-student`. Route-level unit tests were added to cover these behaviors.
@@ -141,7 +139,7 @@ Implementing items 1–4 gives the biggest immediate ROI for the dashboard MVP. 
 - [x] Unit tests (backend service functions + SQL) — Vitest/Jest
   - happy path + edge cases (no completions, null dates)
 - [ ] Integration tests for endpoints (supertest against test DB or in-memory sqlite)
-- [ ] Frontend unit tests: components and basic data-transform logic
+- [x] Frontend unit tests: components and basic data-transform logic
 - [ ] Manual QA checklist
   - [ ] Filter interactions update charts
   - [ ] Timezone sanity checks (display vs. server time)

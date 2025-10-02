@@ -2,6 +2,7 @@ import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import DatePicker from "primevue/datepicker";
+import Dropdown from "primevue/select";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import Message from "primevue/message";
@@ -25,6 +26,7 @@ export default function registerPrime(app) {
   app.component("Password", Password);
   app.component("Textarea", Textarea);
   app.component("DatePicker", DatePicker);
+  app.component("Dropdown", Dropdown);
   app.component("Button", Button);
   app.component("Message", Message);
   app.component("Dialog", Dialog);
@@ -41,5 +43,3 @@ export default function registerPrime(app) {
   app.use(ToastService);
   app.use(ConfirmationService);
 }
-
-// You can expand this list as you add more PrimeVue components to the app.

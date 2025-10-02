@@ -1,5 +1,6 @@
 import express from "express";
-import { Goal } from "../models.js";
+import { Goal, Student, PointsLog } from "../models.js";
+import { POINTS } from "../config/pointsConfig.js";
 
 const router = express.Router();
 
@@ -33,15 +34,17 @@ router.post("/", async (req, res) => {
   res.status(201).json(goal);
 });
 
-// Edit a goal (update any field)
 router.patch("/:id", async (req, res) => {
   const { id } = req.params;
-  const { title, description, target_date, is_completed } = req.body;
+  const { title, description, target_date, is_completed, completed_at } =
+    req.body;
   const updates = { updated_at: new Date() };
+
   if (title !== undefined) updates.title = title;
   if (description !== undefined)
     updates.description =
       description && description.trim() !== "" ? description : null;
+
   if (target_date !== undefined) {
     if (target_date && target_date !== "" && !isNaN(Date.parse(target_date))) {
       updates.target_date = target_date;
@@ -49,9 +52,104 @@ router.patch("/:id", async (req, res) => {
       updates.target_date = null;
     }
   }
-  if (is_completed !== undefined) updates.is_completed = is_completed;
+
+  // Allow client to optionally provide a completed_at timestamp. If provided and
+  // valid, treat the goal as completed. If explicitly null, treat as not completed.
+  if (completed_at !== undefined) {
+    if (completed_at === null || completed_at === "") {
+      updates.completed_at = null;
+      updates.is_completed = false;
+    } else if (!isNaN(Date.parse(completed_at))) {
+      updates.completed_at = new Date(completed_at);
+      updates.is_completed = true;
+    }
+    // invalid completed_at values are ignored
+  }
+
+  // Server-side handling for is_completed flag. When marking completed, if no
+  // completed_at was provided above, set it to now. When un-marking, clear it.
+  if (is_completed !== undefined) {
+    updates.is_completed = is_completed;
+    if (is_completed) {
+      if (updates.completed_at === undefined) {
+        updates.completed_at = new Date();
+      }
+    } else {
+      updates.completed_at = null;
+    }
+  }
+
+  // Fetch the goal before update to check previous completion state
+  const goalBefore = await Goal.findByPk(id);
+  const wasCompleted = goalBefore && goalBefore.is_completed;
+  const wasOnTime =
+    goalBefore &&
+    goalBefore.completed_at &&
+    goalBefore.target_date &&
+    new Date(goalBefore.completed_at) <= new Date(goalBefore.target_date);
+
   await Goal.update(updates, { where: { id } });
-  res.json({ message: "Goal updated" });
+  const updated = await Goal.findByPk(id);
+  if (!updated) return res.status(404).json({ message: "Goal not found" });
+
+  // Award or subtract points based on completion state change
+  const student = updated ? await Student.findByPk(updated.student_id) : null;
+  if (student) {
+    // Goal completed now, wasn't before: add points
+    if (updated.is_completed && !wasCompleted) {
+      student.points += POINTS.COMPLETE_GOAL;
+      await student.save();
+      await PointsLog.create({
+        student_id: student.id,
+        points: POINTS.COMPLETE_GOAL,
+        reason: "Completed goal",
+        related_goal_id: updated.id,
+        created_at: updated.completed_at || new Date(),
+      });
+      // Bonus for on-time
+      if (
+        updated.completed_at &&
+        updated.target_date &&
+        new Date(updated.completed_at) <= new Date(updated.target_date)
+      ) {
+        student.points += POINTS.COMPLETE_ON_TIME;
+        await student.save();
+        await PointsLog.create({
+          student_id: student.id,
+          points: POINTS.COMPLETE_ON_TIME,
+          reason: "Completed goal on time",
+          related_goal_id: updated.id,
+          created_at: updated.completed_at,
+        });
+      }
+    }
+    // Goal reopened (was completed, now not): subtract points
+    if (!updated.is_completed && wasCompleted) {
+      student.points += POINTS.REOPEN_GOAL;
+      await student.save();
+      await PointsLog.create({
+        student_id: student.id,
+        points: POINTS.REOPEN_GOAL,
+        reason: "Goal reopened (completion revoked)",
+        related_goal_id: updated.id,
+        created_at: new Date(),
+      });
+      // Remove on-time bonus if it was previously awarded
+      if (wasOnTime) {
+        student.points += POINTS.REOPEN_ON_TIME;
+        await student.save();
+        await PointsLog.create({
+          student_id: student.id,
+          points: POINTS.REOPEN_ON_TIME,
+          reason: "Goal reopened (on-time bonus revoked)",
+          related_goal_id: updated.id,
+          created_at: new Date(),
+        });
+      }
+    }
+  }
+
+  res.json(updated);
 });
 
 // Delete a goal

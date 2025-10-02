@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest --environment jsdom"
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.3",
@@ -35,5 +35,10 @@
     "@vue/test-utils": "^2.3.0",
     "jsdom": "^22.1.0",
     "vitest": "^3.2.4"
+  },
+  "vitest": {
+    "setupFiles": [
+      "test/setupTests.js"
+    ]
   }
 }

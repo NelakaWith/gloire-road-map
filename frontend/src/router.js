@@ -42,8 +42,8 @@ const routes = [
         component: DashboardView,
       },
       {
-        path: "students",
-        name: "Students",
+        path: "members",
+        name: "Members",
         component: StudentListView,
       },
       {
