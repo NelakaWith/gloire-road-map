@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 bg-white rounded shadow">
     <div class="text-gray-600 mb-2">Completions (group: {{ groupBy }})</div>
-    <div class="w-full h-96">
+    <div class="w-full h-96" ref="wrapperRef">
       <canvas ref="canvasRef" class="w-full h-full" v-if="chartData" />
     </div>
     <div v-if="!chartData" class="text-sm text-gray-500">No data</div>
@@ -116,7 +116,9 @@ const plainChartOptions = computed(() => {
 
 // Canvas & Chart instance (using Chart.js directly instead of vue-chartjs)
 const canvasRef = ref(null);
+const wrapperRef = ref(null);
 let chartInstance = null;
+let resizeObserver = null;
 
 function createChart() {
   if (!canvasRef.value) return;
@@ -160,8 +162,9 @@ watch(
       // ensure DOM painted
       await nextTick();
       createChart();
-      // trigger an extra resize after mount/layout changes
-      window.dispatchEvent(new Event("resize"));
+      // ensure Chart.js measures the correct size
+      if (chartInstance && typeof chartInstance.resize === "function")
+        chartInstance.resize();
       return;
     }
 
@@ -181,7 +184,23 @@ onMounted(() => {
   ) {
     createChart();
     // give Chart.js one more resize after layout settles
-    setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+    setTimeout(() => {
+      if (chartInstance && typeof chartInstance.resize === "function")
+        chartInstance.resize();
+    }, 50);
+
+    // attach ResizeObserver to wrapper to resize chart efficiently on container changes
+    if (typeof ResizeObserver !== "undefined" && wrapperRef.value) {
+      resizeObserver = new ResizeObserver(() => {
+        if (chartInstance && typeof chartInstance.resize === "function")
+          chartInstance.resize();
+      });
+      try {
+        resizeObserver.observe(wrapperRef.value);
+      } catch (e) {
+        // ignore observer errors in unusual environments
+      }
+    }
   }
 });
 
@@ -193,6 +212,14 @@ onUnmounted(() => {
       // ignore
     }
     chartInstance = null;
+  }
+  if (resizeObserver) {
+    try {
+      resizeObserver.disconnect();
+    } catch (e) {
+      // ignore
+    }
+    resizeObserver = null;
   }
 });
 
