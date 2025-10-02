@@ -109,15 +109,34 @@ jobs:
           npm install
           npm run build
 
-      - name: Copy files to droplet via SSH
-        uses: appleboy/scp-action@v0.1.7
+      - name: Clone repository on droplet
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DROPLET_HOST }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
-          source: .
-          target: ~/gloire-road-map
-          rm: true
+          script: |
+            # Remove old deployment
+            rm -rf ~/gloire-road-map
+
+            # Clone the specific tag/version
+            git clone https://github.com/${{ github.repository }}.git ~/gloire-road-map
+            cd ~/gloire-road-map
+
+            # Checkout the specific tag being deployed
+            DEPLOY_TAG="${{ env.DEPLOY_TAG }}"
+            if [ -n "$DEPLOY_TAG" ]; then
+              echo "Checking out tag: $DEPLOY_TAG"
+              git checkout "$DEPLOY_TAG"
+            else
+              echo "No specific tag, using latest from main"
+              git checkout main
+            fi
+
+            echo "Deployed version:"
+            git log -1 --oneline
+            echo "Current package version:"
+            cat package.json | grep '"version"' || echo "No package.json found"
 
       - name: Run deploy script on droplet
         uses: appleboy/ssh-action@v1.0.3
@@ -151,17 +170,29 @@ jobs:
             npm install
             npm run build
 
-            # Ensure NGINX live folder exists and is owned by www-data
-            if sudo -n true 2>/dev/null; then
-              sudo mkdir -p /var/www/gloire-road-map-live
-              sudo chown -R www-data:www-data /var/www/gloire-road-map-live
+            # Alternative approach: copy to a user-owned directory first, then use a script
+            echo "Copying frontend build to staging directory..."
+            mkdir -p ~/frontend-staging
+            rm -rf ~/frontend-staging/*
+            cp -r dist/* ~/frontend-staging/
 
-              # Copy build to NGINX live folder
+            # Try to update nginx directory with sudo
+            if sudo -n true 2>/dev/null; then
+              echo "Updating nginx directory with sudo..."
+              sudo mkdir -p /var/www/gloire-road-map-live
               sudo rm -rf /var/www/gloire-road-map-live/* || true
-              sudo cp -r dist/* /var/www/gloire-road-map-live/ || true
+              sudo cp -r ~/frontend-staging/* /var/www/gloire-road-map-live/ || true
               sudo chown -R www-data:www-data /var/www/gloire-road-map-live || true
+              echo "Nginx directory updated successfully"
             else
-              echo "Skipping sudo-owned NGINX steps: deploy user cannot run sudo without a password"
+              echo "No sudo access - frontend files staged in ~/frontend-staging/"
+              echo "Manual step required: sudo cp -r ~/frontend-staging/* /var/www/gloire-road-map-live/"
+
+              # Alternative: try to use a helper script if it exists
+              if [ -f ~/update-nginx.sh ]; then
+                echo "Running update script..."
+                bash ~/update-nginx.sh
+              fi
             fi
 
             # (Optional) Run DB import if dump file exists and DB secrets are set
