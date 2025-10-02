@@ -115,7 +115,7 @@ jobs:
           host: ${{ secrets.DROPLET_HOST }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
-          source: .
+          source: "backend,frontend,scripts,nginx_sample.conf"
           target: ~/gloire-road-map
           rm: true
 
