@@ -2,6 +2,9 @@
 node_modules/
 .env
 
+# Large files
+image.dd
+*.dd
 
 # Logs
 npm-debug.log*

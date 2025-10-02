@@ -12,7 +12,29 @@
     [
       "@semantic-release/npm",
       {
-        "npmPublish": false
+        "npmPublish": false,
+        "tarballDir": "dist"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version --workspaces"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "package.json",
+          "package-lock.json",
+          "frontend/package.json",
+          "frontend/package-lock.json",
+          "backend/package.json",
+          "backend/package-lock.json",
+          "CHANGELOG.md"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],
     "@semantic-release/github"
