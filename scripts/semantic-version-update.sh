@@ -41,6 +41,17 @@ update_version() {
       echo "Warning: $dir/package.json does not contain a \"version\" field or is unreadable"
     fi
 
+    # check current version to avoid "Version not changed" error
+    local current_version
+    if command -v node >/dev/null 2>&1; then
+      current_version=$(node -e "try{console.log(require('./package.json').version)}catch(e){process.exit(2)}" 2>/dev/null || true)
+    fi
+
+    if [ -n "$current_version" ] && [ "$current_version" = "$NPM_VERSION" ]; then
+      echo "Skipping $dir: already at version $NPM_VERSION"
+      return
+    fi
+
     # run npm version without git tag and capture output for diagnostics
     local output
     if ! output=$(cd "$dir" && npm version "$NPM_VERSION" --no-git-tag-version 2>&1); then
