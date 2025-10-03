@@ -14,7 +14,8 @@ VERSION="$1"
 echo "semantic-version-update: setting version $VERSION"
 
 # Basic semver validation (allows optional leading 'v', prerelease and build metadata)
-SEMVER_REGEX='^v?([0-9]+)\.([0-9]+)\.([0-9]+)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$'
+# Note: bash's regex doesn't support non-capturing groups (?:...), so use compatible groups
+SEMVER_REGEX='^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
 if ! [[ "$VERSION" =~ $SEMVER_REGEX ]]; then
   echo "Error: VERSION '$VERSION' is not a valid semantic version"
   echo "Expected format: MAJOR.MINOR.PATCH (optionally prefixed with v)"
