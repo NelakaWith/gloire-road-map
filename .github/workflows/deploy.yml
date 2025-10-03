@@ -155,7 +155,7 @@ jobs:
             CORS_ORIGIN=https://roadmap.nelakawithanage.com/
 
             # Database configuration
-            DB_HOST=localhost
+            DB_HOST=127.0.0.1
             DB_NAME=${{ secrets.DB_NAME }}
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASS }}
