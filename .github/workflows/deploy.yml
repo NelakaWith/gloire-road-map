@@ -170,41 +170,17 @@ jobs:
             npm install
             npm run build
 
-            # Alternative approach: copy to a user-owned directory first, then use a script
-            echo "Copying frontend build to staging directory..."
-            mkdir -p ~/frontend-staging
-            rm -rf ~/frontend-staging/*
-            cp -r dist/* ~/frontend-staging/
-
-            # Try to update nginx directory with sudo
+            # Copy frontend build directly to nginx directory
             if sudo -n true 2>/dev/null; then
-              echo "Updating nginx directory with sudo..."
+              echo "Updating nginx directory..."
               sudo mkdir -p /var/www/gloire-road-map-live
               sudo rm -rf /var/www/gloire-road-map-live/* || true
-              sudo cp -r ~/frontend-staging/* /var/www/gloire-road-map-live/ || true
+              sudo cp -r dist/* /var/www/gloire-road-map-live/ || true
               sudo chown -R www-data:www-data /var/www/gloire-road-map-live || true
               echo "Nginx directory updated successfully"
             else
-              echo "No sudo access - frontend files staged in ~/frontend-staging/"
-              echo "Manual step required: sudo cp -r ~/frontend-staging/* /var/www/gloire-road-map-live/"
-
-              # Alternative: try to use a helper script if it exists
-              if [ -f ~/update-nginx.sh ]; then
-                echo "Running update script..."
-                bash ~/update-nginx.sh
-              fi
-            fi
-
-            # (Optional) Run DB import if dump file exists and DB secrets are set
-            if [ -f backend/migrations/dump.sql ]; then
-              if [ -n "${{ secrets.DB_USER }}" ] && [ -n "${{ secrets.DB_PASS }}" ] && [ -n "${{ secrets.DB_NAME }}" ]; then
-                echo "Importing backend/migrations/dump.sql to database ${{ secrets.DB_NAME }}"
-                mysql -u"${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASS }}" "${{ secrets.DB_NAME }}" < backend/migrations/dump.sql || echo "mysql import failed"
-              else
-                echo "DB credentials not provided in secrets; skipping DB import"
-              fi
-            else
-              echo "No backend/migrations/dump.sql found; skipping DB import"
+              echo "No sudo access - manual step required:"
+              echo "sudo cp -r ~/gloire-road-map/frontend/dist/* /var/www/gloire-road-map-live/"
             fi
 
             # (Optional) Restart nginx if using static hosting
