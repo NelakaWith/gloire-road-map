@@ -4,7 +4,7 @@
     <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
       <Card class="p-6">
         <template #content>
-          <div class="scrollable-panel">
+          <div class="scrollable-panel mb-4">
             <ul class="space-y-2 mb-4">
               <li
                 v-for="student in students"
@@ -39,14 +39,22 @@
               </li>
             </ul>
           </div>
-          <form @submit.prevent="addStudent" class="flex gap-2 mt-2">
+          <div class="text-center">
+            <Button
+              type="button"
+              label="Add a Member"
+              icon="pi pi-plus"
+              @click="openAddMember"
+            />
+          </div>
+          <!-- <form @submit.prevent="addStudent" class="flex gap-2 mt-2">
             <InputText
               v-model="newStudent"
               placeholder="Add a member"
               class="flex-1"
             />
             <Button type="submit" label="Add" icon="pi pi-plus" />
-          </form>
+          </form> -->
         </template>
       </Card>
     </main>
@@ -105,15 +113,32 @@ const editStudent = (student) => {
 const handleEditSave = async (updatedStudent) => {
   editLoading.value = true;
   try {
-    await axios.patch(
-      `/api/students/${updatedStudent.id}`,
-      { ...updatedStudent },
-      { headers: authHeader() }
-    );
+    if (!updatedStudent.id) {
+      // create
+      await axios.post(
+        "/api/students",
+        {
+          name: updatedStudent.name,
+          contact_number: updatedStudent.contact_number,
+          address: updatedStudent.address,
+          date_of_birth: updatedStudent.date_of_birth,
+        },
+        { headers: authHeader() }
+      );
+    } else {
+      // update
+      await axios.patch(
+        `/api/students/${updatedStudent.id}`,
+        { ...updatedStudent },
+        { headers: authHeader() }
+      );
+    }
+
     await fetchStudents();
     showEditModal.value = false;
+    editingStudent.value = null;
   } catch (error) {
-    console.error("Error updating student:", error);
+    console.error("Error saving student:", error);
   } finally {
     editLoading.value = false;
   }
@@ -122,6 +147,11 @@ const handleEditSave = async (updatedStudent) => {
 const handleEditCancel = () => {
   showEditModal.value = false;
   editingStudent.value = null;
+};
+
+const openAddMember = () => {
+  editingStudent.value = null;
+  showEditModal.value = true;
 };
 
 const confirm = useConfirm();
