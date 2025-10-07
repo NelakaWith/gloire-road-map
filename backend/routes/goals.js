@@ -1,10 +1,27 @@
+/**
+ * @fileoverview Goal management routes
+ * @description Handles CRUD operations for student goals, including goal completion,
+ * points allocation, and progress tracking
+ * @author Gloire Road Map Team
+ * @version 1.0.0
+ */
+
 import express from "express";
 import { Goal, Student, PointsLog } from "../models.js";
 import { POINTS } from "../config/pointsConfig.js";
 
 const router = express.Router();
 
-// Get a single goal by id
+/**
+ * Get a single goal by ID
+ * @route GET /api/goals/:id
+ * @description Retrieves a specific goal by its unique identifier
+ * @access Private (requires JWT authentication)
+ * @param {string} req.params.id - Goal ID
+ * @returns {Object} Goal object with all properties
+ * @throws {404} Goal not found
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   const goal = await Goal.findByPk(id);
@@ -12,7 +29,20 @@ router.get("/:id", async (req, res) => {
   res.json(goal);
 });
 
-// Create a new goal
+/**
+ * Create a new goal
+ * @route POST /api/goals
+ * @description Creates a new goal for a student with optional description and target date
+ * @access Private (requires JWT authentication)
+ * @param {Object} req.body - Goal data
+ * @param {number} req.body.student_id - Student ID (required)
+ * @param {string} req.body.title - Goal title (required)
+ * @param {string} [req.body.description] - Goal description (optional)
+ * @param {string} [req.body.target_date] - Target completion date in ISO format (optional)
+ * @returns {Object} Success message with created goal data
+ * @throws {400} Bad request if required fields are missing
+ * @throws {500} Internal server error if database operation fails
+ */
 router.post("/", async (req, res) => {
   const { student_id, title, description, target_date } = req.body;
   // Make description and target_date optional/null if missing or invalid
