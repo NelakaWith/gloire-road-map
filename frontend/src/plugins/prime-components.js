@@ -8,7 +8,6 @@ import Button from "primevue/button";
 import Message from "primevue/message";
 import Dialog from "primevue/dialog";
 import Toast from "primevue/toast";
-import Calendar from "primevue/calendar";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Tooltip from "primevue/tooltip";
@@ -31,7 +30,6 @@ export default function registerPrime(app) {
   app.component("Message", Message);
   app.component("Dialog", Dialog);
   app.component("Toast", Toast);
-  app.component("Calendar", Calendar);
   app.component("DataTable", DataTable);
   app.component("Column", Column);
   app.component("Form", Form);
