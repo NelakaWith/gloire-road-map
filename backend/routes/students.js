@@ -1,12 +1,35 @@
 import express from "express";
-import { Student, Goal } from "../models.js";
+import { Student, Goal, Attendance, sequelize } from "../models.js";
 
 const router = express.Router();
 
 // Get all students
 router.get("/", async (req, res) => {
-  const students = await Student.findAll({ order: [["created_at", "DESC"]] });
-  res.json(students);
+  try {
+    const students = await Student.findAll({
+      attributes: {
+        include: [
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "present")'
+            ),
+            "days_attended",
+          ],
+          [
+            sequelize.literal(
+              "(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id)"
+            ),
+            "total_attendance_records",
+          ],
+        ],
+      },
+      order: [["created_at", "DESC"]],
+    });
+    res.json(students);
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    res.status(500).json({ message: "Failed to fetch students" });
+  }
 });
 
 // Add student
@@ -60,6 +83,58 @@ router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   await Student.destroy({ where: { id } });
   res.json({ message: "Student deleted" });
+});
+
+// Get single student with attendance details
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const student = await Student.findByPk(id, {
+      attributes: {
+        include: [
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "present")'
+            ),
+            "days_attended",
+          ],
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "absent")'
+            ),
+            "days_absent",
+          ],
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "late")'
+            ),
+            "days_late",
+          ],
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "excused")'
+            ),
+            "days_excused",
+          ],
+          [
+            sequelize.literal(
+              "(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id)"
+            ),
+            "total_attendance_records",
+          ],
+        ],
+      },
+    });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.json(student);
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({ message: "Failed to fetch student" });
+  }
 });
 
 // Get goals for a student
