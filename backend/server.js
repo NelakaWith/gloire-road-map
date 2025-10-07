@@ -54,7 +54,7 @@ app.use("/api/attendance", authenticateJWT, attendanceRoutes);
 /**
  * Swagger API Documentation
  * @description Serves interactive API documentation at /api-docs
- * @access Public (temporarily for testing)
+ * @access Public
  */
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
 

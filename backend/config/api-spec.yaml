@@ -1,0 +1,1091 @@
+openapi: 3.0.0
+info:
+  title: Gloire Road Map API
+  version: 1.0.0
+  description: A comprehensive goal tracking system with attendance monitoring
+  contact:
+    name: Gloire Road Map Team
+    email: support@gloire-roadmap.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3005
+    description: Development server
+  - url: https://api.gloire-roadmap.com
+    description: Production server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter JWT token obtained from /api/auth/login
+
+  schemas:
+    Student:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+          description: Unique student identifier
+          example: 1
+        name:
+          type: string
+          description: Full name of the student
+          example: John Doe
+        contact_number:
+          type: string
+          nullable: true
+          description: Student contact phone number
+          example: "+1-234-567-8900"
+        address:
+          type: string
+          nullable: true
+          description: Student physical address
+          example: "123 Main St, City, State 12345"
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          description: Student date of birth
+          example: "2000-01-15"
+        points:
+          type: integer
+          description: Achievement points earned
+          example: 45
+        created_at:
+          type: string
+          format: date-time
+          description: Registration timestamp
+          example: "2025-10-01T00:00:00.000Z"
+        days_attended:
+          type: integer
+          description: Number of days marked as present
+          example: 18
+        total_attendance_records:
+          type: integer
+          description: Total attendance records
+          example: 20
+
+    Goal:
+      type: object
+      required:
+        - student_id
+        - title
+      properties:
+        id:
+          type: integer
+          description: Unique goal identifier
+          example: 1
+        student_id:
+          type: integer
+          description: Reference to student
+          example: 1
+        title:
+          type: string
+          description: Goal title
+          example: Complete Math Assignment
+        description:
+          type: string
+          nullable: true
+          description: Detailed goal description
+          example: Complete chapters 1-5 of algebra textbook
+        target_date:
+          type: string
+          format: date
+          nullable: true
+          description: Target completion date
+          example: "2025-10-15"
+        is_completed:
+          type: boolean
+          description: Completion status
+          example: false
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Actual completion timestamp
+          example: "2025-10-14T14:30:00.000Z"
+        created_at:
+          type: string
+          format: date-time
+          description: Goal creation timestamp
+          example: "2025-10-01T09:00:00.000Z"
+
+    Attendance:
+      type: object
+      required:
+        - student_id
+        - date
+        - status
+      properties:
+        id:
+          type: integer
+          description: Unique attendance record identifier
+          example: 1
+        student_id:
+          type: integer
+          description: Reference to student
+          example: 1
+        date:
+          type: string
+          format: date
+          description: Attendance date
+          example: "2025-10-07"
+        status:
+          type: string
+          enum: [present, absent, late, excused]
+          description: Attendance status
+          example: present
+        notes:
+          type: string
+          nullable: true
+          description: Optional notes about attendance
+          example: Arrived 5 minutes late due to traffic
+        created_at:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+          example: "2025-10-07T08:00:00.000Z"
+
+    User:
+      type: object
+      required:
+        - userName
+        - email
+        - password
+      properties:
+        id:
+          type: integer
+          description: Unique user identifier
+          example: 1
+        user_name:
+          type: string
+          description: Unique username
+          example: admin
+        email:
+          type: string
+          format: email
+          description: User email address
+          example: admin@example.com
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2025-10-01T00:00:00.000Z"
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: Resource not found
+        error:
+          type: string
+          description: Error type
+          example: NotFoundError
+        details:
+          type: string
+          description: Additional error details
+          example: Student with ID 999 does not exist
+
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: Operation completed successfully
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Students
+    description: Student management operations
+  - name: Goals
+    description: Goal tracking and management
+  - name: Attendance
+    description: Attendance recording and monitoring
+  - name: Points
+    description: Points system and leaderboards
+  - name: Analytics
+    description: Analytics and reporting
+
+paths:
+  # Authentication Endpoints
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register admin user
+      description: Creates the first admin user. Registration is blocked if users already exist.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userName
+                - email
+                - password
+              properties:
+                userName:
+                  type: string
+                  description: Unique username for the admin
+                  example: admin
+                email:
+                  type: string
+                  format: email
+                  description: Admin email address
+                  example: admin@example.com
+                password:
+                  type: string
+                  format: password
+                  description: Plain text password (will be hashed)
+                  example: securePassword123
+      responses:
+        "200":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessMessage"
+        "403":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticates user credentials and returns JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userName
+                - password
+              properties:
+                userName:
+                  type: string
+                  description: Username for authentication
+                  example: admin
+                password:
+                  type: string
+                  format: password
+                  description: Plain text password
+                  example: securePassword123
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authenticated requests
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "400":
+          description: Missing username or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Student Endpoints
+  /api/students:
+    get:
+      tags:
+        - Students
+      summary: Get all students
+      description: Retrieves all students with their attendance statistics
+      responses:
+        "200":
+          description: List of students retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+        "401":
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Students
+      summary: Create new student
+      description: Creates a new student record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                contact_number:
+                  type: string
+                  example: "+1-234-567-8900"
+                address:
+                  type: string
+                  example: "123 Main St, City, State 12345"
+                date_of_birth:
+                  type: string
+                  format: date
+                  example: "2000-01-15"
+      responses:
+        "201":
+          description: Student created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Goals Endpoints
+  /api/goals:
+    get:
+      tags:
+        - Goals
+      summary: Get all goals
+      description: Retrieves all goals with optional filtering by student
+      parameters:
+        - in: query
+          name: student_id
+          schema:
+            type: integer
+          description: Filter goals by student ID
+      responses:
+        "200":
+          description: Goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Goal"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Goals
+      summary: Create new goal
+      description: Creates a new goal for a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - student_id
+                - title
+              properties:
+                student_id:
+                  type: integer
+                  example: 1
+                title:
+                  type: string
+                  example: Complete Math Assignment
+                description:
+                  type: string
+                  example: Complete chapters 1-5 of algebra textbook
+                target_date:
+                  type: string
+                  format: date
+                  example: "2025-10-15"
+      responses:
+        "201":
+          description: Goal created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Attendance Endpoints
+  /api/attendance:
+    get:
+      tags:
+        - Attendance
+      summary: Get attendance records
+      description: Retrieves attendance records with optional filtering
+      parameters:
+        - in: query
+          name: student_id
+          schema:
+            type: integer
+          description: Filter by student ID
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: Filter by specific date (YYYY-MM-DD)
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Filter from start date (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: Filter to end date (YYYY-MM-DD)
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [present, absent, late, excused]
+          description: Filter by attendance status
+      responses:
+        "200":
+          description: Attendance records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/Attendance"
+                    - type: object
+                      properties:
+                        Student:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Attendance
+      summary: Record attendance
+      description: Records attendance for one or multiple students
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/Attendance"
+                - type: array
+                  items:
+                    $ref: "#/components/schemas/Attendance"
+      responses:
+        "201":
+          description: Attendance recorded successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Attendance"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/Attendance"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/attendance/summary:
+    get:
+      tags:
+        - Attendance
+      summary: Get attendance summary
+      description: Retrieves attendance statistics and summary information
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Summary from start date (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: Summary to end date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Attendance summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_records:
+                    type: integer
+                  present_count:
+                    type: integer
+                  absent_count:
+                    type: integer
+                  late_count:
+                    type: integer
+                  excused_count:
+                    type: integer
+                  attendance_rate:
+                    type: number
+                    format: float
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Points Endpoints
+  /api/points/leaderboard:
+    get:
+      tags:
+        - Points
+      summary: Get points leaderboard
+      description: Retrieves the points leaderboard showing student rankings by total points
+      responses:
+        "200":
+          description: Leaderboard retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    student_id:
+                      type: integer
+                      description: Student identifier
+                      example: 1
+                    student_name:
+                      type: string
+                      description: Student name
+                      example: John Doe
+                    completed_points:
+                      type: integer
+                      description: Points from completed goals
+                      example: 85
+                    on_time_bonus:
+                      type: integer
+                      description: Bonus points for on-time completion
+                      example: 15
+                    total_points:
+                      type: integer
+                      description: Combined total points
+                      example: 100
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Analytics Endpoints
+  /api/analytics/overview:
+    get:
+      tags:
+        - Analytics
+      summary: Get analytics overview
+      description: Retrieves general analytics overview for the specified date range
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Start date for analytics (YYYY-MM-DD), defaults to 90 days ago
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: End date for analytics (YYYY-MM-DD), defaults to today
+      responses:
+        "200":
+          description: Analytics overview retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_students:
+                    type: integer
+                    description: Total number of students
+                  total_goals:
+                    type: integer
+                    description: Total number of goals
+                  completed_goals:
+                    type: integer
+                    description: Number of completed goals
+                  completion_rate:
+                    type: number
+                    format: float
+                    description: Goal completion rate as percentage
+                  average_time_to_complete:
+                    type: number
+                    format: float
+                    description: Average time to complete goals in days
+        "400":
+          description: Invalid date parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/analytics/completions:
+    get:
+      tags:
+        - Analytics
+      summary: Get completion analytics
+      description: Retrieves goal completion statistics for the specified date range
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Start date for analytics (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: End date for analytics (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Completion analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  completed_count:
+                    type: integer
+                    description: Number of goals completed in date range
+                  completion_trend:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        count:
+                          type: integer
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/analytics/by-student:
+    get:
+      tags:
+        - Analytics
+      summary: Get analytics by student
+      description: Retrieves analytics data grouped by student
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Start date for analytics (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: End date for analytics (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Student analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    student_id:
+                      type: integer
+                    student_name:
+                      type: string
+                    total_goals:
+                      type: integer
+                    completed_goals:
+                      type: integer
+                    completion_rate:
+                      type: number
+                      format: float
+                    avg_time_to_complete:
+                      type: number
+                      format: float
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/analytics/throughput:
+    get:
+      tags:
+        - Analytics
+      summary: Get throughput analytics
+      description: Retrieves goal throughput and velocity metrics
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Start date for analytics (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: End date for analytics (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Throughput analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals_per_day:
+                    type: number
+                    format: float
+                    description: Average goals completed per day
+                  velocity_trend:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        period:
+                          type: string
+                        goals_completed:
+                          type: integer
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/analytics/backlog:
+    get:
+      tags:
+        - Analytics
+      summary: Get backlog analytics
+      description: Retrieves information about incomplete goals
+      responses:
+        "200":
+          description: Backlog analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_incomplete:
+                    type: integer
+                    description: Total number of incomplete goals
+                  backlog_by_student:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        student_id:
+                          type: integer
+                        student_name:
+                          type: string
+                        incomplete_count:
+                          type: integer
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/analytics/overdue:
+    get:
+      tags:
+        - Analytics
+      summary: Get overdue goals analytics
+      description: Retrieves information about goals that are past their target date
+      responses:
+        "200":
+          description: Overdue analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_overdue:
+                    type: integer
+                    description: Total number of overdue goals
+                  overdue_goals:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Goal"
+                        - type: object
+                          properties:
+                            days_overdue:
+                              type: integer
+                              description: Number of days past target date
+                            Student:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/analytics/time-to-complete:
+    get:
+      tags:
+        - Analytics
+      summary: Get time-to-complete analytics
+      description: Retrieves statistics about how long goals take to complete
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Start date for analytics (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: End date for analytics (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Time-to-complete analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  average_days:
+                    type: number
+                    format: float
+                    description: Average days to complete goals
+                  median_days:
+                    type: number
+                    format: float
+                    description: Median days to complete goals
+                  distribution:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        range:
+                          type: string
+                          description: Time range (e.g., "0-7 days")
+                        count:
+                          type: integer
+                          description: Number of goals in this range
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
