@@ -107,7 +107,7 @@ const handleEditSave = async (updatedStudent) => {
   try {
     await axios.patch(
       `/api/students/${updatedStudent.id}`,
-      { name: updatedStudent.name },
+      { ...updatedStudent },
       { headers: authHeader() }
     );
     await fetchStudents();

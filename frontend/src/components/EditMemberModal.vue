@@ -5,13 +5,13 @@
     header="Edit Member"
     class="w-1/4"
     @hide="onHide"
-    :validateOnValueUpdate="true"
   >
     <Form
       v-slot="$form"
       :initialValues="initialValues"
       :resolver="resolver"
       @submit="handleSubmit"
+      :validateOnValueUpdate="true"
     >
       <div class="flex flex-col gap-2 mb-4">
         <label for="memberName" class="text-sm font-medium text-gray-700">
