@@ -9,6 +9,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
+import { specs, swaggerUiOptions } from "./config/swagger.js";
 import authRoutes from "./routes/auth.js";
 import studentRoutes from "./routes/students.js";
 import goalRoutes from "./routes/goals.js";
@@ -38,15 +40,44 @@ app.use(express.json());
  * - /api/students - Protected student management routes
  * - /api/goals - Protected goal management routes
  * - /api/analytics - Protected analytics and reporting routes
- * - /api/points - Public/Protected points system routes
+ * - /api/points - Protected points system routes
  * - /api/attendance - Protected attendance tracking routes
+ * - /api-docs - Interactive API documentation (Swagger UI)
  */
 app.use("/api/auth", authRoutes);
 app.use("/api/students", authenticateJWT, studentRoutes);
 app.use("/api/goals", authenticateJWT, goalRoutes);
 app.use("/api/analytics", authenticateJWT, analyticsRoutes);
-app.use("/api/points", pointsRoutes);
+app.use("/api/points", authenticateJWT, pointsRoutes);
 app.use("/api/attendance", authenticateJWT, attendanceRoutes);
+
+/**
+ * Swagger API Documentation
+ * @description Serves interactive API documentation at /api-docs
+ * @access Public (temporarily for testing)
+ */
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
+
+/**
+ * Root endpoint
+ * @description Provides basic API information and links to documentation
+ */
+app.get("/", (req, res) => {
+  res.json({
+    name: "Gloire Road Map API",
+    version: "1.0.0",
+    description: "Student management and goal tracking system",
+    documentation: "/api-docs",
+    endpoints: {
+      authentication: "/api/auth",
+      students: "/api/students",
+      goals: "/api/goals",
+      attendance: "/api/attendance",
+      points: "/api/points",
+      analytics: "/api/analytics",
+    },
+  });
+});
 
 import { sequelize } from "./models.js";
 
