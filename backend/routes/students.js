@@ -11,17 +11,47 @@ router.get("/", async (req, res) => {
 
 // Add student
 router.post("/", async (req, res) => {
-  const { name } = req.body;
+  const { name, contact_number, address, date_of_birth } = req.body;
   if (!name) return res.status(400).json({ message: "Name required" });
-  await Student.create({ name });
+
+  // normalize date_of_birth: treat empty string as null, try to parse otherwise
+  let dob = null;
+  if (date_of_birth) {
+    const d = new Date(date_of_birth);
+    dob = isNaN(d.getTime()) ? null : d;
+  }
+
+  await Student.create({
+    name,
+    contact_number: contact_number || null,
+    address: address || null,
+    date_of_birth: dob,
+  });
   res.json({ message: "Student added" });
 });
 
 // Edit student
 router.patch("/:id", async (req, res) => {
-  const { name } = req.body;
+  const { name, contact_number, address, date_of_birth } = req.body;
   const { id } = req.params;
-  await Student.update({ name }, { where: { id } });
+
+  // normalize date_of_birth
+  let dob = null;
+  if (date_of_birth) {
+    const d = new Date(date_of_birth);
+    dob = isNaN(d.getTime()) ? null : d;
+  }
+
+  const update = {
+    ...(name !== undefined ? { name } : {}),
+    ...(contact_number !== undefined
+      ? { contact_number: contact_number || null }
+      : {}),
+    ...(address !== undefined ? { address: address || null } : {}),
+    ...(date_of_birth !== undefined ? { date_of_birth: dob } : {}),
+  };
+
+  await Student.update(update, { where: { id } });
   res.json({ message: "Student updated" });
 });
 
