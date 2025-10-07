@@ -331,6 +331,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Retrieves information about the currently authenticated user
+      responses:
+        "200":
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  userName:
+                    type: string
+                    example: admin
+                  email:
+                    type: string
+                    example: admin@example.com
+        "401":
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - Invalid token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   # Student Endpoints
   /api/students:
     get:
@@ -413,7 +449,371 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  # Goals Endpoints
+  /api/students/{id}:
+    get:
+      tags:
+        - Students
+      summary: Get student by ID
+      description: Retrieves a specific student by their ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+      responses:
+        "200":
+          description: Student retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    patch:
+      tags:
+        - Students
+      summary: Update student
+      description: Updates an existing student record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                contact_number:
+                  type: string
+                address:
+                  type: string
+                date_of_birth:
+                  type: string
+                  format: date
+      responses:
+        "200":
+          description: Student updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Students
+      summary: Delete student
+      description: Deletes a student record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+      responses:
+        "200":
+          description: Student deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessMessage"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/students/{id}/goals:
+    get:
+      tags:
+        - Students
+      summary: Get student goals
+      description: Retrieves all goals for a specific student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+      responses:
+        "200":
+          description: Student goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Goal"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Students
+      summary: Create goal for student
+      description: Creates a new goal for a specific student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: Complete Math Assignment
+                description:
+                  type: string
+                  example: Complete chapters 1-5 of algebra textbook
+                target_date:
+                  type: string
+                  format: date
+                  example: "2025-10-15"
+      responses:
+        "201":
+          description: Goal created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/goals/{id}:
+    get:
+      tags:
+        - Goals
+      summary: Get goal by ID
+      description: Retrieves a specific goal by its ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Goal ID
+      responses:
+        "200":
+          description: Goal retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "404":
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    patch:
+      tags:
+        - Goals
+      summary: Update goal
+      description: Updates an existing goal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Goal ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                target_date:
+                  type: string
+                  format: date
+                is_completed:
+                  type: boolean
+      responses:
+        "200":
+          description: Goal updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "404":
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Goals
+      summary: Delete goal
+      description: Deletes a goal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Goal ID
+      responses:
+        "200":
+          description: Goal deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessMessage"
+        "404":
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /api/goals:
     get:
       tags:
@@ -603,6 +1003,278 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/attendance/{id}:
+    patch:
+      tags:
+        - Attendance
+      summary: Update attendance record
+      description: Updates an existing attendance record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Attendance record ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [present, absent, late, excused]
+                notes:
+                  type: string
+      responses:
+        "200":
+          description: Attendance record updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attendance"
+        "404":
+          description: Attendance record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Attendance
+      summary: Delete attendance record
+      description: Deletes an attendance record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Attendance record ID
+      responses:
+        "200":
+          description: Attendance record deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessMessage"
+        "404":
+          description: Attendance record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/attendance/student/{student_id}:
+    get:
+      tags:
+        - Attendance
+      summary: Get attendance for specific student
+      description: Retrieves attendance records for a specific student
+      parameters:
+        - in: path
+          name: student_id
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Filter from start date (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: Filter to end date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Student attendance records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Attendance"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/attendance/bulk:
+    post:
+      tags:
+        - Attendance
+      summary: Bulk record attendance
+      description: Records attendance for multiple students at once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - date
+                - records
+              properties:
+                date:
+                  type: string
+                  format: date
+                  description: Date for attendance recording
+                  example: "2025-10-07"
+                records:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - student_id
+                      - status
+                    properties:
+                      student_id:
+                        type: integer
+                        example: 1
+                      status:
+                        type: string
+                        enum: [present, absent, late, excused]
+                        example: present
+                      notes:
+                        type: string
+                        example: "Arrived 5 minutes late"
+      responses:
+        "201":
+          description: Bulk attendance recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Attendance recorded for 25 students"
+                  created_count:
+                    type: integer
+                    example: 25
+                  updated_count:
+                    type: integer
+                    example: 0
+                  records:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Attendance"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      tags:
+        - Attendance
+      summary: Get attendance summary
+      description: Retrieves attendance statistics and summary information
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Summary from start date (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: Summary to end date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Attendance summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_records:
+                    type: integer
+                  present_count:
+                    type: integer
+                  absent_count:
+                    type: integer
+                  late_count:
+                    type: integer
+                  excused_count:
+                    type: integer
+                  attendance_rate:
+                    type: number
+                    format: float
         "401":
           description: Unauthorized
           content:
