@@ -85,9 +85,24 @@ app.use("/api/attendance", authenticateJWT, attendanceRoutes);
 /**
  * Swagger API Documentation
  * @description Serves interactive API documentation at /api-docs
- * @access Public
+ * @access Public (consider protecting in production)
+ * @security Rate limited to prevent abuse
  */
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
+const docsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // Limit each IP to 50 docs requests per windowMs
+  message: {
+    error: "Too many documentation requests, please try again later.",
+    retryAfter: "15 minutes",
+  },
+});
+
+app.use(
+  "/api-docs",
+  docsLimiter,
+  swaggerUi.serve,
+  swaggerUi.setup(specs, swaggerUiOptions)
+);
 
 /**
  * Root endpoint

@@ -13,8 +13,17 @@ info:
 servers:
   - url: http://localhost:3005
     description: Development server
-  - url: https://api.gloire-roadmap.com
-    description: Production server
+  - url: "{protocol}://{host}"
+    description: Dynamic server (adapts to deployment environment)"
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: https
+      host:
+        default: roadmap.nelakawithanage.com
+        description: Server hostname
 
 components:
   securitySchemes:
