@@ -87,5 +87,35 @@ export const Goal = sequelize.define(
   }
 );
 
+export const Attendance = sequelize.define(
+  "Attendance",
+  {
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    student_id: { type: DataTypes.INTEGER, allowNull: false },
+    date: { type: DataTypes.DATEONLY, allowNull: false },
+    status: {
+      type: DataTypes.ENUM("present", "absent", "late", "excused"),
+      allowNull: false,
+      defaultValue: "present",
+    },
+    notes: { type: DataTypes.TEXT, allowNull: true },
+    created_at: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+    updated_at: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+  },
+  {
+    tableName: "attendance",
+    timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ["student_id", "date"],
+      },
+    ],
+  }
+);
+
 Student.hasMany(Goal, { foreignKey: "student_id" });
 Goal.belongsTo(Student, { foreignKey: "student_id" });
+
+Student.hasMany(Attendance, { foreignKey: "student_id" });
+Attendance.belongsTo(Student, { foreignKey: "student_id" });
