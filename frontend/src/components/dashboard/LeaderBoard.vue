@@ -30,7 +30,7 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import { authHeader } from "../../utils/authHeader";
 import { useRouter } from "vue-router";
-import { useToast } from "primevue";
+import { useToast } from "primevue/usetoast";
 
 const router = useRouter();
 const toast = useToast();
