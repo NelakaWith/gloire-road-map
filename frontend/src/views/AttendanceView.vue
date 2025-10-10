@@ -29,7 +29,7 @@ const fetchAttendanceList = async () => {
   } catch (error) {
     toast.add({
       severity: "error",
-      summary: "Error",
+      summary: "Something went wrong :" + error.response?.status,
       detail: error,
       life: 3000,
     });

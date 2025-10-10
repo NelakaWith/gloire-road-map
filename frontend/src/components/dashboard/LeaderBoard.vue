@@ -47,7 +47,7 @@ const fetchLeaderboard = async () => {
     toast.add({
       severity: "error",
       summary: "Error",
-      detail: "Failed to load leaderboard",
+      detail: "Something went wrong :" + error.response?.status,
       life: 3000,
     });
     return;
