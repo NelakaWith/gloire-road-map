@@ -27,7 +27,7 @@ const props = defineProps({
   },
   containerClass: {
     type: String,
-    default: "flex justify-between items-center max-w-3xl mx-auto p-4",
+    default: "flex justify-between items-center mx-auto py-4",
   },
 });
 </script>
