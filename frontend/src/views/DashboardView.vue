@@ -29,6 +29,18 @@
           />
         </template>
       </Card>
+
+      <Card class="dashboard-card">
+        <template #title>Attendance</template>
+        <template #content>
+          <p class="card-text">Track overall attendance and participation.</p>
+          <Button
+            label="View Attendance"
+            icon="pi pi-calendar"
+            @click="$router.push('/attendance')"
+          />
+        </template>
+      </Card>
     </div>
     <LeaderBoard />
   </div>

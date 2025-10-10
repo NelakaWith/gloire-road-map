@@ -10,6 +10,8 @@ import LoginView from "./views/LoginView.vue";
 import DashboardView from "./views/DashboardView.vue";
 import StudentListView from "./views/MemberListView.vue";
 import GoalListView from "./views/GoalListView.vue";
+import AnalyticsView from "./views/AnalyticsView.vue";
+import AttendanceView from "./views/AttendanceView.vue";
 
 const routes = [
   // Auth routes with AuthLayout
@@ -54,9 +56,13 @@ const routes = [
       {
         path: "analytics",
         name: "Analytics",
-        component: () => import("./views/AnalyticsView.vue"),
+        component: AnalyticsView,
       },
-      // Add more main routes here (dashboard, profile, etc.)
+      {
+        path: "attendance",
+        name: "Attendance",
+        component: AttendanceView,
+      },
     ],
   },
 
