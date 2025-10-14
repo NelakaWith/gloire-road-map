@@ -7,7 +7,7 @@
         class="flex items-center text-gray-600 hover:text-gray-900 bg-transparent border-0 p-0 mr-2"
         aria-label="Go back"
       >
-        <i class="pi pi-chevron-left mr-2"></i>
+        <i class="pi pi-chevron-left"></i>
       </router-link>
       <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
     </div>
