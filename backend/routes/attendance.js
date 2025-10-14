@@ -356,6 +356,209 @@ router.post("/bulk", async (req, res) => {
 });
 
 /**
+ * Session-based attendance marking
+ * @route POST /api/attendance/session
+ * @description Mark attendance for all students in a session with simplified payload
+ * @access Private (requires JWT authentication)
+ * @param {Object} req.body - Session attendance data
+ * @param {string} req.body.date - Session date in YYYY-MM-DD format (required)
+ * @param {Array<Object>} req.body.attendance_records - Array of attendance records (required)
+ * @param {number} req.body.attendance_records[].student_id - Student ID (required)
+ * @param {string} req.body.attendance_records[].status - Attendance status (required)
+ * @param {string} [req.body.attendance_records[].notes] - Optional notes
+ * @returns {Object} Results with message and attendance records
+ * @returns {string} returns.message - Success message with count
+ * @returns {Array<Object>} returns.attendance - Created/updated attendance records
+ * @throws {400} Bad request if required fields are missing
+ * @throws {500} Internal server error if database operation fails
+ */
+router.post("/session", async (req, res) => {
+  try {
+    const { date, attendance_records } = req.body;
+
+    if (!date || !attendance_records || !Array.isArray(attendance_records)) {
+      return res.status(400).json({
+        message: "date and attendance_records array are required",
+      });
+    }
+
+    const results = await Promise.all(
+      attendance_records.map(async (record) => {
+        const { student_id, status, notes } = record;
+
+        if (!student_id || !status) {
+          throw new Error(`student_id and status are required for all records`);
+        }
+
+        const [attendance, created] = await Attendance.findOrCreate({
+          where: { student_id, date },
+          defaults: {
+            status,
+            notes: notes || null,
+          },
+        });
+
+        if (!created) {
+          // Update existing record
+          await attendance.update({
+            status,
+            notes: notes || attendance.notes,
+            updated_at: new Date(),
+          });
+        }
+
+        // Return the record with student information
+        const result = await Attendance.findByPk(attendance.id, {
+          include: [
+            {
+              model: Student,
+              attributes: ["id", "name"],
+            },
+          ],
+        });
+
+        return result;
+      })
+    );
+
+    res.json({
+      message: `Attendance marked for ${results.length} students`,
+      attendance: results,
+    });
+  } catch (error) {
+    console.error("Error in session attendance marking:", error);
+    res.status(500).json({
+      message: error.message || "Failed to mark session attendance",
+    });
+  }
+});
+
+/**
+ * Get attendance sheet for a specific date
+ * @route GET /api/attendance/sheet/:date
+ * @description Gets all students with their attendance status for a specific date
+ * @access Private (requires JWT authentication)
+ * @param {string} req.params.date - Date in YYYY-MM-DD format
+ * @returns {Array<Object>} Array of students with attendance information
+ * @returns {number} returns[].student_id - Student ID
+ * @returns {string} returns[].name - Student name
+ * @returns {string} returns[].status - Attendance status or 'not_marked' if no record
+ * @returns {string} [returns[].notes] - Attendance notes if any
+ * @returns {number} [returns[].attendance_id] - Attendance record ID if exists
+ * @throws {500} Internal server error if database query fails
+ */
+router.get("/sheet/:date", async (req, res) => {
+  try {
+    const { date } = req.params;
+
+    const students = await Student.findAll({
+      include: [
+        {
+          model: Attendance,
+          where: { date },
+          required: false, // LEFT JOIN to include students without attendance
+        },
+      ],
+      order: [["name", "ASC"]],
+    });
+
+    const attendanceSheet = students.map((student) => ({
+      student_id: student.id,
+      name: student.name,
+      status: student.Attendances?.[0]?.status || "not_marked",
+      notes: student.Attendances?.[0]?.notes || null,
+      attendance_id: student.Attendances?.[0]?.id || null,
+    }));
+
+    res.json(attendanceSheet);
+  } catch (error) {
+    console.error("Error fetching attendance sheet:", error);
+    res.status(500).json({ message: "Failed to fetch attendance sheet" });
+  }
+});
+
+/**
+ * Get available session dates
+ * @route GET /api/attendance/sessions
+ * @description Gets all unique dates where attendance was recorded
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.start_date] - Filter from start date (YYYY-MM-DD)
+ * @param {string} [req.query.end_date] - Filter to end date (YYYY-MM-DD)
+ * @returns {Array<Object>} Array of session dates with attendance counts
+ * @returns {string} returns[].date - Session date (YYYY-MM-DD)
+ * @returns {number} returns[].total_students - Total students with attendance recorded
+ * @returns {number} returns[].present_count - Number of students marked present
+ * @returns {number} returns[].absent_count - Number of students marked absent
+ * @returns {number} returns[].late_count - Number of students marked late
+ * @returns {number} returns[].excused_count - Number of students marked excused
+ * @throws {500} Internal server error if database query fails
+ */
+router.get("/sessions", async (req, res) => {
+  try {
+    const { start_date, end_date } = req.query;
+
+    const whereClause = {};
+    if (start_date && end_date) {
+      whereClause.date = {
+        [Op.between]: [start_date, end_date],
+      };
+    } else if (start_date) {
+      whereClause.date = {
+        [Op.gte]: start_date,
+      };
+    } else if (end_date) {
+      whereClause.date = {
+        [Op.lte]: end_date,
+      };
+    }
+
+    const sessions = await Attendance.findAll({
+      attributes: [
+        "date",
+        [sequelize.fn("COUNT", sequelize.col("*")), "total_students"],
+        [
+          sequelize.fn(
+            "SUM",
+            sequelize.literal("CASE WHEN status = 'present' THEN 1 ELSE 0 END")
+          ),
+          "present_count",
+        ],
+        [
+          sequelize.fn(
+            "SUM",
+            sequelize.literal("CASE WHEN status = 'absent' THEN 1 ELSE 0 END")
+          ),
+          "absent_count",
+        ],
+        [
+          sequelize.fn(
+            "SUM",
+            sequelize.literal("CASE WHEN status = 'late' THEN 1 ELSE 0 END")
+          ),
+          "late_count",
+        ],
+        [
+          sequelize.fn(
+            "SUM",
+            sequelize.literal("CASE WHEN status = 'excused' THEN 1 ELSE 0 END")
+          ),
+          "excused_count",
+        ],
+      ],
+      where: whereClause,
+      group: ["date"],
+      order: [["date", "DESC"]],
+      raw: true,
+    });
+
+    res.json(sessions);
+  } catch (error) {
+    console.error("Error fetching attendance sessions:", error);
+    res.status(500).json({ message: "Failed to fetch attendance sessions" });
+  }
+});
+
+/**
  * Get attendance summary and statistics
  * @route GET /api/attendance/summary
  * @description Generates attendance statistics grouped by student with counts for each status
