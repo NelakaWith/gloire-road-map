@@ -11,6 +11,8 @@ import Toast from "primevue/toast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Tooltip from "primevue/tooltip";
+import Tag from "primevue/tag";
+import ProgressSpinner from "primevue/progressspinner";
 import { Form } from "@primevue/forms";
 import Menubar from "primevue/menubar";
 import ConfirmDialog from "primevue/confirmdialog";
@@ -32,6 +34,8 @@ export default function registerPrime(app) {
   app.component("Toast", Toast);
   app.component("DataTable", DataTable);
   app.component("Column", Column);
+  app.component("Tag", Tag);
+  app.component("ProgressSpinner", ProgressSpinner);
   app.component("Form", Form);
   app.component("Menubar", Menubar);
   app.component("ConfirmDialog", ConfirmDialog);
