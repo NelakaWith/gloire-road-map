@@ -52,7 +52,6 @@ const fetchLeaderboard = async () => {
     });
     return;
   }
-  leaderboard.value = response.data;
 };
 
 const goToGoals = (studentId) => {

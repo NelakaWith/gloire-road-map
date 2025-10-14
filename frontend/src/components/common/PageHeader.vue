@@ -1,14 +1,14 @@
 <template>
   <header :class="containerClass">
     <div class="flex items-center">
-      <a
+      <router-link
         v-if="showBack"
-        :href="backTo"
+        :to="backTo"
         class="flex items-center text-gray-600 hover:text-gray-900 bg-transparent border-0 p-0 mr-2"
         aria-label="Go back"
       >
-        <i class="pi pi-chevron-left"></i>
-      </a>
+        <i class="pi pi-chevron-left mr-2"></i>
+      </router-link>
       <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
     </div>
 
@@ -33,8 +33,4 @@ const props = defineProps({
 });
 </script>
 
-<style scoped lang="scss">
-.pi {
-  @apply text-gray-600;
-}
-</style>
+<!-- Removed custom style block; Tailwind classes handle icon color -->
