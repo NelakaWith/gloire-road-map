@@ -10,7 +10,7 @@
       </template>
     </PageHeader>
 
-    <main class="flex flex-col gap-6 max-w-6xl mx-auto px-4">
+    <main class="flex flex-col gap-8 mx-auto">
       <!-- Date Filter & Session Overview -->
       <Card>
         <template #content>
@@ -368,7 +368,11 @@ const formatDate = (date) => {
 
 const formatDateForAPI = (date) => {
   if (!date) return null;
-  return date.toISOString().split("T")[0];
+  // Use local date formatting to avoid timezone issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 onMounted(async () => {

@@ -219,11 +219,15 @@ const loadStudentSheet = async () => {
 
   loading.value = true;
   try {
-    const dateStr = sessionDate.value.toISOString().split("T")[0];
+    // Fix timezone issue - use local date formatting
+    const year = sessionDate.value.getFullYear();
+    const month = String(sessionDate.value.getMonth() + 1).padStart(2, "0");
+    const day = String(sessionDate.value.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
+
     const response = await axios.get(`/api/attendance/sheet/${dateStr}`, {
       headers: authHeader(),
     });
-
     students.value = response.data.map((student) => ({
       ...student,
       notes: student.notes || "",
