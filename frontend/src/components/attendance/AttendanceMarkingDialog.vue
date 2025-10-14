@@ -214,6 +214,18 @@ watch(
   }
 );
 
+/**
+ * Load the attendance sheet for the selected session date.
+ *
+ * Behavior:
+ *  - Formats `sessionDate` to a local YYYY-MM-DD string to avoid timezone shifts.
+ *  - Calls GET /api/attendance/sheet/{date} with auth headers.
+ *  - Populates `students` with the returned list and saves a deep copy in
+ *    `originalData` for later change detection.
+ *
+ * Error modes:
+ *  - On failure, shows a toast error and leaves `students` unchanged.
+ */
 const loadStudentSheet = async () => {
   if (!sessionDate.value) return;
 
@@ -247,6 +259,17 @@ const loadStudentSheet = async () => {
   }
 };
 
+/**
+ * Set the attendance status for a single student in the UI.
+ *
+ * Inputs:
+ *  - student (object): the student object from `students`.
+ *  - status (string): one of 'present'|'absent'|'late'|'excused'|'not_marked'.
+ *
+ * Side effects:
+ *  - Updates the student's `status` in-place and clears notes when resetting
+ *    to 'not_marked'.
+ */
 const setStatus = (student, status) => {
   student.status = status;
   if (status === "not_marked") {
@@ -254,6 +277,10 @@ const setStatus = (student, status) => {
   }
 };
 
+/**
+ * Convenience helper: mark every student in the current sheet as 'present'.
+ * Clears notes for each student.
+ */
 const markAllPresent = () => {
   students.value.forEach((student) => {
     student.status = "present";
@@ -261,6 +288,9 @@ const markAllPresent = () => {
   });
 };
 
+/**
+ * Convenience helper: reset all student entries to 'not_marked' and clear notes.
+ */
 const clearAll = () => {
   students.value.forEach((student) => {
     student.status = "not_marked";
@@ -268,10 +298,19 @@ const clearAll = () => {
   });
 };
 
+/**
+ * Return the number of students that have been marked (status != 'not_marked').
+ * Useful for UI counters and disabling saves when nothing is marked.
+ */
 const getMarkedCount = () => {
   return students.value.filter((s) => s.status !== "not_marked").length;
 };
 
+/**
+ * Computed flag: true when there are changes between `students` and the
+ * `originalData` snapshot taken after loading the sheet. Used to enable/disable
+ * the Save button and to warn about unsaved changes.
+ */
 const hasChanges = computed(() => {
   if (!originalData.value.length || !students.value.length) return false;
 
@@ -283,6 +322,20 @@ const hasChanges = computed(() => {
   });
 });
 
+/**
+ * Persist attendance for the session to the backend.
+ *
+ * Behavior:
+ *  - Builds an array of attendance_records for students that are marked.
+ *  - Rejects saving if no students are marked and shows a warning toast.
+ *  - Formats the `sessionDate` to YYYY-MM-DD and POSTs to
+ *    /api/attendance/session with auth headers.
+ *  - Emits 'attendance-marked' on success so parent views can refresh.
+ *
+ * Error modes:
+ *  - On HTTP or validation error, shows an error toast with server message if
+ *    available.
+ */
 const saveAttendance = async () => {
   if (!sessionDate.value) return;
 
@@ -341,6 +394,12 @@ const saveAttendance = async () => {
   }
 };
 
+/**
+ * Close the marking dialog.
+ *
+ * If there are unsaved changes this could prompt confirmation (currently a
+ * TODO). It always updates the parent-visible binding via `dialogVisible`.
+ */
 const closeDialog = () => {
   if (hasChanges.value && !saving.value) {
     // Could add confirmation dialog here

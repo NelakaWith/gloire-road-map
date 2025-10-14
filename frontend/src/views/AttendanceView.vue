@@ -230,6 +230,20 @@ const stats = computed(() => {
   };
 });
 
+/**
+ * Fetch attendance records from the API.
+ *
+ * Inputs:
+ *  - date (Date|null): optional Date object to filter attendance for a specific day.
+ *
+ * Behavior:
+ *  - When a date is provided, it is formatted for the API using `formatDateForAPI`.
+ *  - Calls GET /api/attendance with auth headers and optional `date` query param.
+ *  - Updates `attendanceList` with the response data and manages `loading` state.
+ *
+ * Error modes:
+ *  - On network or server error, shows a toast with an error message.
+ */
 const fetchAttendanceList = async (date = null) => {
   loading.value = true;
   try {
