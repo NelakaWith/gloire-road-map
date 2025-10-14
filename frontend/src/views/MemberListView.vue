@@ -1,7 +1,7 @@
 <template>
   <div class="pb-4">
     <PageHeader title="Members" :showBack="true" />
-    <main class="flex flex-col gap-8 max-w-3xl mx-auto px-4">
+    <main class="flex flex-col gap-8 mx-auto">
       <Card class="p-6">
         <template #content>
           <div class="scrollable-panel mb-4">
@@ -47,14 +47,6 @@
               @click="openAddMember"
             />
           </div>
-          <!-- <form @submit.prevent="addStudent" class="flex gap-2 mt-2">
-            <InputText
-              v-model="newStudent"
-              placeholder="Add a member"
-              class="flex-1"
-            />
-            <Button type="submit" label="Add" icon="pi pi-plus" />
-          </form> -->
         </template>
       </Card>
     </main>
@@ -93,16 +85,6 @@ const fetchStudents = async () => {
     headers: authHeader(),
   });
   students.value = res.data;
-};
-
-const addStudent = async () => {
-  await axios.post(
-    "/api/students",
-    { name: newStudent.value },
-    { headers: authHeader() }
-  );
-  newStudent.value = "";
-  await fetchStudents();
 };
 
 const editStudent = (student) => {

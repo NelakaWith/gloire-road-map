@@ -29,17 +29,30 @@
           />
         </template>
       </Card>
+
+      <Card class="dashboard-card">
+        <template #title>Attendance</template>
+        <template #content>
+          <p class="card-text">Track overall attendance and participation.</p>
+          <Button
+            label="View Attendance"
+            icon="pi pi-calendar"
+            @click="$router.push('/attendance')"
+          />
+        </template>
+      </Card>
     </div>
+    <LeaderBoard />
   </div>
 </template>
 
 <script setup>
-// Dashboard component for the main layout
+import LeaderBoard from "../components/dashboard/LeaderBoard.vue";
 </script>
 
 <style scoped>
 .dashboard {
-  @apply space-y-8;
+  @apply space-y-8 pb-4;
 }
 
 .dashboard-header {
@@ -47,7 +60,7 @@
 }
 
 .dashboard-title {
-  @apply text-2xl font-bold text-gray-900 mb-2;
+  @apply text-2xl font-bold text-gray-900 mb-2 mt-4;
 }
 
 .dashboard-subtitle {

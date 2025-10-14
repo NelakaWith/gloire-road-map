@@ -4,9 +4,10 @@
       <router-link
         v-if="showBack"
         :to="backTo"
-        class="flex items-center text-gray-600 hover:text-gray-900"
+        class="flex items-center text-gray-600 hover:text-gray-900 bg-transparent border-0 p-0 mr-2"
+        aria-label="Go back"
       >
-        <i class="pi pi-chevron-left mr-2"></i>
+        <i class="pi pi-chevron-left"></i>
       </router-link>
       <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
     </div>
@@ -27,13 +28,9 @@ const props = defineProps({
   },
   containerClass: {
     type: String,
-    default: "flex justify-between items-center max-w-3xl mx-auto p-4",
+    default: "flex justify-between items-center mx-auto py-4",
   },
 });
 </script>
 
-<style scoped lang="scss">
-.pi {
-  @apply text-gray-600;
-}
-</style>
+<!-- Removed custom style block; Tailwind classes handle icon color -->

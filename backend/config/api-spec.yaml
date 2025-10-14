@@ -13,8 +13,17 @@ info:
 servers:
   - url: http://localhost:3005
     description: Development server
-  - url: https://api.gloire-roadmap.com
-    description: Production server
+  - url: "{protocol}://{host}"
+    description: Dynamic server (adapts to deployment environment)"
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: https
+      host:
+        default: roadmap.nelakawithanage.com
+        description: Server hostname
 
 components:
   securitySchemes:
@@ -1288,6 +1297,100 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/attendance/session:
+    post:
+      tags:
+        - Attendance
+      summary: Session-based attendance marking
+      description: Mark attendance for all students in a session with simplified payload format
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - date
+                - attendance_records
+              properties:
+                date:
+                  type: string
+                  format: date
+                  description: Session date for attendance marking
+                  example: "2025-10-14"
+                attendance_records:
+                  type: array
+                  description: Array of attendance records for the session
+                  items:
+                    type: object
+                    required:
+                      - student_id
+                      - status
+                    properties:
+                      student_id:
+                        type: integer
+                        description: Student ID
+                        example: 1
+                      status:
+                        type: string
+                        enum: [present, absent, late, excused]
+                        description: Attendance status
+                        example: "present"
+                      notes:
+                        type: string
+                        description: Optional notes about attendance
+                        example: "Arrived 5 minutes late"
+              example:
+                date: "2025-10-14"
+                attendance_records:
+                  - student_id: 1
+                    status: "present"
+                  - student_id: 2
+                    status: "late"
+                    notes: "Traffic delay"
+                  - student_id: 3
+                    status: "absent"
+      responses:
+        "200":
+          description: Session attendance marked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message with count
+                    example: "Attendance marked for 16 students"
+                  attendance:
+                    type: array
+                    description: Array of created/updated attendance records
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Attendance"
+                        - type: object
+                          properties:
+                            Student:
+                              $ref: "#/components/schemas/Student"
+        "400":
+          description: Bad request - missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /api/attendance/summary:
     get:
       tags:
@@ -1328,6 +1431,134 @@ paths:
                   attendance_rate:
                     type: number
                     format: float
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/attendance/sheet/{date}:
+    get:
+      tags:
+        - Attendance
+      summary: Get attendance sheet for specific date
+      description: Retrieves all students with their attendance status for a specific date, including students who haven't been marked
+      parameters:
+        - in: path
+          name: date
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Date to get attendance sheet for (YYYY-MM-DD)
+          example: "2025-10-14"
+      responses:
+        "200":
+          description: Attendance sheet retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    student_id:
+                      type: integer
+                      description: Student ID
+                      example: 1
+                    name:
+                      type: string
+                      description: Student name
+                      example: "John Doe"
+                    status:
+                      type: string
+                      enum: [present, absent, late, excused, not_marked]
+                      description: Attendance status or 'not_marked' if no record exists
+                      example: "present"
+                    notes:
+                      type: string
+                      nullable: true
+                      description: Attendance notes if any
+                      example: "Arrived 5 minutes late"
+                    attendance_id:
+                      type: integer
+                      nullable: true
+                      description: Attendance record ID if exists
+                      example: 123
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/attendance/sessions:
+    get:
+      tags:
+        - Attendance
+      summary: Get attendance session dates
+      description: Retrieves all unique dates where attendance was recorded with summary statistics
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          description: Filter from start date (YYYY-MM-DD)
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          description: Filter to end date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Session dates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      description: Session date
+                      example: "2025-10-14"
+                    total_students:
+                      type: integer
+                      description: Total students with attendance recorded
+                      example: 16
+                    present_count:
+                      type: integer
+                      description: Number of students marked present
+                      example: 12
+                    absent_count:
+                      type: integer
+                      description: Number of students marked absent
+                      example: 2
+                    late_count:
+                      type: integer
+                      description: Number of students marked late
+                      example: 1
+                    excused_count:
+                      type: integer
+                      description: Number of students marked excused
+                      example: 1
         "401":
           description: Unauthorized
           content:
