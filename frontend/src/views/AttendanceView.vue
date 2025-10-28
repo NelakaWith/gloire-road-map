@@ -369,7 +369,7 @@ const getStatusSeverity = (status) => {
   const severityMap = {
     present: "success",
     absent: "danger",
-    late: "warning",
+    late: "warn",
     excused: "info",
   };
   return severityMap[status] || "secondary";
