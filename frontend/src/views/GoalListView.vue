@@ -1,7 +1,7 @@
 <template>
   <div class="pb-4">
-    <PageHeader :title="pageTitle" :showBack="true" backTo="/members" />
-    <main class="flex flex-col gap-8 mx-auto">
+    <PageHeader :title="pageTitle" :showBack="true" />
+    <main class="flex flex-col gap-4 mx-auto">
       <Card v-if="selectedStudent" class="p-6">
         <template #content>
           <div class="scrollable-panel">

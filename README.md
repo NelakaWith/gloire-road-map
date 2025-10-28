@@ -1,150 +1,228 @@
-# Gloire Road Map - Goal Tracking App
+# 🎯 Gloire Road Map
 
-## What this repo is now
+> A comprehensive goal tracking and student management platform with real-time analytics and attendance management.
 
-Gloire Road Map is a small goal-tracking app (admin + students) with a Vue 3 frontend and an Express backend backed by MySQL. The project now includes an MVP Analytics module (backend + tests + frontend components) and a CI/CD workflow that deploys the app to a droplet via SSH.
+[![CI/CD](https://github.com/NelakaWith/gloire-road-map/actions/workflows/deploy.yml/badge.svg)](https://github.com/NelakaWith/gloire-road-map/actions)
+![Vue 3](https://img.shields.io/badge/Vue.js-3.4-green)
+![Node.js](https://img.shields.io/badge/Node.js-Express-blue)
+![MySQL](https://img.shields.io/badge/Database-MySQL-orange)
 
-This README summarizes the current state, a short case study that shows the analytics flow, what was implemented recently, and recommended next steps.
+## 📋 Project Overview
 
-## Stack
+Gloire Road Map is a modern full-stack application designed for educational institutions and training programs to track student goals, manage attendance, and analyze performance metrics. The platform provides separate interfaces for administrators and students, featuring real-time analytics, session-based attendance marking, and comprehensive goal management.
 
-- Frontend: Vue 3 + Vite (+ PrimeVue components)
-- Backend: Node.js + Express
-- Database: MySQL
-- CI/CD: GitHub Actions (release + deploy workflows)
+## 🚀 Tech Stack
 
-## Quick status (high level)
+### Frontend
 
-- Analytics endpoints (backend): throughput, backlog, overdue, time-to-complete — implemented and covered by unit tests.
-- Frontend: `AnalyticsView.vue` + chart components scaffolded and wired for the MVP (charts and KPI cards present). Additional UI polish remains.
-- DB: seed SQL and index suggestions were added to `_db/` (seeds and non-destructive index SQL included).
-- CI/CD: Fixed a workflow SyntaxError and improved deployment status handling (exports clean DEPLOYMENT_ID and attempts an `in_progress` status). Note: GitHub Environment protection (required approvals) can still show a deployment as "Ready to deploy (idle)" until released.
+- **Vue 3** with Composition API
+- **PrimeVue** component library with custom themes
+- **Vite** for build tooling and HMR
+- **Pinia** for state management
+- **Vue Router** for SPA navigation
+- **Chart.js & Vue-ChartJS** for data visualization
+- **Tailwind CSS** for styling
+- **Vitest** for testing
 
-## Simple case study — Admin inspects last 30 days throughput
+### Backend
 
-1. Admin opens the Analytics page and selects "Last 30 days" and `group_by=day`.
-2. Frontend requests: GET /api/analytics/throughput?start_date=2025-08-26&end_date=2025-09-25&group_by=day
-3. Backend returns a zero-filled time series with created/completed counts and completion_rate for each day.
+- **Node.js** with Express framework
+- **Sequelize ORM** with MySQL database
+- **JWT** authentication with bcrypt
+- **Swagger** for API documentation
+- **Express Rate Limiting** for security
+- **Vitest** for unit testing
 
-Example (trimmed) response:
+### DevOps & Tools
 
-```json
-[
-  {
-    "label": "2025-09-01",
-    "start": "2025-09-01",
-    "end": "2025-09-01",
-    "created": 5,
-    "completed": 3,
-    "completion_rate": 60
-  },
-  {
-    "label": "2025-09-02",
-    "start": "2025-09-02",
-    "end": "2025-09-02",
-    "created": 2,
-    "completed": 2,
-    "completion_rate": 100
-  }
-]
+- **GitHub Actions** CI/CD pipeline
+- **Semantic Release** for versioning
+- **Husky** pre-commit hooks
+- **Commitizen** for conventional commits
+- **PM2** for production process management
+
+## ✨ Key Features
+
+### 🎯 Goal Management
+
+- Create, edit, and track student goals with deadlines
+- Bulk operations and advanced filtering
+- Progress tracking with visual indicators
+- Goal completion analytics
+
+### 📊 Advanced Analytics
+
+- **Throughput Analysis**: Goal creation vs completion rates
+- **Time-to-Complete**: Statistical analysis with P90 metrics
+- **Backlog Management**: Age buckets and overdue tracking
+- **Visual Charts**: Interactive time-series and histogram displays
+
+### 👨‍🎓 Attendance System
+
+- Session-based attendance marking with visual student grids
+- Bulk attendance operations (mark all present/absent)
+- Date-based attendance sheets
+- Real-time attendance status updates
+
+### 🔐 Authentication & Security
+
+- JWT-based authentication
+- Role-based access control (Admin/Student)
+- Rate limiting and input validation
+- Secure session management
+
+### 📱 Modern UI/UX
+
+- Responsive design for all devices
+- Dark/light theme support
+- Interactive data tables with sorting and filtering
+- Modal dialogs for seamless workflows
+
+## 📁 Project Structure
+
+```
+gloire-road-map/
+├── frontend/                 # Vue 3 SPA
+│   ├── src/
+│   │   ├── components/       # Reusable Vue components
+│   │   ├── views/           # Page-level components
+│   │   ├── stores/          # Pinia state management
+│   │   ├── router/          # Vue Router configuration
+│   │   └── assets/          # Static assets
+│   └── test/                # Frontend test suites
+├── backend/                 # Express.js API
+│   ├── routes/              # API route handlers
+│   ├── services/            # Business logic layer
+│   ├── models.js            # Sequelize models
+│   ├── middleware/          # Custom middleware
+│   └── test/               # Backend test suites
+├── _db/                    # Database scripts and seeds
+├── .github/workflows/      # CI/CD pipeline
+└── scripts/               # Deployment and utility scripts
 ```
 
-From that chart and the KPI cards the admin can quickly see whether throughput is improving and whether backlog is growing.
+## 🔑 Key Concepts
 
-## What we implemented (recent & important)
+### Analytics Engine
 
-- Backend analytics endpoints with unit tests:
-  - GET /api/analytics/throughput — created vs completed time-series (server-side zero-fill, completion rate)
-  - GET /api/analytics/backlog — backlog totals and age buckets
-  - GET /api/analytics/overdue — overdue vs on-time completion metrics
-  - GET /api/analytics/time-to-complete — mean, median, p90 and histogram buckets
-- Frontend MVP components for Analytics (filters, KPI cards, charts).
-- Unit tests (Vitest) for backend analytics functions — passing locally.
-- CI workflow fixes for `deploy.yml`: removed duplicate declarations that caused a SyntaxError; now exports a clean `DEPLOYMENT_ID` and attempts an `in_progress` status so deployments are correctly tracked where possible.
-- DB artifacts: seed SQL and index creation snippets added under `_db/`.
+The platform includes a sophisticated analytics engine that processes goal and attendance data to provide actionable insights:
 
-## How to run locally (quick)
+- **Zero-filled Time Series**: Ensures consistent data visualization even with sparse data
+- **Statistical Aggregations**: Mean, median, P90 calculations for performance metrics
+- **Age Buckets**: Categorizes goals and attendance by time periods
+- **Completion Rates**: Tracks success ratios across different time periods
 
-1. Install prerequisites: Node.js and MySQL.
-2. Import DB schema and seed data (see `mysql/` or `_db/` where provided).
-3. In `backend/` and `frontend/` run `npm install`.
-4. Copy `.env.example` to `.env` and adjust database and secrets.
-5. Run backend and frontend in development mode (or use `start-dev.bat` on Windows if present). Default frontend dev port: 5173.
+### Session-Based Attendance
 
-## How deploys work (notes)
+Innovative attendance marking system that allows:
 
-- The GitHub Actions deploy workflow creates a GitHub Deployment and copies files to the droplet via `scp`, then runs a remote `ssh` script to install and restart services (pm2 for backend, build frontend on the host). Secrets required: `DROPLET_HOST`, `DROPLET_USER`, `DROPLET_SSH_KEY`.
-- The workflow now writes `DEPLOYMENT_ID` to GITHUB_ENV and tries to set an `in_progress` status right after creation; the final `success`/`failure` steps will set the status after the remote deploy step.
-- If you see "Ready to deploy (idle)" in the GitHub UI, check: repository Settings → Environments → production. If that environment requires reviewers/approvals, a human approval is required to release the deployment. Alternatively, remove the `environment` property in the workflow to avoid gating (not recommended for production).
+- Visual grid layout of all students in a session
+- One-click status changes with immediate visual feedback
+- Bulk operations for efficient classroom management
+- Historical attendance tracking and reporting
 
-## Next steps (recommended)
+## 🛠️ Setup Instructions
 
-1. Wire frontend charts fully to the analytics endpoints (if any leftover wiring remains). Add smoothing and presets (30/90/365 days).
-2. Add integration tests (supertest) against a seeded test DB to validate full endpoint behavior end-to-end.
-3. Add short TTL caching (Redis or in-memory) for heavy aggregations (60–300s) to keep response latency low in staging/production.
-4. Add role-based access to the Analytics page (admin-only) and a feature flag for rollout.
-5. If performance becomes a concern, add a nightly aggregation job that writes summary rows to a `daily_goal_stats` table and have endpoints read that table.
+### Prerequisites
 
-## Where to look in the codebase
+- Node.js (v16 or higher)
+- MySQL (v8 or higher)
+- Git
 
-- Backend analytics code: `backend/services/analytics.js` and `backend/routes/analytics.js`
-- Frontend analytics view: `frontend/src/views/AnalyticsView.vue` (and chart components)
-- DB scripts and seeds: `_db/` (seed files and index SQL)
-- CI deploy workflow: `.github/workflows/deploy.yml`
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/NelakaWith/gloire-road-map.git
+   cd gloire-road-map
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   # Install root dependencies
+   npm install
+
+   # Install backend dependencies
+   cd backend && npm install
+
+   # Install frontend dependencies
+   cd ../frontend && npm install
+   ```
+
+3. **Database setup**
+
+   ```bash
+   # Create MySQL database
+   mysql -u root -p -e "CREATE DATABASE gloire_roadmap;"
+
+   # Import schema and seed data
+   mysql -u root -p gloire_roadmap < _db/schema.sql
+   mysql -u root -p gloire_roadmap < _db/seeds.sql
+   ```
+
+4. **Environment configuration**
+
+   ```bash
+   # Copy environment template
+   cp backend/.env.example backend/.env
+
+   # Edit .env with your database credentials
+   # DB_HOST=localhost
+   # DB_USER=root
+   # DB_PASS=your_password
+   # DB_NAME=gloire_roadmap
+   # JWT_SECRET=your_jwt_secret
+   ```
+
+5. **Start development servers**
+
+   ```bash
+   # Backend (port 3000)
+   cd backend && npm run dev
+
+   # Frontend (port 5173)
+   cd frontend && npm run dev
+   ```
+
+6. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
+   - API Documentation: http://localhost:3000/api-docs
+
+### Testing
+
+```bash
+# Run backend tests
+cd backend && npm test
+
+# Run frontend tests
+cd frontend && npm test
+```
+
+### Production Deployment
+
+The project includes automated CI/CD pipeline using GitHub Actions. Configure the following secrets:
+
+- `DROPLET_HOST`: Server IP address
+- `DROPLET_USER`: SSH username
+- `DROPLET_SSH_KEY`: Private SSH key
+
+## 👨‍💻 Author
+
+**Nelaka Withanage**
+
+- GitHub: [@NelakaWith](https://github.com/NelakaWith)
+- Portfolio: [nelakawith.netlify.app](https://nelakawith.netlify.app/)
+- LinkedIn: [in/nelaka-withanage/](https://www.linkedin.com/in/nelaka-withanage/)
 
 ---
 
-## Troubleshooting (short)
+## 📄 License
 
-- If the deployment shows as idle: inspect the Actions create-deployment step logs and check repository environment protections (approvals) in Settings → Environments.
-- If builds fail during CI: view the Actions log for the failing step; common causes are missing secrets or node module audit/fetch warnings (update packages as needed).
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## Full app case study — end-to-end usage
-
-This case study walks through a typical complete workflow using the full app (Admin + Student + Analytics) and shows how the analytics features support operational decisions.
-
-Scenario: A training program admin onboards a new cohort of 50 students and wants to monitor progress over the first 90 days.
-
-1. Onboarding
-
-- Admin creates 50 student accounts (or imports via CSV) and assigns each an initial set of goals (2–5 per student) with target dates spread over the next 90 days.
-- Expected metric: initial `total_goals` = ~150–250.
-
-2. Week 1 — early adoption monitoring
-
-- Students start completing small goals. Admin checks the Analytics page and sets the date range to the first 7 days.
-- Key views: throughput (created vs completed), top students, backlog age buckets.
-- Operational action: identify students with 0 completions and send a reminder email or schedule a mentor check-in.
-
-3. Week 4 — intervention and SLA measurement
-
-- Admin filters analytics to the last 30 days, examines time-to-complete distribution and p90 metric. If p90 exceeds SLA (e.g., 21 days), investigate goal complexity or mentoring gaps.
-- Key views: time-to-complete histogram, overdue rate, top students by completions.
-- Operational action: create a focused intervention for students whose average time-to-complete is in the top quartile.
-
-4. Month 3 — retention and cohort comparison
-
-- Admin compares cohorts (month-over-month) to measure retention: % of students who completed at least one goal in the last 30 days.
-- Key views: cohort retention (planned extension), monthly active students (MAS), average goals per active student.
-- Operational action: promote high-performing students, iterate onboarding content for cohorts with low retention.
-
-5. Ongoing operations & deploys
-
-- CI deploys updates to the app. The deploy workflow records a GitHub Deployment and sets statuses as the run progresses; if your environment requires approvals, the deployment will wait until released.
-- Admins can rely on the analytics dashboard to watch the impact of product changes (e.g., a UI tweak to the goal creation flow) by comparing pre/post-release throughput and completion-rate changes.
-
-Metrics to watch (examples)
-
-- Total goals, completed goals, completion rate (pct)
-- Throughput: created vs completed per day/week/month
-- Backlog: open goals and age buckets (0–7, 8–30, 31–90, 90+ days)
-- Time-to-complete: median, mean, p90 and histogram
-- Overdue rate and on-time completion percentage
-
-How analytics informs decisions
-
-- Quickly identify cohorts or students needing attention (low completions, high avg days-to-complete).
-- Measure effectiveness of interventions (mentor outreach, reminders) by tracking throughput before and after.
-- Use p90 and histograms to set realistic SLAs and prioritise product investments that reduce completion friction.
+_This project demonstrates modern full-stack development practices, including clean architecture, comprehensive testing, automated deployment, and user-centered design principles._

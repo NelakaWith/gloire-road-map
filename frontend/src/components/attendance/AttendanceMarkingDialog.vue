@@ -100,7 +100,7 @@
             />
             <Button
               @click="setStatus(student, 'late')"
-              :severity="student.status === 'late' ? 'warning' : 'secondary'"
+              :severity="student.status === 'late' ? 'warn' : 'secondary'"
               :outlined="student.status !== 'late'"
               size="small"
               label="Late"

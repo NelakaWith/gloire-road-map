@@ -4,44 +4,6 @@
       <h1 class="dashboard-title">Dashboard</h1>
       <p class="dashboard-subtitle">Welcome back!</p>
     </div>
-
-    <div class="dashboard-grid">
-      <Card class="dashboard-card">
-        <template #title>Members</template>
-        <template #content>
-          <p class="card-text">Manage members and track their progress.</p>
-          <Button
-            label="View Members"
-            icon="pi pi-users"
-            @click="$router.push('/members')"
-          />
-        </template>
-      </Card>
-
-      <Card class="dashboard-card">
-        <template #title>Analytics</template>
-        <template #content>
-          <p class="card-text">Track overall progress and achievements.</p>
-          <Button
-            label="View Analytics"
-            icon="pi pi-chart-line"
-            @click="$router.push('/analytics')"
-          />
-        </template>
-      </Card>
-
-      <Card class="dashboard-card">
-        <template #title>Attendance</template>
-        <template #content>
-          <p class="card-text">Track overall attendance and participation.</p>
-          <Button
-            label="View Attendance"
-            icon="pi pi-calendar"
-            @click="$router.push('/attendance')"
-          />
-        </template>
-      </Card>
-    </div>
     <LeaderBoard />
   </div>
 </template>
@@ -52,7 +14,7 @@ import LeaderBoard from "../components/dashboard/LeaderBoard.vue";
 
 <style scoped>
 .dashboard {
-  @apply space-y-8 pb-4;
+  @apply space-y-4 pb-4;
 }
 
 .dashboard-header {
