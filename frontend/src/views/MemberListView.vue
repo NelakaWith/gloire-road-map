@@ -1,7 +1,7 @@
 <template>
   <div class="pb-4">
     <PageHeader title="Members" :showBack="true" />
-    <main class="flex flex-col gap-8 mx-auto">
+    <main class="flex flex-col gap-4 mx-auto">
       <Card class="p-6">
         <template #content>
           <div class="scrollable-panel mb-4">
@@ -16,7 +16,6 @@
                   <div
                     class="flex items-center gap-1 mr-4 rounded-full px-4 py-1 bg-yellow-100 text-yellow-800"
                   >
-                    <i class="pi pi-trophy"></i>
                     <span class="font-bold">{{ student.points }}</span>
                   </div>
                   <span class="font-medium">{{ student.name }}</span>

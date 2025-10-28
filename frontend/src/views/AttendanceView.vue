@@ -10,7 +10,7 @@
       </template>
     </PageHeader>
 
-    <main class="flex flex-col gap-8 mx-auto">
+    <main class="flex flex-col gap-4 mx-auto">
       <!-- Date Filter & Session Overview -->
       <Card>
         <template #content>
