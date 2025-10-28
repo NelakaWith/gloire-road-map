@@ -1,14 +1,14 @@
 <template>
   <header :class="containerClass">
     <div class="flex items-center">
-      <router-link
+      <button
         v-if="showBack"
-        :to="backTo"
+        @click="goBack"
         class="flex items-center text-gray-600 hover:text-gray-900 bg-transparent border-0 p-0 mr-2"
         aria-label="Go back"
       >
         <i class="pi pi-chevron-left"></i>
-      </router-link>
+      </button>
       <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
     </div>
 
@@ -19,18 +19,23 @@
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 const props = defineProps({
   title: { type: String, required: true },
   showBack: { type: Boolean, default: false },
-  backTo: {
-    type: String,
-    default: "/dashboard",
-  },
   containerClass: {
     type: String,
     default: "flex justify-between items-center mx-auto py-4",
   },
 });
-</script>
 
-<!-- Removed custom style block; Tailwind classes handle icon color -->
+/**
+ * Navigate back using browser history
+ */
+const goBack = () => {
+  router.back();
+};
+</script>
