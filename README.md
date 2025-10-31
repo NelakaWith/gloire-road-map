@@ -201,6 +201,20 @@ cd backend && npm test
 cd frontend && npm test
 ```
 
+#### SOLID Architecture Testing Framework
+
+This project includes a comprehensive enterprise-grade testing framework with 370+ test cases covering the SOLID architecture implementation:
+
+📖 **[View Testing Framework Documentation](backend/tests/README.md)**
+
+Key testing features:
+
+- **100% method coverage** across all repositories and services
+- **Jest-based framework** with custom test runner and utilities
+- **Mock implementations** with realistic data factories
+- **SOLID principles validation** through comprehensive unit tests
+- **CI/CD integration** ready for automated testing pipelines
+
 ### Production Deployment
 
 The project includes automated CI/CD pipeline using GitHub Actions. Configure the following secrets:
