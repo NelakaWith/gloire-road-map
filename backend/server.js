@@ -134,14 +134,10 @@ sequelize
   .sync()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(
-        `\x1b[35m Backend running on http://localhost:${PORT} \x1b[35m`
-      );
-      console.log(
-        `\x1b[35m API docs available at http://localhost:${PORT}/api-docs \x1b[35m`
-      );
+      console.log(`✅ Backend running on http://localhost:${PORT}`);
+      console.log(`📑 API docs available at http://localhost:${PORT}/api-docs`);
     });
   })
   .catch((err) => {
-    console.error("Failed to sync database:", err);
+    console.error("🚨 Failed to sync database:", err);
   });
