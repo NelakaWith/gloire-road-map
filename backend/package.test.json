@@ -1,0 +1,38 @@
+{
+  "name": "gloire-road-map-backend-tests",
+  "version": "1.0.0",
+  "description": "Unit tests for Gloire Road Map backend with SOLID architecture",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:repositories": "jest --testPathPattern=repositories",
+    "test:services": "jest --testPathPattern=services",
+    "test:unit": "jest --testPathIgnorePatterns=integration",
+    "test:integration": "jest --testPathPattern=integration"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js", "**/tests/**/*.spec.js"],
+    "collectCoverageFrom": [
+      "repositories/**/*.js",
+      "services/**/*.js",
+      "!**/node_modules/**",
+      "!**/tests/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"],
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "transform": {},
+    "extensionsToTreatAsEsm": [".js"],
+    "globals": {
+      "__DEV__": true
+    }
+  }
+}
