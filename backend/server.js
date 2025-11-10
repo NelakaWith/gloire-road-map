@@ -89,7 +89,38 @@ app.use(
 app.use(generalLimiter);
 
 // Middleware configuration
-app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(",").map((url) => url.trim())
+        : [];
+
+      // In development, allow localhost origins
+      if (process.env.NODE_ENV !== "production") {
+        if (
+          origin.startsWith("http://localhost:") ||
+          origin.startsWith("http://127.0.0.1:")
+        ) {
+          return callback(null, true);
+        }
+      }
+
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Reject the request
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  })
+);
 app.use(express.json());
 
 /**

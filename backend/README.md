@@ -26,6 +26,39 @@ The API will be available on the port configured in `.env` (default: 3000).
 - `PORT` — server port
 - `JWT_SECRET` — secret for JWT tokens
 - `NODE_ENV` — `development` or `production`
+- `CORS_ORIGIN` — comma-separated list of allowed origins (critical for security)
+
+## Security Configuration
+
+### CORS Setup
+
+CORS is configured to be restrictive in production while allowing development flexibility:
+
+**Development:**
+
+- Leave `CORS_ORIGIN` empty or undefined
+- Automatically allows `localhost` and `127.0.0.1` origins
+
+**Production:**
+
+- Set `CORS_ORIGIN` to your exact domain(s): `https://yourdomain.com,https://www.yourdomain.com`
+- Never use wildcards (`*`) in production
+- Only allow HTTPS origins
+
+**Example .env for production:**
+
+```bash
+NODE_ENV=production
+CORS_ORIGIN=https://yourapp.com,https://www.yourapp.com
+```
+
+### Security Features
+
+- **Helmet.js**: Security headers (CSP, HSTS, XSS protection, etc.)
+- **Rate Limiting**: 100 requests/15min general, 5 requests/15min for auth
+- **JWT Authentication**: Bearer token validation
+- **bcrypt Password Hashing**: Secure password storage
+- **Sequelize ORM**: SQL injection protection
 
 ## Analytics endpoints (important)
 
