@@ -10,6 +10,8 @@ import router from "./router";
 import registerPrime from "./plugins/prime-components";
 
 const app = createApp(App);
+
+// Configure PrimeVue with Aura theme and custom options
 app.use(PrimeVue, {
   theme: {
     preset: Aura,
@@ -20,16 +22,13 @@ app.use(PrimeVue, {
     },
   },
 });
+
+// Set up Pinia store and Vue Router
 const pinia = createPinia();
 app.use(pinia);
+// Set up Vue Router
 app.use(router);
 // register primevue components globally
 registerPrime(app);
-
-// Validate authentication on app startup (call /me) so UI stays in sync after refresh
-import { useAuthStore } from "./store/auth";
-const authStore = useAuthStore(pinia);
-// fire and forget; router.beforeEach also validates when navigating
-authStore.fetchMe().catch(() => {});
-
+// Validate saved token on app startup (call /me) so UI stays in sync after refresh
 app.mount("#app");

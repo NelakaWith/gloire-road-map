@@ -80,15 +80,31 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
-  // If authenticated but no user loaded, try to validate via /me
-  if (authStore.isAuthenticated && !authStore.user) {
-    await authStore.fetchMe();
-  }
-
-  if (requiresAuth && !authStore.isAuthenticated) {
-    next("/auth/login");
-  } else if (to.path === "/auth/login" && authStore.isAuthenticated) {
-    next("/");
+  if (requiresAuth) {
+    // For protected routes, always check authentication status
+    // This handles both initial load and navigation to protected routes
+    try {
+      const result = await authStore.fetchMe();
+      if (result.success) {
+        next();
+      } else {
+        next("/auth/login");
+      }
+    } catch (error) {
+      next("/auth/login");
+    }
+  } else if (to.path === "/auth/login") {
+    // Check if user is already authenticated when trying to access login
+    try {
+      const result = await authStore.fetchMe();
+      if (result.success) {
+        next("/");
+      } else {
+        next();
+      }
+    } catch (error) {
+      next();
+    }
   } else {
     next();
   }
