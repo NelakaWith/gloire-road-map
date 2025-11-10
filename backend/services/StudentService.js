@@ -3,7 +3,7 @@
  * @description Concrete implementation of IStudentService providing business logic operations
  * for student management. Handles student validation, profile management, analytics,
  * and comprehensive dashboard functionality.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

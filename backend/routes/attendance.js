@@ -2,7 +2,7 @@
  * @fileoverview Attendance management routes
  * @description Handles all attendance-related API endpoints including recording,
  * updating, filtering, and statistical analysis of student attendance
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

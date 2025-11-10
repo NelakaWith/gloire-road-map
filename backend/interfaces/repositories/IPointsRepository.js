@@ -2,7 +2,7 @@
  * @fileoverview Points Repository Interface
  * @description Defines the contract for points and points log data access operations.
  * This interface abstracts points-related database operations from business logic.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

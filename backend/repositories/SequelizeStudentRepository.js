@@ -2,7 +2,7 @@
  * @fileoverview Sequelize Student Repository Implementation
  * @description Concrete implementation of IStudentRepository using Sequelize ORM.
  * Handles all student-related database operations using MySQL through Sequelize.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

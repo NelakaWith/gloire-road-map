@@ -2,7 +2,7 @@
  * @fileoverview Jest Test Setup Configuration
  * @description Global test setup for Jest testing framework.
  * Configures mocks, test utilities, and global test environment.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

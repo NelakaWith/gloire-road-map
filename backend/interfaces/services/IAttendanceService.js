@@ -3,7 +3,7 @@
  * @description Abstract interface defining business logic operations for attendance management.
  * This interface provides a contract for attendance-related business operations including
  * tracking, validation, analytics, and reporting functionality.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

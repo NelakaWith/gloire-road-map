@@ -2,7 +2,7 @@
  * @fileoverview Attendance Repository Interface
  * @description Defines the contract for attendance data access operations.
  * This interface abstracts attendance-related database operations from business logic.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

@@ -2,7 +2,7 @@
  * @fileoverview Sequelize Goal Repository Implementation
  * @description Concrete implementation of IGoalRepository using Sequelize ORM.
  * Handles all goal-related database operations using MySQL through Sequelize.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

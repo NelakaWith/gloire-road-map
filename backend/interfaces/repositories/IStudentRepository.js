@@ -2,7 +2,7 @@
  * @fileoverview Student Repository Interface
  * @description Defines the contract for student data access operations.
  * This interface abstracts student-related database operations from business logic.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

@@ -3,7 +3,7 @@
  * @description Abstract interface defining business logic operations for student management.
  * This interface provides a contract for student-related business operations including
  * profile management, academic tracking, and comprehensive analytics.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

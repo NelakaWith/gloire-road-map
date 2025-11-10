@@ -2,7 +2,7 @@
  * @fileoverview Repository Interfaces Barrel Export
  * @description Provides centralized exports for all repository interfaces.
  * This allows importing all repository interfaces from a single module.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

@@ -1,7 +1,7 @@
 /**
  * @fileoverview Authentication routes
  * @description Handles user registration, login, and JWT token management
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

@@ -2,7 +2,7 @@
  * @fileoverview Sequelize Attendance Repository Implementation
  * @description Concrete implementation of IAttendanceRepository using Sequelize ORM.
  * Handles all attendance-related database operations using MySQL through Sequelize.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

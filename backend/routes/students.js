@@ -2,7 +2,7 @@
  * @fileoverview Student management routes
  * @description Handles all student-related API endpoints including CRUD operations,
  * attendance statistics, and goal management
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

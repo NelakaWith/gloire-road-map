@@ -2,7 +2,7 @@
  * @fileoverview Goal Repository Interface
  * @description Defines the contract for goal data access operations.
  * This interface abstracts goal-related database operations from business logic.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

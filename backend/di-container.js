@@ -2,7 +2,7 @@
  * @fileoverview Dependency Injection Container
  * @description Factory for creating and wiring up SOLID architecture components
  * with proper dependency injection. Provides centralized service instantiation.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

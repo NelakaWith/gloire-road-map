@@ -3,7 +3,7 @@
  * @description Abstract interface defining business logic operations for points management.
  * This interface provides a contract for points-related business operations including
  * earning, redemption, validation, analytics, and gamification features.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

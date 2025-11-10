@@ -3,7 +3,7 @@
 /**
  * @fileoverview Test Runner Script
  * @description Utility script to run specific test suites or all tests with proper configuration
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

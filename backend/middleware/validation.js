@@ -1,7 +1,7 @@
 /**
  * @fileoverview Input validation middleware using Joi
  * @description Comprehensive validation schemas for all API endpoints
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

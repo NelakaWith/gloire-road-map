@@ -2,7 +2,7 @@
  * @fileoverview Points Service Unit Tests
  * @description Comprehensive unit tests for PointsService business logic operations.
  * Tests points management, rewards system, leaderboards, and integration with repositories.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

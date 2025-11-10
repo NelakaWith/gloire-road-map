@@ -2,7 +2,7 @@
  * @fileoverview Attendance Service Unit Tests
  * @description Comprehensive unit tests for AttendanceService business logic operations.
  * Tests attendance tracking, analytics, report generation, and integration with repositories.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

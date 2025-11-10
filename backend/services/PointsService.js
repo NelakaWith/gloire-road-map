@@ -3,7 +3,7 @@
  * @description Concrete implementation of IPointsService providing business logic operations
  * for points management. Handles points earning, redemption, validation, analytics, and
  * comprehensive gamification features.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

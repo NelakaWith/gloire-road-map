@@ -3,7 +3,7 @@
  * @description Abstract interface defining business logic operations for goal management.
  * This interface provides a contract for goal-related business operations that go beyond
  * simple CRUD operations, including goal validation, completion tracking, and analytics.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

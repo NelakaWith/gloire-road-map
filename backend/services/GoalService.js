@@ -3,7 +3,7 @@
  * @description Concrete implementation of IGoalService providing business logic operations
  * for goal management. Handles goal validation, completion tracking, analytics, and
  * integration with points system.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

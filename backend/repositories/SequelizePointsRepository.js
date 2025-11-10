@@ -2,7 +2,7 @@
  * @fileoverview Sequelize Points Repository Implementation
  * @description Concrete implementation of IPointsRepository using Sequelize ORM.
  * Handles all points-related database operations using MySQL through Sequelize.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

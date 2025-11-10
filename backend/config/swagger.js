@@ -1,7 +1,7 @@
 /**
  * @fileoverview Swagger/OpenAPI configuration
  * @description Configuration for automatic API documentation generation using external spec file
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 import YAML from "yamljs";

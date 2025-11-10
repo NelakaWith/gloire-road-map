@@ -1,7 +1,7 @@
 /**
  * @fileoverview Points system routes
  * @description Handles points-related API endpoints including leaderboards and point tracking
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

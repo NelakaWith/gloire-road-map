@@ -2,7 +2,7 @@
  * @fileoverview Goal management routes
  * @description Handles CRUD operations for student goals, including goal completion,
  * points allocation, and progress tracking
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

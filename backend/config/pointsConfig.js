@@ -1,7 +1,7 @@
 /**
  * @fileoverview Points system configuration
  * @description Centralized configuration for point values used throughout the application
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

@@ -2,7 +2,7 @@
  * @fileoverview Goal Service Unit Tests
  * @description Comprehensive unit tests for GoalService business logic operations.
  * Tests validation, goal management, analytics, and integration with repositories.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

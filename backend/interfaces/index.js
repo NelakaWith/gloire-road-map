@@ -2,7 +2,7 @@
  * @fileoverview Main Interfaces Barrel Export
  * @description Provides centralized exports for all interfaces in the application.
  * This allows importing all interfaces from a single module.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

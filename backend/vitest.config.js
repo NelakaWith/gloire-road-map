@@ -2,7 +2,7 @@
  * @fileoverview Vitest Configuration for SOLID Architecture Testing
  * @description Comprehensive test configuration for the Gloire Road Map backend
  * covering repository pattern, service layer, and SOLID principles validation
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

@@ -1,7 +1,7 @@
 /**
  * @fileoverview JWT Authentication middleware
  * @description Provides JWT token verification middleware for protecting API routes
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

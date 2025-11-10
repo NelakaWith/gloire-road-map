@@ -2,7 +2,7 @@
  * @fileoverview Main Express server application
  * @description Entry point for the Gloire Road Map backend API server.
  * Configures middleware, routes, database connection, and starts the HTTP server.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

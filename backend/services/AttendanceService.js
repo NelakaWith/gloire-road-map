@@ -3,7 +3,7 @@
  * @description Concrete implementation of IAttendanceService providing business logic operations
  * for attendance management. Handles attendance validation, tracking, analytics, and
  * comprehensive reporting functionality.
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

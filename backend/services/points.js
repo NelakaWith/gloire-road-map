@@ -1,7 +1,7 @@
 /**
  * @fileoverview Points calculation service
  * @description Business logic for calculating and retrieving student points and leaderboards
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 

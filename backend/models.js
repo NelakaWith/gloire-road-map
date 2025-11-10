@@ -1,7 +1,7 @@
 /**
  * @fileoverview Database models and Sequelize configuration
  * @description Defines all database models, their relationships, and database connection setup
- * @author Gloire Road Map Team
+ * @author @NelakaWith
  * @version 1.0.0
  */
 
