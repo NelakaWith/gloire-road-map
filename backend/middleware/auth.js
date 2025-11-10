@@ -10,10 +10,10 @@ import jwt from "jsonwebtoken";
 /**
  * JWT Authentication middleware
  * @function authenticateJWT
- * @description Verifies JWT tokens in Authorization header and attaches user info to request
+ * @description Verifies JWT tokens from httpOnly cookies and attaches user info to request
  * @param {Object} req - Express request object
- * @param {Object} req.headers - Request headers
- * @param {string} req.headers.authorization - Authorization header with Bearer token
+ * @param {Object} req.cookies - Request cookies
+ * @param {string} req.cookies.auth_token - JWT token from httpOnly cookie
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  * @returns {void} Calls next() on success, sends error response on failure
@@ -23,13 +23,12 @@ import jwt from "jsonwebtoken";
  * // Usage in routes:
  * app.use('/api/protected', authenticateJWT, protectedRoutes);
  *
- * // Authorization header format:
- * Authorization: Bearer <jwt_token>
+ * // Cookie format:
+ * auth_token=<jwt_token>
  */
 export function authenticateJWT(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split(" ")[1];
+  const token = req.cookies.auth_token;
+  if (token) {
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) return res.status(403).json({ message: "Invalid token" });
       req.user = user;

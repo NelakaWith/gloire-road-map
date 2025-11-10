@@ -8,6 +8,7 @@
 
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -122,6 +123,9 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Parse cookies
+app.use(cookieParser());
 
 /**
  * API Routes Configuration

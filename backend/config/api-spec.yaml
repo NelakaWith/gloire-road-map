@@ -27,11 +27,11 @@ servers:
 
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Enter JWT token obtained from /api/auth/login
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+      description: JWT token stored in httpOnly cookie. Login at /api/auth/login to set the cookie.
 
   schemas:
     Student:
@@ -204,30 +204,30 @@ components:
           description: Additional error details
           example: Student with ID 999 does not exist
 
-    SuccessMessage:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Success message
-          example: Operation completed successfully
+      SuccessMessage:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Success message
+            example: Operation completed successfully
 
-security:
-  - bearerAuth: []
+  security:
+    - cookieAuth: []
 
-tags:
-  - name: Authentication
-    description: User authentication and authorization
-  - name: Students
-    description: Student management operations
-  - name: Goals
-    description: Goal tracking and management
-  - name: Attendance
-    description: Attendance recording and monitoring
-  - name: Points
-    description: Points system and leaderboards
-  - name: Analytics
-    description: Analytics and reporting
+  tags:
+    - name: Authentication
+      description: User authentication and authorization
+    - name: Students
+      description: Student management operations
+    - name: Goals
+      description: Goal tracking and management
+    - name: Attendance
+      description: Attendance recording and monitoring
+    - name: Points
+      description: Points system and leaderboards
+    - name: Analytics
+      description: Analytics and reporting
 
 paths:
   # Authentication Endpoints

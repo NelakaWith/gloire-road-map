@@ -187,20 +187,75 @@ router.post("/login", validate(authSchemas.login), async (req, res) => {
     process.env.JWT_SECRET,
     { expiresIn: "8h" }
   );
-  res.json({ token });
+
+  // Set httpOnly cookie with JWT token
+  res.cookie("auth_token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // Use HTTPS in production
+    sameSite: "strict",
+    maxAge: 8 * 60 * 60 * 1000, // 8 hours in milliseconds
+  });
+
+  res.json({
+    message: "Login successful",
+    user: { id: user.id, userName: user.user_name, email: user.email },
+  });
 });
 
 // Get current user
 router.get("/me", async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer "))
+  const token = req.cookies.auth_token;
+  if (!token)
     return res.status(401).json({ message: "Invalid Login, Please try again" });
-  const token = authHeader.split(" ")[1];
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
     res.json({ id: user.id, userName: user.userName, email: user.email });
   } catch {
     res.status(403).json({ message: "Invalid Login, Please try again" });
+  }
+});
+
+/**
+ * User logout
+ * @route POST /api/auth/logout
+ * @description Clears the authentication cookie to log out the user
+ * @access Private (requires valid JWT cookie)
+ * @returns {Object} Success message
+ * @throws {500} Internal server error if cookie clearing fails
+ *
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: User logout
+ *     description: Clears the authentication cookie to log out the user
+ *     tags: [Authentication]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post("/logout", (req, res) => {
+  try {
+    res.clearCookie("auth_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+    res.json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    res.status(500).json({ message: "Failed to logout" });
   }
 });
 
