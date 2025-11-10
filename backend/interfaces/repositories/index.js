@@ -11,6 +11,7 @@ export { IGoalRepository } from "./IGoalRepository.js";
 export { IStudentRepository } from "./IStudentRepository.js";
 export { IAttendanceRepository } from "./IAttendanceRepository.js";
 export { IPointsRepository } from "./IPointsRepository.js";
+export { IUserRepository } from "./IUserRepository.js";
 
 /**
  * Repository interface registry for dependency injection
@@ -21,6 +22,7 @@ export const REPOSITORY_INTERFACES = {
   IStudentRepository,
   IAttendanceRepository,
   IPointsRepository,
+  IUserRepository,
 };
 
 /**
@@ -32,4 +34,5 @@ export const REPOSITORY_INTERFACE_NAMES = {
   STUDENT: "IStudentRepository",
   ATTENDANCE: "IAttendanceRepository",
   POINTS: "IPointsRepository",
+  USER: "IUserRepository",
 };

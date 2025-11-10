@@ -9,8 +9,8 @@
 // Repository Interfaces
 export * from "./repositories/index.js";
 
-// Service Interfaces (will be added in Phase 1.4)
-// export * from './services/index.js';
+// Service Interfaces
+export * from "./services/index.js";
 
 /**
  * Interface types enumeration
