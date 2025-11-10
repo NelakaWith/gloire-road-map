@@ -8,6 +8,11 @@
 
 import express from "express";
 import { Student, Goal, Attendance, sequelize } from "../models.js";
+import {
+  validate,
+  studentSchemas,
+  paramSchemas,
+} from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -93,7 +98,7 @@ router.get("/", async (req, res) => {
  * @throws {400} Bad request if name is missing
  * @throws {500} Internal server error if database operation fails
  */
-router.post("/", async (req, res) => {
+router.post("/", validate(studentSchemas.create), async (req, res) => {
   const { name, contact_number, address, date_of_birth } = req.body;
   if (!name) return res.status(400).json({ message: "Name required" });
 
@@ -127,29 +132,34 @@ router.post("/", async (req, res) => {
  * @returns {Object} Success message
  * @throws {500} Internal server error if database operation fails
  */
-router.patch("/:id", async (req, res) => {
-  const { name, contact_number, address, date_of_birth } = req.body;
-  const { id } = req.params;
+router.patch(
+  "/:id",
+  validate(paramSchemas.id, "params"),
+  validate(studentSchemas.update),
+  async (req, res) => {
+    const { name, contact_number, address, date_of_birth } = req.body;
+    const { id } = req.params;
 
-  // normalize date_of_birth
-  let dob = null;
-  if (date_of_birth) {
-    const d = new Date(date_of_birth);
-    dob = isNaN(d.getTime()) ? null : d;
+    // normalize date_of_birth
+    let dob = null;
+    if (date_of_birth) {
+      const d = new Date(date_of_birth);
+      dob = isNaN(d.getTime()) ? null : d;
+    }
+
+    const update = {
+      ...(name !== undefined ? { name } : {}),
+      ...(contact_number !== undefined
+        ? { contact_number: contact_number || null }
+        : {}),
+      ...(address !== undefined ? { address: address || null } : {}),
+      ...(date_of_birth !== undefined ? { date_of_birth: dob } : {}),
+    };
+
+    await Student.update(update, { where: { id } });
+    res.json({ message: "Student updated" });
   }
-
-  const update = {
-    ...(name !== undefined ? { name } : {}),
-    ...(contact_number !== undefined
-      ? { contact_number: contact_number || null }
-      : {}),
-    ...(address !== undefined ? { address: address || null } : {}),
-    ...(date_of_birth !== undefined ? { date_of_birth: dob } : {}),
-  };
-
-  await Student.update(update, { where: { id } });
-  res.json({ message: "Student updated" });
-});
+);
 
 /**
  * Delete a student
@@ -161,7 +171,7 @@ router.patch("/:id", async (req, res) => {
  * @throws {500} Internal server error if database operation fails
  * @warning This action is irreversible and will delete all student data including goals and attendance
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", validate(paramSchemas.id, "params"), async (req, res) => {
   const { id } = req.params;
   await Student.destroy({ where: { id } });
   res.json({ message: "Student deleted" });
@@ -182,7 +192,7 @@ router.delete("/:id", async (req, res) => {
  * @throws {404} Student not found
  * @throws {500} Internal server error if database query fails
  */
-router.get("/:id", async (req, res) => {
+router.get("/:id", validate(paramSchemas.id, "params"), async (req, res) => {
   try {
     const { id } = req.params;
     const student = await Student.findByPk(id, {
@@ -242,14 +252,18 @@ router.get("/:id", async (req, res) => {
  * @returns {Array<Object>} Array of goal objects
  * @throws {500} Internal server error if database query fails
  */
-router.get("/:id/goals", async (req, res) => {
-  const { id } = req.params;
-  const goals = await Goal.findAll({
-    where: { student_id: id },
-    order: [["created_at", "DESC"]],
-  });
-  res.json(goals);
-});
+router.get(
+  "/:id/goals",
+  validate(paramSchemas.id, "params"),
+  async (req, res) => {
+    const { id } = req.params;
+    const goals = await Goal.findAll({
+      where: { student_id: id },
+      order: [["created_at", "DESC"]],
+    });
+    res.json(goals);
+  }
+);
 
 /**
  * Create a new goal for a student
@@ -263,12 +277,17 @@ router.get("/:id/goals", async (req, res) => {
  * @throws {400} Bad request if title is missing
  * @throws {500} Internal server error if database operation fails
  */
-router.post("/:id/goals", async (req, res) => {
-  const { id } = req.params;
-  const { title } = req.body;
-  if (!title) return res.status(400).json({ message: "Title required" });
-  await Goal.create({ student_id: id, title });
-  res.json({ message: "Goal added" });
-});
+router.post(
+  "/:id/goals",
+  validate(paramSchemas.id, "params"),
+  validate(studentSchemas.createGoal),
+  async (req, res) => {
+    const { id } = req.params;
+    const { title } = req.body;
+    if (!title) return res.status(400).json({ message: "Title required" });
+    await Goal.create({ student_id: id, title });
+    res.json({ message: "Goal added" });
+  }
+);
 
 export default router;

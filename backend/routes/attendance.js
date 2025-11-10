@@ -9,6 +9,11 @@
 import express from "express";
 import { Student, Attendance, sequelize } from "../models.js";
 import { Op } from "sequelize";
+import {
+  validate,
+  attendanceSchemas,
+  paramSchemas,
+} from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -25,58 +30,62 @@ const router = express.Router();
  * @returns {Array<Object>} Array of attendance records with student information
  * @throws {500} Internal server error if database query fails
  */
-router.get("/", async (req, res) => {
-  try {
-    const { student_id, date, start_date, end_date, status } = req.query;
+router.get(
+  "/",
+  validate(attendanceSchemas.query, "query"),
+  async (req, res) => {
+    try {
+      const { student_id, date, start_date, end_date, status } = req.query;
 
-    const whereClause = {};
+      const whereClause = {};
 
-    if (student_id) {
-      whereClause.student_id = student_id;
+      if (student_id) {
+        whereClause.student_id = student_id;
+      }
+
+      if (date) {
+        whereClause.date = date;
+      }
+
+      if (start_date && end_date) {
+        whereClause.date = {
+          [Op.between]: [start_date, end_date],
+        };
+      } else if (start_date) {
+        whereClause.date = {
+          [Op.gte]: start_date,
+        };
+      } else if (end_date) {
+        whereClause.date = {
+          [Op.lte]: end_date,
+        };
+      }
+
+      if (status) {
+        whereClause.status = status;
+      }
+
+      const attendance = await Attendance.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: Student,
+            attributes: ["id", "name"],
+          },
+        ],
+        order: [
+          ["date", "DESC"],
+          ["student_id", "ASC"],
+        ],
+      });
+
+      res.json(attendance);
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+      res.status(500).json({ message: "Failed to fetch attendance records" });
     }
-
-    if (date) {
-      whereClause.date = date;
-    }
-
-    if (start_date && end_date) {
-      whereClause.date = {
-        [Op.between]: [start_date, end_date],
-      };
-    } else if (start_date) {
-      whereClause.date = {
-        [Op.gte]: start_date,
-      };
-    } else if (end_date) {
-      whereClause.date = {
-        [Op.lte]: end_date,
-      };
-    }
-
-    if (status) {
-      whereClause.status = status;
-    }
-
-    const attendance = await Attendance.findAll({
-      where: whereClause,
-      include: [
-        {
-          model: Student,
-          attributes: ["id", "name"],
-        },
-      ],
-      order: [
-        ["date", "DESC"],
-        ["student_id", "ASC"],
-      ],
-    });
-
-    res.json(attendance);
-  } catch (error) {
-    console.error("Error fetching attendance:", error);
-    res.status(500).json({ message: "Failed to fetch attendance records" });
   }
-});
+);
 
 /**
  * Get attendance records for a specific student
@@ -89,36 +98,41 @@ router.get("/", async (req, res) => {
  * @returns {Array<Object>} Array of attendance records for the student
  * @throws {500} Internal server error if database query fails
  */
-router.get("/student/:student_id", async (req, res) => {
-  try {
-    const { student_id } = req.params;
-    const { start_date, end_date } = req.query;
+router.get(
+  "/student/:student_id",
+  validate(paramSchemas.studentId, "params"),
+  validate(attendanceSchemas.query, "query"),
+  async (req, res) => {
+    try {
+      const { student_id } = req.params;
+      const { start_date, end_date } = req.query;
 
-    const whereClause = { student_id };
+      const whereClause = { student_id };
 
-    if (start_date && end_date) {
-      whereClause.date = {
-        [Op.between]: [start_date, end_date],
-      };
+      if (start_date && end_date) {
+        whereClause.date = {
+          [Op.between]: [start_date, end_date],
+        };
+      }
+
+      const attendance = await Attendance.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: Student,
+            attributes: ["id", "name"],
+          },
+        ],
+        order: [["date", "DESC"]],
+      });
+
+      res.json(attendance);
+    } catch (error) {
+      console.error("Error fetching student attendance:", error);
+      res.status(500).json({ message: "Failed to fetch student attendance" });
     }
-
-    const attendance = await Attendance.findAll({
-      where: whereClause,
-      include: [
-        {
-          model: Student,
-          attributes: ["id", "name"],
-        },
-      ],
-      order: [["date", "DESC"]],
-    });
-
-    res.json(attendance);
-  } catch (error) {
-    console.error("Error fetching student attendance:", error);
-    res.status(500).json({ message: "Failed to fetch student attendance" });
   }
-});
+);
 
 /**
  * Record attendance for a student
@@ -136,7 +150,7 @@ router.get("/student/:student_id", async (req, res) => {
  * @throws {409} Conflict if attendance already exists for this student and date
  * @throws {500} Internal server error if database operation fails
  */
-router.post("/", async (req, res) => {
+router.post("/", validate(attendanceSchemas.create), async (req, res) => {
   try {
     const { student_id, date, status, notes } = req.body;
 
@@ -199,40 +213,45 @@ router.post("/", async (req, res) => {
  * @throws {404} Attendance record not found
  * @throws {500} Internal server error if database operation fails
  */
-router.patch("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status, notes } = req.body;
+router.patch(
+  "/:id",
+  validate(paramSchemas.id, "params"),
+  validate(attendanceSchemas.update),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, notes } = req.body;
 
-    const attendance = await Attendance.findByPk(id);
-    if (!attendance) {
-      return res.status(404).json({ message: "Attendance record not found" });
+      const attendance = await Attendance.findByPk(id);
+      if (!attendance) {
+        return res.status(404).json({ message: "Attendance record not found" });
+      }
+
+      const updateData = {
+        updated_at: new Date(),
+      };
+
+      if (status !== undefined) updateData.status = status;
+      if (notes !== undefined) updateData.notes = notes;
+
+      await Attendance.update(updateData, { where: { id } });
+
+      const updatedAttendance = await Attendance.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            attributes: ["id", "name"],
+          },
+        ],
+      });
+
+      res.json(updatedAttendance);
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+      res.status(500).json({ message: "Failed to update attendance" });
     }
-
-    const updateData = {
-      updated_at: new Date(),
-    };
-
-    if (status !== undefined) updateData.status = status;
-    if (notes !== undefined) updateData.notes = notes;
-
-    await Attendance.update(updateData, { where: { id } });
-
-    const updatedAttendance = await Attendance.findByPk(id, {
-      include: [
-        {
-          model: Student,
-          attributes: ["id", "name"],
-        },
-      ],
-    });
-
-    res.json(updatedAttendance);
-  } catch (error) {
-    console.error("Error updating attendance:", error);
-    res.status(500).json({ message: "Failed to update attendance" });
   }
-});
+);
 
 /**
  * Delete an attendance record
@@ -245,7 +264,7 @@ router.patch("/:id", async (req, res) => {
  * @throws {500} Internal server error if database operation fails
  * @warning This action is irreversible
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", validate(paramSchemas.id, "params"), async (req, res) => {
   try {
     const { id } = req.params;
 

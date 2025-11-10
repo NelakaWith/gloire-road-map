@@ -59,6 +59,7 @@ CORS_ORIGIN=https://yourapp.com,https://www.yourapp.com
 - **JWT Authentication**: Bearer token validation
 - **bcrypt Password Hashing**: Secure password storage
 - **Sequelize ORM**: SQL injection protection
+- **Joi Input Validation**: Comprehensive server-side validation for all endpoints
 
 ## Analytics endpoints (important)
 

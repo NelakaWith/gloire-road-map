@@ -9,6 +9,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../models.js";
+import { validate, authSchemas } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -78,7 +79,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/register", async (req, res) => {
+router.post("/register", validate(authSchemas.register), async (req, res) => {
   const { userName, email, password } = req.body;
   const count = await User.count();
   if (count > 0)
@@ -173,13 +174,8 @@ router.post("/register", async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/login", async (req, res) => {
+router.post("/login", validate(authSchemas.login), async (req, res) => {
   const { userName, password } = req.body;
-  if (!userName || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username and password are required" });
-  }
   const user = await User.findOne({ where: { user_name: userName } });
   if (!user)
     return res.status(401).json({ message: "Invalid Username or password" });
