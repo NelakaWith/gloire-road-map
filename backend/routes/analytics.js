@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Analytics routes
+ * @description Handles all analytics-related API endpoints including overview statistics,
+ * completion trends, throughput analysis, and performance metrics
+ * @author @NelakaWith
+ * @version 1.0.0
+ */
+
 import express from "express";
 import {
   getOverview,
@@ -30,7 +38,17 @@ function defaultRangeLastNDays(n = 90) {
   };
 }
 
-// GET /api/analytics/overview
+/**
+ * Get analytics overview
+ * @route GET /api/analytics/overview
+ * @description Retrieves comprehensive analytics overview including key metrics and statistics
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.start_date] - Start date in YYYY-MM-DD format (defaults to 90 days ago)
+ * @param {string} [req.query.end_date] - End date in YYYY-MM-DD format (defaults to today)
+ * @returns {Object} Analytics overview data with key performance indicators
+ * @throws {400} Bad request if start_date > end_date
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/overview", async (req, res) => {
   try {
     let start = parseDateSafe(req.query.start_date);
@@ -54,7 +72,18 @@ router.get("/overview", async (req, res) => {
   }
 });
 
-// GET /api/analytics/completions?group_by=day|week|month&start_date=&end_date=
+/**
+ * Get goal completions analytics
+ * @route GET /api/analytics/completions
+ * @description Retrieves goal completion statistics grouped by time periods
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.start_date] - Start date in YYYY-MM-DD format (defaults to 90 days ago)
+ * @param {string} [req.query.end_date] - End date in YYYY-MM-DD format (defaults to today)
+ * @param {string} [req.query.group_by] - Grouping period: day|week|month (defaults to week)
+ * @returns {Array<Object>} Array of completion statistics grouped by time period
+ * @throws {400} Bad request if start_date > end_date or invalid group_by value
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/completions", async (req, res) => {
   try {
     let start = parseDateSafe(req.query.start_date);
@@ -86,7 +115,19 @@ router.get("/completions", async (req, res) => {
   }
 });
 
-// GET /api/analytics/by-student?start_date=&end_date=&limit=&offset=
+/**
+ * Get analytics by student
+ * @route GET /api/analytics/by-student
+ * @description Retrieves analytics data aggregated by individual students
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.start_date] - Start date in YYYY-MM-DD format (defaults to 90 days ago)
+ * @param {string} [req.query.end_date] - End date in YYYY-MM-DD format (defaults to today)
+ * @param {number} [req.query.limit] - Maximum number of results to return (defaults to 50, max 1000)
+ * @param {number} [req.query.offset] - Number of results to skip for pagination (defaults to 0)
+ * @returns {Array<Object>} Array of student analytics data with pagination
+ * @throws {400} Bad request if start_date > end_date or invalid pagination parameters
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/by-student", async (req, res) => {
   try {
     let start = parseDateSafe(req.query.start_date);
@@ -121,7 +162,18 @@ router.get("/by-student", async (req, res) => {
   }
 });
 
-// GET /api/analytics/throughput?group_by=day|week|month&start_date=&end_date=
+/**
+ * Get throughput analytics
+ * @route GET /api/analytics/throughput
+ * @description Retrieves goal creation throughput statistics over time periods
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.start_date] - Start date in YYYY-MM-DD format (defaults to 90 days ago)
+ * @param {string} [req.query.end_date] - End date in YYYY-MM-DD format (defaults to today)
+ * @param {string} [req.query.group_by] - Grouping period: day|week|month (defaults to month)
+ * @returns {Array<Object>} Array of throughput statistics grouped by time period
+ * @throws {400} Bad request if start_date > end_date or invalid group_by value
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/throughput", async (req, res) => {
   try {
     let start = parseDateSafe(req.query.start_date);
@@ -155,7 +207,16 @@ router.get("/throughput", async (req, res) => {
   }
 });
 
-// GET /api/analytics/backlog?as_of=YYYY-MM-DD&top_n=10
+/**
+ * Get backlog analytics
+ * @route GET /api/analytics/backlog
+ * @description Retrieves current goal backlog statistics and top overdue items
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.as_of] - Date to calculate backlog as of (YYYY-MM-DD, defaults to today)
+ * @param {number} [req.query.top_n] - Number of top backlog items to return (defaults to 10, max 100)
+ * @returns {Object} Backlog analytics data including overdue goals and statistics
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/backlog", async (req, res) => {
   try {
     const as_of = parseDateSafe(req.query.as_of) || null;
@@ -171,7 +232,17 @@ router.get("/backlog", async (req, res) => {
   }
 });
 
-// GET /api/analytics/overdue?start_date=&end_date=&as_of=
+/**
+ * Get overdue goals analytics
+ * @route GET /api/analytics/overdue
+ * @description Retrieves statistics about overdue goals and completion delays
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.start_date] - Start date in YYYY-MM-DD format
+ * @param {string} [req.query.end_date] - End date in YYYY-MM-DD format
+ * @param {string} [req.query.as_of] - Date to calculate overdue status as of (YYYY-MM-DD)
+ * @returns {Object} Overdue goals analytics and statistics
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/overdue", async (req, res) => {
   try {
     let start = parseDateSafe(req.query.start_date);
@@ -186,7 +257,17 @@ router.get("/overdue", async (req, res) => {
   }
 });
 
-// GET /api/analytics/time-to-complete?start_date=&end_date=&buckets=
+/**
+ * Get time-to-complete analytics
+ * @route GET /api/analytics/time-to-complete
+ * @description Retrieves statistics about goal completion times and duration analysis
+ * @access Private (requires JWT authentication)
+ * @param {string} [req.query.start_date] - Start date in YYYY-MM-DD format (defaults to 90 days ago)
+ * @param {string} [req.query.end_date] - End date in YYYY-MM-DD format (defaults to today)
+ * @returns {Object} Time-to-complete analytics with duration statistics and distributions
+ * @throws {400} Bad request if start_date > end_date
+ * @throws {500} Internal server error if database query fails
+ */
 router.get("/time-to-complete", async (req, res) => {
   try {
     let start = parseDateSafe(req.query.start_date);

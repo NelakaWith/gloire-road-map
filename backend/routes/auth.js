@@ -26,58 +26,7 @@ const router = express.Router();
  * @throws {403} Forbidden if users already exist in the system
  * @throws {500} Internal server error if database operation fails
  * @security Password is hashed using bcrypt with salt rounds of 10
- *
- * @swagger
- * /api/auth/register:
- *   post:
- *     summary: Register admin user
- *     description: Creates the first admin user. Registration is blocked if users already exist.
- *     tags: [Authentication]
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userName
- *               - email
- *               - password
- *             properties:
- *               userName:
- *                 type: string
- *                 description: Unique username for the admin
- *                 example: admin
- *               email:
- *                 type: string
- *                 format: email
- *                 description: Admin email address
- *                 example: admin@example.com
- *               password:
- *                 type: string
- *                 format: password
- *                 description: Plain text password (will be hashed)
- *                 example: securePassword123
- *     responses:
- *       200:
- *         description: User registered successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessMessage'
- *       403:
- *         description: User already exists
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+
  */
 router.post("/register", validate(authSchemas.register), async (req, res) => {
   const { userName, email, password } = req.body;
@@ -104,75 +53,6 @@ router.post("/register", validate(authSchemas.register), async (req, res) => {
  * @throws {401} Unauthorized if credentials are invalid
  * @throws {500} Internal server error if database operation fails
  * @security Uses bcrypt for password comparison and JWT for token generation
- *
- * @swagger
- * /api/auth/login:
- *   post:
- *     summary: User login
- *     description: Authenticates user credentials and returns JWT token
- *     tags: [Authentication]
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userName
- *               - password
- *             properties:
- *               userName:
- *                 type: string
- *                 description: Username for authentication
- *                 example: admin
- *               password:
- *                 type: string
- *                 format: password
- *                 description: Plain text password
- *                 example: securePassword123
- *     responses:
- *       200:
- *         description: Authentication successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                   description: JWT token for authenticated requests
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     userName:
- *                       type: string
- *                       example: admin
- *                     email:
- *                       type: string
- *                       example: admin@example.com
- *       400:
- *         description: Missing username or password
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Invalid credentials
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.post("/login", validate(authSchemas.login), async (req, res) => {
   const { userName, password } = req.body;
@@ -222,28 +102,6 @@ router.get("/me", async (req, res) => {
  * @access Private (requires valid JWT cookie)
  * @returns {Object} Success message
  * @throws {500} Internal server error if cookie clearing fails
- *
- * @swagger
- * /api/auth/logout:
- *   post:
- *     summary: User logout
- *     description: Clears the authentication cookie to log out the user
- *     tags: [Authentication]
- *     security:
- *       - cookieAuth: []
- *     responses:
- *       200:
- *         description: Logout successful
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessMessage'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.post("/logout", (req, res) => {
   try {
