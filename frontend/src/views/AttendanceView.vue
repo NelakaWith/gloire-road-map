@@ -190,9 +190,8 @@ import { ref, onMounted, computed } from "vue";
 import { useConfirm } from "primevue/useconfirm";
 import PageHeader from "../components/common/PageHeader.vue";
 import AttendanceMarkingDialog from "../components/attendance/AttendanceMarkingDialog.vue";
-import { authHeader } from "../utils/authHeader";
 import { useToast } from "primevue/usetoast";
-import axios from "axios";
+import axios from "../utils/axios";
 
 const toast = useToast();
 const confirm = useConfirm();
@@ -253,7 +252,6 @@ const fetchAttendanceList = async (date = null) => {
     }
 
     const response = await axios.get("/api/attendance", {
-      headers: authHeader(),
       params,
     });
     attendanceList.value = response.data;
@@ -298,14 +296,10 @@ const editAttendance = (record) => {
 const saveEdit = async () => {
   saving.value = true;
   try {
-    await axios.patch(
-      `/api/attendance/${editingRecord.value.id}`,
-      {
-        status: editingRecord.value.status,
-        notes: editingRecord.value.notes,
-      },
-      { headers: authHeader() }
-    );
+    await axios.patch(`/api/attendance/${editingRecord.value.id}`, {
+      status: editingRecord.value.status,
+      notes: editingRecord.value.notes,
+    });
 
     showEditDialog.value = false;
     loadSessionData();
@@ -343,9 +337,7 @@ const deleteAttendance = (record) => {
     },
     accept: async () => {
       try {
-        await axios.delete(`/api/attendance/${record.id}`, {
-          headers: authHeader(),
-        });
+        await axios.delete(`/api/attendance/${record.id}`);
         loadSessionData();
         toast.add({
           severity: "success",

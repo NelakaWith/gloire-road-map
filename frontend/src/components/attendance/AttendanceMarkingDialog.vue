@@ -166,8 +166,7 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useToast } from "primevue/usetoast";
-import { authHeader } from "../../utils/authHeader";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 const props = defineProps({
   visible: {
@@ -237,9 +236,7 @@ const loadStudentSheet = async () => {
     const day = String(sessionDate.value.getDate()).padStart(2, "0");
     const dateStr = `${year}-${month}-${day}`;
 
-    const response = await axios.get(`/api/attendance/sheet/${dateStr}`, {
-      headers: authHeader(),
-    });
+    const response = await axios.get(`/api/attendance/sheet/${dateStr}`);
     students.value = response.data.map((student) => ({
       ...student,
       notes: student.notes || "",
@@ -362,16 +359,10 @@ const saveAttendance = async () => {
 
     const dateStr = sessionDate.value.toISOString().split("T")[0];
 
-    await axios.post(
-      "/api/attendance/session",
-      {
-        date: dateStr,
-        attendance_records: attendanceRecords,
-      },
-      {
-        headers: authHeader(),
-      }
-    );
+    await axios.post("/api/attendance/session", {
+      date: dateStr,
+      attendance_records: attendanceRecords,
+    });
 
     emit("attendance-marked");
 

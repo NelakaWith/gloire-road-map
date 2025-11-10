@@ -23,8 +23,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
-import { authHeader } from "../utils/authHeader";
+import axios from "../utils/axios";
 import PageHeader from "../components/common/PageHeader.vue";
 import KPICards from "../components/analytics/KPICards.vue";
 import TimeSeriesChart from "../components/analytics/TimeSeriesChart.vue";
@@ -48,7 +47,6 @@ initialStart.setDate(initialEnd.getDate() - 90);
 async function loadOverview(start, end) {
   const res = await axios.get("/api/analytics/overview", {
     params: { start_date: start.toISOString(), end_date: end.toISOString() },
-    headers: authHeader(),
   });
   kpis.value = res.data || kpis.value;
 }
@@ -60,7 +58,6 @@ async function loadCompletions(start, end, group) {
       end_date: end.toISOString(),
       group_by: group,
     },
-    headers: authHeader(),
   });
   completionsSeries.value = res.data || [];
 }
@@ -72,7 +69,6 @@ async function loadByStudent(start, end) {
       end_date: end.toISOString(),
       limit: 10,
     },
-    headers: authHeader(),
   });
   byStudent.value = res.data || [];
 }

@@ -80,8 +80,8 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
-  // If we have a token but no user loaded, try to validate it via /me
-  if (authStore.token && !authStore.user) {
+  // If authenticated but no user loaded, try to validate via /me
+  if (authStore.isAuthenticated && !authStore.user) {
     await authStore.fetchMe();
   }
 

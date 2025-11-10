@@ -63,9 +63,8 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
+import axios from "../utils/axios";
 import { useAuthStore } from "../store/auth";
-import { authHeader } from "../utils/authHeader";
 import { useRouter } from "vue-router";
 import { useConfirm } from "primevue/useconfirm";
 import EditMemberModal from "../components/EditMemberModal.vue";
@@ -80,9 +79,7 @@ const editingStudent = ref(null);
 const editLoading = ref(false);
 
 const fetchStudents = async () => {
-  const res = await axios.get("/api/students", {
-    headers: authHeader(),
-  });
+  const res = await axios.get("/api/students");
   students.value = res.data;
 };
 
@@ -95,24 +92,16 @@ const handleEditSave = async (updatedStudent) => {
   editLoading.value = true;
   try {
     if (!updatedStudent.id) {
-      // create
-      await axios.post(
-        "/api/students",
-        {
-          name: updatedStudent.name,
-          contact_number: updatedStudent.contact_number,
-          address: updatedStudent.address,
-          date_of_birth: updatedStudent.date_of_birth,
-        },
-        { headers: authHeader() }
-      );
+      await axios.post("/api/students", {
+        name: updatedStudent.name,
+        contact_number: updatedStudent.contact_number,
+        address: updatedStudent.address,
+        date_of_birth: updatedStudent.date_of_birth,
+      });
     } else {
-      // update
-      await axios.patch(
-        `/api/students/${updatedStudent.id}`,
-        { ...updatedStudent },
-        { headers: authHeader() }
-      );
+      await axios.patch(`/api/students/${updatedStudent.id}`, {
+        ...updatedStudent,
+      });
     }
 
     await fetchStudents();
@@ -152,7 +141,7 @@ const openDeleteDialog = (id) => {
       severity: "danger",
     },
     accept: async () => {
-      await axios.delete(`/api/students/${id}`, { headers: authHeader() });
+      await axios.delete(`/api/students/${id}`);
       await fetchStudents();
     },
   });
@@ -163,7 +152,7 @@ const goToGoals = (studentId) => {
 };
 
 onMounted(async () => {
-  if (!auth.token) router.push("/login");
+  if (!auth.isAuthenticated) router.push("/login");
   else {
     await fetchStudents();
   }

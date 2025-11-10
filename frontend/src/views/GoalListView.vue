@@ -95,9 +95,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import axios from "axios";
+import axios from "../utils/axios";
 import { useAuthStore } from "../store/auth";
-import { authHeader } from "../utils/authHeader";
 import { useRouter, useRoute } from "vue-router";
 import GoalModal from "../components/GoalModal.vue";
 import PageHeader from "../components/common/PageHeader.vue";
@@ -127,15 +126,11 @@ const fetchStudentAndGoals = async () => {
     goals.value = [];
     return;
   }
-  const resStudent = await axios.get(`/api/students`, {
-    headers: authHeader(),
-  });
+  const resStudent = await axios.get(`/api/students`);
   const student = resStudent.data.find((s) => s.id == studentId);
   selectedStudent.value = student;
   if (student) {
-    const resGoals = await axios.get(`/api/students/${studentId}/goals`, {
-      headers: authHeader(),
-    });
+    const resGoals = await axios.get(`/api/students/${studentId}/goals`);
     goals.value = resGoals.data;
   } else {
     goals.value = [];
@@ -145,13 +140,11 @@ const fetchStudentAndGoals = async () => {
 const openGoalModal = (goal, mode) => {
   if (goal && goal.id) {
     // fetch full goal details
-    axios
-      .get(`/api/goals/${goal.id}`, { headers: authHeader() })
-      .then((res) => {
-        selectedGoal.value = res.data;
-        goalModalMode.value = mode;
-        showGoalModal.value = true;
-      });
+    axios.get(`/api/goals/${goal.id}`).then((res) => {
+      selectedGoal.value = res.data;
+      goalModalMode.value = mode;
+      showGoalModal.value = true;
+    });
   } else {
     selectedGoal.value = null;
     goalModalMode.value = mode;
@@ -165,29 +158,19 @@ const closeGoalModal = () => {
 
 const handleSaveGoal = async (goalData) => {
   if (goalModalMode.value === "add") {
-    await axios.post(
-      `/api/goals`,
-      {
-        student_id: selectedStudent.value.id,
-        ...goalData,
-      },
-      { headers: authHeader() }
-    );
-  } else if (goalModalMode.value === "edit" && selectedGoal.value) {
-    await axios.patch(`/api/goals/${selectedGoal.value.id}`, goalData, {
-      headers: authHeader(),
+    await axios.post(`/api/goals`, {
+      student_id: selectedStudent.value.id,
+      ...goalData,
     });
+  } else if (goalModalMode.value === "edit" && selectedGoal.value) {
+    await axios.patch(`/api/goals/${selectedGoal.value.id}`, goalData);
   }
   await fetchStudentAndGoals();
   closeGoalModal();
 };
 
 const markGoalDone = async (goalId, done = true) => {
-  await axios.patch(
-    `/api/goals/${goalId}`,
-    { is_completed: done },
-    { headers: authHeader() }
-  );
+  await axios.patch(`/api/goals/${goalId}`, { is_completed: done });
   await fetchStudentAndGoals();
 };
 
@@ -208,9 +191,7 @@ const openDeleteDialog = (goal) => {
     },
     accept: async () => {
       if (selectedGoal.value && selectedGoal.value.id) {
-        await axios.delete(`/api/goals/${selectedGoal.value.id}`, {
-          headers: authHeader(),
-        });
+        await axios.delete(`/api/goals/${selectedGoal.value.id}`);
         await fetchStudentAndGoals();
         closeGoalModal();
       }
@@ -219,7 +200,7 @@ const openDeleteDialog = (goal) => {
 };
 
 onMounted(async () => {
-  if (!auth.token) router.push("/login");
+  if (!auth.isAuthenticated) router.push("/login");
   else {
     await fetchStudentAndGoals();
   }

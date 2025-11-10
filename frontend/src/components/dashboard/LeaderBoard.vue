@@ -44,8 +44,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
-import { authHeader } from "../../utils/authHeader";
+import axios from "../../utils/axios";
 import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
 
@@ -56,9 +55,7 @@ const leaderboard = ref([]);
 
 const fetchLeaderboard = async () => {
   try {
-    const response = await axios.get(`/api/points/leaderboard`, {
-      headers: authHeader(),
-    });
+    const response = await axios.get(`/api/points/leaderboard`);
     leaderboard.value = response.data;
   } catch (error) {
     toast.add({
