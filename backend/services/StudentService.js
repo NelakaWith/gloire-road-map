@@ -766,6 +766,49 @@ export class StudentService extends IStudentService {
     }
   }
 
+  /**
+   * Get all goals for a specific student
+   * @async
+   * @param {number} studentId - Student ID
+   * @returns {Promise<Array<Object>>} Array of student goals
+   */
+  async getStudentGoals(studentId) {
+    try {
+      const goals = await this.goalRepository.findByStudentId(studentId);
+      return goals;
+    } catch (error) {
+      throw new Error(`Failed to get student goals: ${error.message}`);
+    }
+  }
+
+  /**
+   * Create a new goal for a student
+   * @async
+   * @param {number} studentId - Student ID
+   * @param {string} title - Goal title
+   * @returns {Promise<Object>} Created goal
+   */
+  async createStudentGoal(studentId, title) {
+    try {
+      // Validate student exists
+      const student = await this.studentRepository.findById(studentId);
+      if (!student) {
+        throw new Error("Student not found");
+      }
+
+      // Create the goal
+      const goal = await this.goalRepository.create({
+        studentId,
+        title,
+        status: "active",
+      });
+
+      return goal;
+    } catch (error) {
+      throw new Error(`Failed to create student goal: ${error.message}`);
+    }
+  }
+
   // Additional helper methods would continue here...
   // For brevity, I'm including key helper methods
 

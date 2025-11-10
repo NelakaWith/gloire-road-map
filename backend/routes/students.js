@@ -28,41 +28,11 @@ const studentService = DIContainer.getService("student");
  * @returns {number} returns.days_attended - Number of days marked as present
  * @returns {number} returns.total_attendance_records - Total attendance records
  * @throws {500} Internal server error if database query fails
- *
- * @swagger
- * /api/students:
- *   get:
- *     summary: Get all students
- *     description: Retrieves all students with their attendance statistics
- *     tags: [Students]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of students retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Student'
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.get("/", async (req, res) => {
   try {
-    const students = await studentService.getAllStudentsWithAttendance();
-    res.json(students);
+    const result = await studentService.getAllStudents({ includeStats: true });
+    res.json(result.students);
   } catch (error) {
     console.error("Error fetching students:", error);
     res.status(500).json({ message: "Failed to fetch students" });
