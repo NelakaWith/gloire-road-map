@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { Op, sequelize } from "sequelize";
+import Sequelize, { Op } from "sequelize";
 import { IStudentRepository } from "../interfaces/repositories/IStudentRepository.js";
 
 /**

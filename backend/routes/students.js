@@ -7,7 +7,7 @@
  */
 
 import express from "express";
-import { Student, Goal, Attendance, sequelize } from "../models.js";
+import DIContainer from "../di-container.js";
 import {
   validate,
   studentSchemas,
@@ -15,6 +15,9 @@ import {
 } from "../middleware/validation.js";
 
 const router = express.Router();
+
+// Get service instance from DI container
+const studentService = DIContainer.getService("student");
 
 /**
  * Get all students with attendance statistics
@@ -58,25 +61,7 @@ const router = express.Router();
  */
 router.get("/", async (req, res) => {
   try {
-    const students = await Student.findAll({
-      attributes: {
-        include: [
-          [
-            sequelize.literal(
-              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "present")'
-            ),
-            "days_attended",
-          ],
-          [
-            sequelize.literal(
-              "(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id)"
-            ),
-            "total_attendance_records",
-          ],
-        ],
-      },
-      order: [["created_at", "DESC"]],
-    });
+    const students = await studentService.getAllStudentsWithAttendance();
     res.json(students);
   } catch (error) {
     console.error("Error fetching students:", error);
@@ -99,23 +84,19 @@ router.get("/", async (req, res) => {
  * @throws {500} Internal server error if database operation fails
  */
 router.post("/", validate(studentSchemas.create), async (req, res) => {
-  const { name, contact_number, address, date_of_birth } = req.body;
-  if (!name) return res.status(400).json({ message: "Name required" });
-
-  // normalize date_of_birth: treat empty string as null, try to parse otherwise
-  let dob = null;
-  if (date_of_birth) {
-    const d = new Date(date_of_birth);
-    dob = isNaN(d.getTime()) ? null : d;
+  try {
+    const { name, contact_number, address, date_of_birth } = req.body;
+    await studentService.createStudent({
+      name,
+      contact_number: contact_number || null,
+      address: address || null,
+      date_of_birth: date_of_birth || null,
+    });
+    res.json({ message: "Student added" });
+  } catch (error) {
+    console.error("Error creating student:", error);
+    res.status(500).json({ message: "Failed to create student" });
   }
-
-  await Student.create({
-    name,
-    contact_number: contact_number || null,
-    address: address || null,
-    date_of_birth: dob,
-  });
-  res.json({ message: "Student added" });
 });
 
 /**
@@ -137,27 +118,21 @@ router.patch(
   validate(paramSchemas.id, "params"),
   validate(studentSchemas.update),
   async (req, res) => {
-    const { name, contact_number, address, date_of_birth } = req.body;
-    const { id } = req.params;
+    try {
+      const { name, contact_number, address, date_of_birth } = req.body;
+      const { id } = req.params;
 
-    // normalize date_of_birth
-    let dob = null;
-    if (date_of_birth) {
-      const d = new Date(date_of_birth);
-      dob = isNaN(d.getTime()) ? null : d;
+      await studentService.updateStudent(id, {
+        name,
+        contact_number: contact_number || null,
+        address: address || null,
+        date_of_birth: date_of_birth || null,
+      });
+      res.json({ message: "Student updated" });
+    } catch (error) {
+      console.error("Error updating student:", error);
+      res.status(500).json({ message: "Failed to update student" });
     }
-
-    const update = {
-      ...(name !== undefined ? { name } : {}),
-      ...(contact_number !== undefined
-        ? { contact_number: contact_number || null }
-        : {}),
-      ...(address !== undefined ? { address: address || null } : {}),
-      ...(date_of_birth !== undefined ? { date_of_birth: dob } : {}),
-    };
-
-    await Student.update(update, { where: { id } });
-    res.json({ message: "Student updated" });
   }
 );
 
@@ -172,9 +147,14 @@ router.patch(
  * @warning This action is irreversible and will delete all student data including goals and attendance
  */
 router.delete("/:id", validate(paramSchemas.id, "params"), async (req, res) => {
-  const { id } = req.params;
-  await Student.destroy({ where: { id } });
-  res.json({ message: "Student deleted" });
+  try {
+    const { id } = req.params;
+    await studentService.deleteStudent(id);
+    res.json({ message: "Student deleted" });
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    res.status(500).json({ message: "Failed to delete student" });
+  }
 });
 
 /**
@@ -195,42 +175,7 @@ router.delete("/:id", validate(paramSchemas.id, "params"), async (req, res) => {
 router.get("/:id", validate(paramSchemas.id, "params"), async (req, res) => {
   try {
     const { id } = req.params;
-    const student = await Student.findByPk(id, {
-      attributes: {
-        include: [
-          [
-            sequelize.literal(
-              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "present")'
-            ),
-            "days_attended",
-          ],
-          [
-            sequelize.literal(
-              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "absent")'
-            ),
-            "days_absent",
-          ],
-          [
-            sequelize.literal(
-              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "late")'
-            ),
-            "days_late",
-          ],
-          [
-            sequelize.literal(
-              '(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id AND attendance.status = "excused")'
-            ),
-            "days_excused",
-          ],
-          [
-            sequelize.literal(
-              "(SELECT COUNT(*) FROM attendance WHERE attendance.student_id = Student.id)"
-            ),
-            "total_attendance_records",
-          ],
-        ],
-      },
-    });
+    const student = await studentService.getStudentById(id);
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
@@ -256,12 +201,14 @@ router.get(
   "/:id/goals",
   validate(paramSchemas.id, "params"),
   async (req, res) => {
-    const { id } = req.params;
-    const goals = await Goal.findAll({
-      where: { student_id: id },
-      order: [["created_at", "DESC"]],
-    });
-    res.json(goals);
+    try {
+      const { id } = req.params;
+      const goals = await studentService.getStudentGoals(id);
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching student goals:", error);
+      res.status(500).json({ message: "Failed to fetch student goals" });
+    }
   }
 );
 
@@ -282,11 +229,15 @@ router.post(
   validate(paramSchemas.id, "params"),
   validate(studentSchemas.createGoal),
   async (req, res) => {
-    const { id } = req.params;
-    const { title } = req.body;
-    if (!title) return res.status(400).json({ message: "Title required" });
-    await Goal.create({ student_id: id, title });
-    res.json({ message: "Goal added" });
+    try {
+      const { id } = req.params;
+      const { title } = req.body;
+      await studentService.createStudentGoal(id, title);
+      res.json({ message: "Goal added" });
+    } catch (error) {
+      console.error("Error creating student goal:", error);
+      res.status(500).json({ message: "Failed to create goal" });
+    }
   }
 );
 
