@@ -6,9 +6,13 @@
  */
 
 import express from "express";
-import { getPointsLeaderboard } from "../services/points.js";
+import DIContainer from "../di-container.js";
 import { authenticateJWT } from "../middleware/auth.js";
+
 const router = express.Router();
+
+// Get service instance from DI container
+const pointsService = DIContainer.getService("points");
 
 /**
  * Get points leaderboard
@@ -25,7 +29,7 @@ const router = express.Router();
  */
 router.get("/leaderboard", authenticateJWT, async (req, res) => {
   try {
-    const leaderboard = await getPointsLeaderboard();
+    const leaderboard = await pointsService.getPointsLeaderboard();
     res.json(leaderboard);
   } catch (err) {
     res
