@@ -71,12 +71,11 @@ export class AttendanceService extends IAttendanceService {
 
       // Award attendance points if present
       if (attendanceData.status === "present") {
-        await this.pointsRepository.create({
+        await this.pointsRepository.createPointsLog({
           student_id: attendanceData.student_id,
           points: 1,
-          type: "earned",
-          description: "Daily attendance bonus",
-          transaction_date: new Date(),
+          reason: "Daily attendance bonus",
+          related_goal_id: null,
         });
       }
 
@@ -107,6 +106,82 @@ export class AttendanceService extends IAttendanceService {
       return attendance;
     } catch (error) {
       throw new Error(`Failed to get attendance by ID: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get attendance records with flexible filtering options
+   * @async
+   * @param {Object} filters - Filter options
+   * @param {number} [filters.student_id] - Filter by student ID
+   * @param {string} [filters.date] - Filter by specific date (YYYY-MM-DD)
+   * @param {string} [filters.start_date] - Filter from start date (YYYY-MM-DD)
+   * @param {string} [filters.end_date] - Filter to end date (YYYY-MM-DD)
+   * @param {string} [filters.status] - Filter by status (present|absent|late|excused)
+   * @returns {Promise<Array>} Array of attendance records matching filters
+   */
+  async getAttendanceRecords(filters = {}) {
+    try {
+      const { student_id, date, start_date, end_date, status } = filters;
+
+      // If filtering by single student, use student-specific query
+      if (student_id) {
+        const options = {};
+        if (date) {
+          options.date = date;
+        }
+        if (start_date && end_date) {
+          options.dateRange = { start: start_date, end: end_date };
+        } else if (start_date) {
+          options.dateRange = { start: start_date };
+        } else if (end_date) {
+          options.dateRange = { end: end_date };
+        }
+        if (status) {
+          options.status = status;
+        }
+
+        const result = await this.getStudentAttendance(student_id, options);
+        return result.records || result;
+      }
+
+      // If filtering by date, use date-specific query
+      if (date) {
+        const result = await this.getDailyAttendance(date);
+        let records = result.attendance || [];
+
+        // Apply additional filters
+        if (status) {
+          records = records.filter((r) => r.status === status);
+        }
+
+        return records;
+      }
+
+      // If filtering by date range, find all records in range
+      if (start_date || end_date) {
+        const options = {
+          dateRange: {},
+        };
+        if (start_date) options.dateRange.start = start_date;
+        if (end_date) options.dateRange.end = end_date;
+        if (status) options.status = status;
+
+        const result = await this.attendanceRepository.findAll(options);
+        return result || [];
+      }
+
+      // If only filtering by status, get all records and filter
+      if (status) {
+        const allRecords = await this.attendanceRepository.findAll();
+        return (allRecords || []).filter((r) => r.status === status);
+      }
+
+      // Return all records
+      const allRecords = await this.attendanceRepository.findAll();
+      return allRecords || [];
+    } catch (error) {
+      throw new Error(`Failed to get attendance records: ${error.message}`);
     }
   }
 
@@ -299,12 +374,11 @@ export class AttendanceService extends IAttendanceService {
 
       // Revert attendance points if present
       if (attendance.status === "present") {
-        await this.pointsRepository.create({
+        await this.pointsRepository.createPointsLog({
           student_id: attendance.student_id,
-          points: 1,
-          type: "penalty",
-          description: "Attendance record deletion adjustment",
-          transaction_date: new Date(),
+          points: -1,
+          reason: "Attendance record deletion adjustment",
+          related_goal_id: null,
         });
       }
 
@@ -369,12 +443,11 @@ export class AttendanceService extends IAttendanceService {
 
           // Award points if applicable
           if (awardPoints && attendanceData.status === "present") {
-            await this.pointsRepository.create({
+            await this.pointsRepository.createPointsLog({
               student_id: attendanceData.student_id,
               points: 1,
-              type: "earned",
-              description: "Daily attendance bonus",
-              transaction_date: new Date(),
+              reason: "Daily attendance bonus",
+              related_goal_id: null,
             });
           }
 
@@ -815,26 +888,269 @@ export class AttendanceService extends IAttendanceService {
     return { success: true, archivedCount: 0 };
   }
 
+  /**
+   * Get attendance sheet for a specific date (all students with their attendance status)
+   * @async
+   * @param {string} date - Date in YYYY-MM-DD format
+   * @returns {Promise<Array>} Array of students with attendance information
+   */
+  async getAttendanceSheet(date) {
+    try {
+      // Get all students
+      const students = await this.studentRepository.findAll();
+      if (!students || students.length === 0) {
+        return [];
+      }
+
+      // Get attendance records for this date using correct parameter names
+      const attendanceRecords = await this.attendanceRepository.findAll({
+        startDate: date,
+        endDate: date,
+      });
+
+      // Create a map for quick lookup
+      const attendanceMap = {};
+      if (attendanceRecords) {
+        attendanceRecords.forEach((record) => {
+          attendanceMap[record.student_id] = record;
+        });
+      }
+
+      // Build sheet with all students
+      return students.map((student) => {
+        const attendance = attendanceMap[student.id];
+        return {
+          student_id: student.id,
+          name: student.name,
+          status: attendance ? attendance.status : "not_marked",
+          notes: attendance ? attendance.notes : null,
+          attendance_id: attendance ? attendance.id : null,
+        };
+      });
+    } catch (error) {
+      throw new Error(`Failed to get attendance sheet: ${error.message}`);
+    }
+  }
+
+  /**
+   * Mark attendance for multiple students in a session
+   * @async
+   * @param {string} date - Session date
+   * @param {Array} attendanceRecords - Array of attendance records to create/update
+   * @returns {Promise<Object>} Results with created/updated records
+   */
+  async markSessionAttendance(date, attendanceRecords) {
+    try {
+      const results = {
+        created: [],
+        updated: [],
+        errors: [],
+      };
+
+      for (const record of attendanceRecords) {
+        try {
+          const attendanceData = {
+            student_id: record.student_id,
+            date,
+            status: record.status,
+            notes: record.notes || null,
+          };
+
+          // Check for existing record
+          const existing = await this.checkDuplicateAttendance(
+            record.student_id,
+            date
+          );
+
+          if (existing) {
+            // Update existing record
+            const updated = await this.updateAttendance(existing.id, {
+              status: record.status,
+              notes: record.notes || null,
+            });
+            results.updated.push(updated);
+          } else {
+            // Create new record
+            const created = await this.recordAttendance(attendanceData);
+            results.created.push(created);
+          }
+        } catch (error) {
+          results.errors.push({
+            student_id: record.student_id,
+            error: error.message,
+          });
+        }
+      }
+
+      return {
+        message: `Processed ${attendanceRecords.length} records (${results.created.length} created, ${results.updated.length} updated)`,
+        created: results.created,
+        updated: results.updated,
+        errors: results.errors,
+      };
+    } catch (error) {
+      throw new Error(`Failed to mark session attendance: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get all unique session dates with attendance statistics
+   * @async
+   * @param {Object} filters - Filter options
+   * @param {string} [filters.start_date] - Start date for range
+   * @param {string} [filters.end_date] - End date for range
+   * @returns {Promise<Array>} Array of session dates with statistics
+   */
+  async getAttendanceSessions(filters = {}) {
+    try {
+      const options = {};
+      if (filters.start_date && filters.end_date) {
+        options.startDate = filters.start_date;
+        options.endDate = filters.end_date;
+      } else if (filters.start_date) {
+        options.startDate = filters.start_date;
+      } else if (filters.end_date) {
+        options.endDate = filters.end_date;
+      }
+
+      // Get all attendance records
+      const records = await this.attendanceRepository.findAll(options);
+      if (!records || records.length === 0) {
+        return [];
+      }
+
+      // Group by date and count statuses
+      const sessionMap = {};
+      records.forEach((record) => {
+        const date = new Date(record.date).toISOString().split("T")[0];
+        if (!sessionMap[date]) {
+          sessionMap[date] = {
+            date,
+            total_students: 0,
+            present_count: 0,
+            absent_count: 0,
+            late_count: 0,
+            excused_count: 0,
+          };
+        }
+
+        sessionMap[date].total_students++;
+        if (record.status === "present") {
+          sessionMap[date].present_count++;
+        } else if (record.status === "absent") {
+          sessionMap[date].absent_count++;
+        } else if (record.status === "late") {
+          sessionMap[date].late_count++;
+        } else if (record.status === "excused") {
+          sessionMap[date].excused_count++;
+        }
+      });
+
+      // Convert to array and sort by date descending
+      return Object.values(sessionMap).sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+    } catch (error) {
+      throw new Error(`Failed to get attendance sessions: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get attendance summary grouped by student
+   * @async
+   * @param {Object} filters - Filter options
+   * @param {string} [filters.start_date] - Start date for range
+   * @param {string} [filters.end_date] - End date for range
+   * @returns {Promise<Array>} Array of attendance summaries per student
+   */
+  async getAttendanceSummary(filters = {}) {
+    try {
+      const options = {};
+      if (filters.start_date && filters.end_date) {
+        options.startDate = filters.start_date;
+        options.endDate = filters.end_date;
+      } else if (filters.start_date) {
+        options.startDate = filters.start_date;
+      } else if (filters.end_date) {
+        options.endDate = filters.end_date;
+      }
+
+      // Get all students
+      const students = await this.studentRepository.findAll();
+      if (!students || students.length === 0) {
+        return [];
+      }
+
+      // Get attendance records
+      const records = await this.attendanceRepository.findAll(options);
+
+      // Group by student and count statuses
+      const summaryMap = {};
+      students.forEach((student) => {
+        summaryMap[student.id] = {
+          student_id: student.id,
+          name: student.name,
+          total_records: 0,
+          present_count: 0,
+          absent_count: 0,
+          late_count: 0,
+          excused_count: 0,
+          attendance_rate: 0,
+        };
+      });
+
+      if (records && records.length > 0) {
+        records.forEach((record) => {
+          if (summaryMap[record.student_id]) {
+            summaryMap[record.student_id].total_records++;
+            if (record.status === "present") {
+              summaryMap[record.student_id].present_count++;
+            } else if (record.status === "absent") {
+              summaryMap[record.student_id].absent_count++;
+            } else if (record.status === "late") {
+              summaryMap[record.student_id].late_count++;
+            } else if (record.status === "excused") {
+              summaryMap[record.student_id].excused_count++;
+            }
+          }
+        });
+
+        // Calculate attendance rate (present + excused / total)
+        Object.values(summaryMap).forEach((summary) => {
+          if (summary.total_records > 0) {
+            summary.attendance_rate = Math.round(
+              ((summary.present_count + summary.excused_count) /
+                summary.total_records) *
+                100
+            );
+          }
+        });
+      }
+
+      return Object.values(summaryMap);
+    } catch (error) {
+      throw new Error(`Failed to get attendance summary: ${error.message}`);
+    }
+  }
+
   // Private helper methods
   async _adjustAttendancePoints(studentId, oldStatus, newStatus, date) {
     // Logic to adjust points when attendance status changes
     if (oldStatus === "present" && newStatus !== "present") {
       // Remove attendance bonus
-      await this.pointsRepository.create({
+      await this.pointsRepository.createPointsLog({
         student_id: studentId,
-        points: 1,
-        type: "penalty",
-        description: `Attendance status change: ${oldStatus} to ${newStatus}`,
-        transaction_date: new Date(),
+        points: -1,
+        reason: `Attendance status change: ${oldStatus} to ${newStatus}`,
+        related_goal_id: null,
       });
     } else if (oldStatus !== "present" && newStatus === "present") {
       // Add attendance bonus
-      await this.pointsRepository.create({
+      await this.pointsRepository.createPointsLog({
         student_id: studentId,
         points: 1,
-        type: "earned",
-        description: `Attendance status change: ${oldStatus} to ${newStatus}`,
-        transaction_date: new Date(),
+        reason: `Attendance status change: ${oldStatus} to ${newStatus}`,
+        related_goal_id: null,
       });
     }
   }

@@ -18,17 +18,40 @@ import { IPointsRepository } from "../interfaces/repositories/IPointsRepository.
 export class SequelizePointsRepository extends IPointsRepository {
   /**
    * Constructor for SequelizePointsRepository
-   * @param {Object} pointsModel - Sequelize Points model
+   * @param {Object} pointsLogModel - Sequelize PointsLog model
    * @param {Object} studentModel - Sequelize Student model
    * @param {Object} goalModel - Sequelize Goal model
    * @param {Object} sequelizeInstance - Sequelize instance for raw queries
    */
-  constructor(pointsModel, studentModel, goalModel, sequelizeInstance) {
+  constructor(pointsLogModel, studentModel, goalModel, sequelizeInstance) {
     super();
-    this.pointsModel = pointsModel;
+    this.pointsLogModel = pointsLogModel;
     this.studentModel = studentModel;
     this.goalModel = goalModel;
     this.sequelize = sequelizeInstance;
+  }
+
+  /**
+   * Create a new points log entry
+   * @async
+   * @param {Object} pointsData - Points log data to create
+   * @returns {Promise<Object>} Created points log entry
+   * @throws {Error} If points log creation fails
+   */
+  async createPointsLog(pointsData) {
+    try {
+      const pointsLog = await this.pointsLogModel.create({
+        student_id: pointsData.student_id,
+        points: pointsData.points,
+        reason: pointsData.reason || null,
+        related_goal_id: pointsData.related_goal_id || null,
+        created_at: new Date(),
+      });
+
+      return pointsLog.toJSON();
+    } catch (error) {
+      throw new Error(`Failed to create points log: ${error.message}`);
+    }
   }
 
   /**
@@ -44,9 +67,8 @@ export class SequelizePointsRepository extends IPointsRepository {
         studentId,
         startDate,
         endDate,
-        type,
         includeStudent = false,
-        orderBy = "transaction_date",
+        orderBy = "created_at",
         orderDirection = "DESC",
         limit,
         offset,
@@ -63,21 +85,17 @@ export class SequelizePointsRepository extends IPointsRepository {
       }
 
       if (startDate && endDate) {
-        whereClause.transaction_date = {
+        whereClause.created_at = {
           [Op.between]: [startDate, endDate],
         };
       } else if (startDate) {
-        whereClause.transaction_date = {
+        whereClause.created_at = {
           [Op.gte]: startDate,
         };
       } else if (endDate) {
-        whereClause.transaction_date = {
+        whereClause.created_at = {
           [Op.lte]: endDate,
         };
-      }
-
-      if (type) {
-        whereClause.type = type;
       }
 
       if (includeStudent) {
@@ -98,8 +116,8 @@ export class SequelizePointsRepository extends IPointsRepository {
         queryOptions.offset = offset;
       }
 
-      const points = await this.pointsModel.findAll(queryOptions);
-      return points.map((record) => record.toJSON());
+      const pointsLogs = await this.pointsLogModel.findAll(queryOptions);
+      return pointsLogs.map((record) => record.toJSON());
     } catch (error) {
       throw new Error(
         `Failed to find all points transactions: ${error.message}`
@@ -117,36 +135,24 @@ export class SequelizePointsRepository extends IPointsRepository {
    */
   async findById(id, options = {}) {
     try {
-      const { includeStudent = false, includeGoal = false } = options;
+      const { includeStudent = false } = options;
 
       const queryOptions = {
         where: { id },
       };
 
-      const includes = [];
-
       if (includeStudent) {
-        includes.push({
-          model: this.studentModel,
-          attributes: ["id", "name"],
-          as: "student",
-        });
+        queryOptions.include = [
+          {
+            model: this.studentModel,
+            attributes: ["id", "name"],
+            as: "student",
+          },
+        ];
       }
 
-      if (includeGoal) {
-        includes.push({
-          model: this.goalModel,
-          attributes: ["id", "title", "description"],
-          as: "goal",
-        });
-      }
-
-      if (includes.length > 0) {
-        queryOptions.include = includes;
-      }
-
-      const points = await this.pointsModel.findByPk(id, queryOptions);
-      return points ? points.toJSON() : null;
+      const pointsLog = await this.pointsLogModel.findByPk(id, queryOptions);
+      return pointsLog ? pointsLog.toJSON() : null;
     } catch (error) {
       throw new Error(
         `Failed to find points transaction by ID: ${error.message}`
@@ -162,35 +168,31 @@ export class SequelizePointsRepository extends IPointsRepository {
    * @returns {Promise<Array<Object>>} Array of points transaction objects
    * @throws {Error} If database query fails
    */
-  async findByStudentId(studentId, options = {}) {
+  async findPointsLogByStudent(studentId, options = {}) {
     try {
       const {
         startDate,
         endDate,
-        type,
-        orderBy = "transaction_date",
+        orderBy = "created_at",
         orderDirection = "DESC",
         limit,
+        offset,
       } = options;
 
       const whereClause = { student_id: studentId };
 
       if (startDate && endDate) {
-        whereClause.transaction_date = {
+        whereClause.created_at = {
           [Op.between]: [startDate, endDate],
         };
       } else if (startDate) {
-        whereClause.transaction_date = {
+        whereClause.created_at = {
           [Op.gte]: startDate,
         };
       } else if (endDate) {
-        whereClause.transaction_date = {
+        whereClause.created_at = {
           [Op.lte]: endDate,
         };
-      }
-
-      if (type) {
-        whereClause.type = type;
       }
 
       const queryOptions = {
@@ -202,142 +204,118 @@ export class SequelizePointsRepository extends IPointsRepository {
         queryOptions.limit = limit;
       }
 
-      const points = await this.pointsModel.findAll(queryOptions);
-      return points.map((record) => record.toJSON());
+      if (offset) {
+        queryOptions.offset = offset;
+      }
+
+      const pointsLogs = await this.pointsLogModel.findAll(queryOptions);
+      return pointsLogs.map((record) => record.toJSON());
     } catch (error) {
       throw new Error(`Failed to find points by student ID: ${error.message}`);
     }
   }
 
   /**
-   * Find points transactions by type
+   * Find points transactions by goal ID
    * @async
-   * @param {string} type - Transaction type (earned, redeemed, bonus, penalty)
-   * @param {Object} [options] - Query options
+   * @param {number} goalId - Goal ID
    * @returns {Promise<Array<Object>>} Array of points transaction objects
    * @throws {Error} If database query fails
    */
-  async findByType(type, options = {}) {
+  async findPointsLogByGoal(goalId) {
     try {
-      const {
-        studentId,
-        startDate,
-        endDate,
-        includeStudent = false,
-        limit,
-      } = options;
-
-      const whereClause = { type };
-
-      if (studentId) {
-        whereClause.student_id = studentId;
-      }
-
-      if (startDate && endDate) {
-        whereClause.transaction_date = {
-          [Op.between]: [startDate, endDate],
-        };
-      } else if (startDate) {
-        whereClause.transaction_date = {
-          [Op.gte]: startDate,
-        };
-      } else if (endDate) {
-        whereClause.transaction_date = {
-          [Op.lte]: endDate,
-        };
-      }
-
-      const queryOptions = {
-        where: whereClause,
-        order: [["transaction_date", "DESC"]],
-      };
-
-      if (includeStudent) {
-        queryOptions.include = [
-          {
-            model: this.studentModel,
-            attributes: ["id", "name"],
-            as: "student",
-          },
-        ];
-      }
-
-      if (limit) {
-        queryOptions.limit = limit;
-      }
-
-      const points = await this.pointsModel.findAll(queryOptions);
-      return points.map((record) => record.toJSON());
-    } catch (error) {
-      throw new Error(`Failed to find points by type: ${error.message}`);
-    }
-  }
-
-  /**
-   * Create a new points transaction
-   * @async
-   * @param {Object} pointsData - Points transaction data to create
-   * @returns {Promise<Object>} Created points transaction object
-   * @throws {Error} If points transaction creation fails
-   */
-  async create(pointsData) {
-    try {
-      const points = await this.pointsModel.create({
-        student_id: pointsData.student_id,
-        points: pointsData.points,
-        type: pointsData.type,
-        description: pointsData.description || null,
-        goal_id: pointsData.goal_id || null,
-        transaction_date: pointsData.transaction_date || new Date(),
-        created_at: new Date(),
+      const pointsLogs = await this.pointsLogModel.findAll({
+        where: { related_goal_id: goalId },
+        order: [["created_at", "DESC"]],
       });
 
-      return points.toJSON();
+      return pointsLogs.map((record) => record.toJSON());
     } catch (error) {
-      throw new Error(`Failed to create points transaction: ${error.message}`);
+      throw new Error(`Failed to find points by goal ID: ${error.message}`);
     }
   }
 
   /**
-   * Update a points transaction by ID
+   * Calculate total points for a student
    * @async
-   * @param {number} id - Points transaction ID
-   * @param {Object} updates - Fields to update
-   * @returns {Promise<Object|null>} Updated points transaction object or null if not found
+   * @param {number} studentId - Student ID
+   * @param {Object} [options] - Calculation options
+   * @returns {Promise<number>} Total points earned by the student
+   * @throws {Error} If calculation fails
+   */
+  async calculateTotalPoints(studentId, options = {}) {
+    try {
+      const { startDate, endDate } = options;
+      const replacements = { studentId };
+
+      let dateFilter = "";
+      if (startDate || endDate) {
+        const dateConditions = [];
+        if (startDate) {
+          dateConditions.push("created_at >= :startDate");
+          replacements.startDate = startDate;
+        }
+        if (endDate) {
+          dateConditions.push("created_at <= :endDate");
+          replacements.endDate = endDate;
+        }
+        dateFilter = `AND ${dateConditions.join(" AND ")}`;
+      }
+
+      const sql = `
+        SELECT COALESCE(SUM(points), 0) as total_points
+        FROM points_log
+        WHERE student_id = :studentId ${dateFilter}
+      `;
+
+      const [result] = await this.sequelize.query(sql, {
+        replacements,
+        type: this.sequelize.QueryTypes.SELECT,
+      });
+
+      return parseInt(result.total_points) || 0;
+    } catch (error) {
+      throw new Error(`Failed to calculate total points: ${error.message}`);
+    }
+  }
+
+  /**
+   * Update student's total points in the student record
+   * @async
+   * @param {number} studentId - Student ID
+   * @param {number} newTotalPoints - New total points value
+   * @returns {Promise<boolean>} True if update was successful
    * @throws {Error} If update operation fails
    */
-  async update(id, updates) {
+  async updateStudentPoints(studentId, newTotalPoints) {
     try {
-      const [affectedRows] = await this.pointsModel.update(updates, {
-        where: { id },
-      });
+      const [affectedRows] = await this.studentModel.update(
+        { points: newTotalPoints },
+        { where: { id: studentId } }
+      );
 
-      if (affectedRows === 0) {
-        return null;
-      }
-
-      return await this.findById(id);
+      return affectedRows > 0;
     } catch (error) {
-      throw new Error(`Failed to update points transaction: ${error.message}`);
+      throw new Error(`Failed to update student points: ${error.message}`);
     }
   }
 
   /**
-   * Delete a points transaction by ID
+   * Delete a points log entry by ID
    * @async
-   * @param {number} id - Points transaction ID
-   * @returns {Promise<boolean>} True if deleted, false if not found
-   * @throws {Error} If delete operation fails
+   * @param {number} id - Points log ID to delete
+   * @returns {Promise<boolean>} True if deletion was successful
+   * @throws {Error} If deletion operation fails
    */
   async delete(id) {
     try {
-      const deletedRows = await this.pointsModel.destroy({
+      const affectedRows = await this.pointsLogModel.destroy({
         where: { id },
       });
 
-      return deletedRows > 0;
+      return affectedRows > 0;
     } catch (error) {
-      throw new Error(`Failed to delete points transaction: ${error.message}`);
+      throw new Error(`Failed to delete points log entry: ${error.message}`);
     }
   }
 
@@ -358,11 +336,11 @@ export class SequelizePointsRepository extends IPointsRepository {
       if (startDate || endDate) {
         const dateConditions = [];
         if (startDate) {
-          dateConditions.push("transaction_date >= :startDate");
+          dateConditions.push("created_at >= :startDate");
           replacements.startDate = startDate;
         }
         if (endDate) {
-          dateConditions.push("transaction_date <= :endDate");
+          dateConditions.push("created_at <= :endDate");
           replacements.endDate = endDate;
         }
         dateFilter = `AND ${dateConditions.join(" AND ")}`;
@@ -370,15 +348,11 @@ export class SequelizePointsRepository extends IPointsRepository {
 
       const sql = `
         SELECT
-          SUM(CASE WHEN type IN ('earned', 'bonus') THEN points ELSE 0 END) as total_earned,
-          SUM(CASE WHEN type IN ('redeemed', 'penalty') THEN points ELSE 0 END) as total_spent,
-          SUM(CASE WHEN type IN ('earned', 'bonus') THEN points ELSE -points END) as current_balance,
-          COUNT(*) as total_transactions,
-          SUM(CASE WHEN type = 'earned' THEN points ELSE 0 END) as earned_points,
-          SUM(CASE WHEN type = 'bonus' THEN points ELSE 0 END) as bonus_points,
-          SUM(CASE WHEN type = 'redeemed' THEN points ELSE 0 END) as redeemed_points,
-          SUM(CASE WHEN type = 'penalty' THEN points ELSE 0 END) as penalty_points
-        FROM points
+          SUM(CASE WHEN points > 0 THEN points ELSE 0 END) as total_earned,
+          SUM(CASE WHEN points < 0 THEN ABS(points) ELSE 0 END) as total_spent,
+          SUM(points) as current_balance,
+          COUNT(*) as total_transactions
+        FROM points_log
         WHERE student_id = :studentId ${dateFilter}
       `;
 
@@ -393,12 +367,6 @@ export class SequelizePointsRepository extends IPointsRepository {
         total_spent: parseInt(result.total_spent) || 0,
         current_balance: parseInt(result.current_balance) || 0,
         total_transactions: parseInt(result.total_transactions) || 0,
-        breakdown: {
-          earned_points: parseInt(result.earned_points) || 0,
-          bonus_points: parseInt(result.bonus_points) || 0,
-          redeemed_points: parseInt(result.redeemed_points) || 0,
-          penalty_points: parseInt(result.penalty_points) || 0,
-        },
       };
     } catch (error) {
       throw new Error(`Failed to get student points balance: ${error.message}`);
@@ -421,11 +389,11 @@ export class SequelizePointsRepository extends IPointsRepository {
       if (startDate || endDate) {
         const dateConditions = [];
         if (startDate) {
-          dateConditions.push("p.transaction_date >= :startDate");
+          dateConditions.push("p.created_at >= :startDate");
           replacements.startDate = startDate;
         }
         if (endDate) {
-          dateConditions.push("p.transaction_date <= :endDate");
+          dateConditions.push("p.created_at <= :endDate");
           replacements.endDate = endDate;
         }
         dateFilter = `AND ${dateConditions.join(" AND ")}`;
@@ -435,11 +403,9 @@ export class SequelizePointsRepository extends IPointsRepository {
         SELECT
           p.student_id,
           s.name as student_name,
-          SUM(CASE WHEN p.type IN ('earned', 'bonus') THEN p.points ELSE -p.points END) as total_balance,
-          SUM(CASE WHEN p.type = 'earned' THEN p.points ELSE 0 END) as earned_points,
-          SUM(CASE WHEN p.type = 'bonus' THEN p.points ELSE 0 END) as bonus_points,
+          SUM(p.points) as total_balance,
           COUNT(*) as total_transactions
-        FROM points p
+        FROM points_log p
         JOIN students s ON p.student_id = s.id
         WHERE 1=1 ${dateFilter}
         GROUP BY p.student_id, s.name
@@ -456,8 +422,6 @@ export class SequelizePointsRepository extends IPointsRepository {
         student_id: row.student_id,
         student_name: row.student_name,
         total_balance: parseInt(row.total_balance),
-        earned_points: parseInt(row.earned_points),
-        bonus_points: parseInt(row.bonus_points),
         total_transactions: parseInt(row.total_transactions),
       }));
     } catch (error) {
@@ -481,11 +445,11 @@ export class SequelizePointsRepository extends IPointsRepository {
       if (startDate || endDate) {
         const dateConditions = [];
         if (startDate) {
-          dateConditions.push("transaction_date >= :startDate");
+          dateConditions.push("created_at >= :startDate");
           replacements.startDate = startDate;
         }
         if (endDate) {
-          dateConditions.push("transaction_date <= :endDate");
+          dateConditions.push("created_at <= :endDate");
           replacements.endDate = endDate;
         }
         dateFilter = `WHERE ${dateConditions.join(" AND ")}`;
@@ -495,14 +459,11 @@ export class SequelizePointsRepository extends IPointsRepository {
         SELECT
           COUNT(DISTINCT student_id) as active_students,
           COUNT(*) as total_transactions,
-          SUM(CASE WHEN type IN ('earned', 'bonus') THEN points ELSE 0 END) as total_points_awarded,
-          SUM(CASE WHEN type IN ('redeemed', 'penalty') THEN points ELSE 0 END) as total_points_spent,
-          AVG(CASE WHEN type IN ('earned', 'bonus') THEN points ELSE 0 END) as avg_points_per_transaction,
-          SUM(CASE WHEN type = 'earned' THEN points ELSE 0 END) as earned_points,
-          SUM(CASE WHEN type = 'bonus' THEN points ELSE 0 END) as bonus_points,
-          SUM(CASE WHEN type = 'redeemed' THEN points ELSE 0 END) as redeemed_points,
-          SUM(CASE WHEN type = 'penalty' THEN points ELSE 0 END) as penalty_points
-        FROM points
+          SUM(CASE WHEN points > 0 THEN points ELSE 0 END) as total_points_awarded,
+          SUM(CASE WHEN points < 0 THEN ABS(points) ELSE 0 END) as total_points_spent,
+          AVG(ABS(points)) as avg_points_per_transaction,
+          SUM(CASE WHEN points > 0 THEN points ELSE 0 END) as earned_points
+        FROM points_log
         ${dateFilter}
       `;
 
@@ -521,12 +482,6 @@ export class SequelizePointsRepository extends IPointsRepository {
           (parseInt(result.total_points_spent) || 0),
         avg_points_per_transaction:
           parseFloat(result.avg_points_per_transaction) || 0,
-        breakdown: {
-          earned_points: parseInt(result.earned_points) || 0,
-          bonus_points: parseInt(result.bonus_points) || 0,
-          redeemed_points: parseInt(result.redeemed_points) || 0,
-          penalty_points: parseInt(result.penalty_points) || 0,
-        },
       };
     } catch (error) {
       throw new Error(
@@ -536,115 +491,66 @@ export class SequelizePointsRepository extends IPointsRepository {
   }
 
   /**
-   * Count points transactions with optional filters
+   * Count points log entries, optionally filtered by student
    * @async
-   * @param {Object} [filters] - Filters to apply
-   * @returns {Promise<number>} Total count of points transactions
+   * @param {Object} options - Query options
+   * @param {number} options.studentId - Optional student ID to filter
+   * @returns {Promise<number>} Count of matching points log entries
    * @throws {Error} If count operation fails
    */
-  async count(filters = {}) {
+  async count(options = {}) {
     try {
       const whereClause = {};
 
-      if (filters.studentId) {
-        whereClause.student_id = filters.studentId;
+      if (options.studentId) {
+        whereClause.student_id = options.studentId;
       }
 
-      if (filters.type) {
-        whereClause.type = filters.type;
-      }
-
-      if (filters.startDate && filters.endDate) {
-        whereClause.transaction_date = {
-          [Op.between]: [filters.startDate, filters.endDate],
-        };
-      } else if (filters.startDate) {
-        whereClause.transaction_date = {
-          [Op.gte]: filters.startDate,
-        };
-      } else if (filters.endDate) {
-        whereClause.transaction_date = {
-          [Op.lte]: filters.endDate,
-        };
-      }
-
-      return await this.pointsModel.count({ where: whereClause });
+      return await this.pointsLogModel.count({ where: whereClause });
     } catch (error) {
-      throw new Error(`Failed to count points transactions: ${error.message}`);
+      throw new Error(`Failed to count points logs: ${error.message}`);
     }
   }
 
   /**
-   * Award points to a student for goal completion
+   * Award points to a student for completing a goal
    * @async
    * @param {number} studentId - Student ID
-   * @param {number} goalId - Goal ID
-   * @param {number} basePoints - Base points for completion
-   * @param {boolean} onTime - Whether goal was completed on time
-   * @returns {Promise<Array<Object>>} Array of created points transactions
-   * @throws {Error} If award operation fails
+   * @param {number} pointsToAward - Points to award
+   * @param {number} goalId - Goal ID that was completed
+   * @returns {Promise<Object>} Created points log entry
+   * @throws {Error} If operation fails
    */
-  async awardGoalPoints(studentId, goalId, basePoints = 2, onTime = false) {
+  async awardGoalPoints(studentId, pointsToAward, goalId) {
     try {
-      const transactions = [];
-
-      // Award base points for completion
-      const baseTransaction = await this.create({
+      return await this.createPointsLog({
         student_id: studentId,
-        goal_id: goalId,
-        points: basePoints,
-        type: "earned",
-        description: "Goal completion points",
-        transaction_date: new Date(),
+        points: pointsToAward,
+        reason: "Goal completion",
+        related_goal_id: goalId,
       });
-      transactions.push(baseTransaction);
-
-      // Award bonus points if completed on time
-      if (onTime) {
-        const bonusTransaction = await this.create({
-          student_id: studentId,
-          goal_id: goalId,
-          points: 3,
-          type: "bonus",
-          description: "On-time completion bonus",
-          transaction_date: new Date(),
-        });
-        transactions.push(bonusTransaction);
-      }
-
-      return transactions;
     } catch (error) {
       throw new Error(`Failed to award goal points: ${error.message}`);
     }
   }
 
   /**
-   * Redeem points for a student
+   * Redeem points for a student (deduct from total)
    * @async
    * @param {number} studentId - Student ID
-   * @param {number} pointsToRedeem - Number of points to redeem
-   * @param {string} description - Description of redemption
-   * @returns {Promise<Object|null>} Created redemption transaction or null if insufficient balance
-   * @throws {Error} If redemption operation fails
+   * @param {number} pointsToRedeem - Points to redeem
+   * @param {string} reason - Reason for redemption
+   * @returns {Promise<Object>} Created points log entry with negative points
+   * @throws {Error} If operation fails
    */
-  async redeemPoints(studentId, pointsToRedeem, description) {
+  async redeemPoints(studentId, pointsToRedeem, reason = "Points redemption") {
     try {
-      // Check current balance
-      const balance = await this.getStudentBalance(studentId);
-
-      if (balance.current_balance < pointsToRedeem) {
-        return null; // Insufficient balance
-      }
-
-      const transaction = await this.create({
+      return await this.createPointsLog({
         student_id: studentId,
-        points: pointsToRedeem,
-        type: "redeemed",
-        description: description,
-        transaction_date: new Date(),
+        points: -pointsToRedeem,
+        reason,
+        related_goal_id: null,
       });
-
-      return transaction;
     } catch (error) {
       throw new Error(`Failed to redeem points: ${error.message}`);
     }
@@ -654,7 +560,7 @@ export class SequelizePointsRepository extends IPointsRepository {
    * Get recent points activity for analytics
    * @async
    * @param {Object} [options] - Query options
-   * @returns {Promise<Array<Object>>} Recent points transactions
+   * @returns {Promise<Array<Object>>} Recent points log entries
    * @throws {Error} If query fails
    */
   async getRecentActivity(options = {}) {
@@ -664,13 +570,23 @@ export class SequelizePointsRepository extends IPointsRepository {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
 
-      return await this.findAll({
-        studentId,
-        startDate,
-        includeStudent: true,
+      const whereClause = { created_at: { [Op.gte]: startDate } };
+      if (studentId) {
+        whereClause.student_id = studentId;
+      }
+
+      return await this.pointsLogModel.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: this.studentModel,
+            attributes: ["id", "name"],
+            required: false,
+          },
+        ],
+        order: [["created_at", "DESC"]],
         limit,
-        orderBy: "transaction_date",
-        orderDirection: "DESC",
+        raw: false,
       });
     } catch (error) {
       throw new Error(`Failed to get recent points activity: ${error.message}`);
@@ -678,19 +594,21 @@ export class SequelizePointsRepository extends IPointsRepository {
   }
 
   /**
-   * Bulk create points transactions
+   * Bulk create points log entries
    * @async
-   * @param {Array<Object>} pointsData - Array of points transaction data
-   * @returns {Promise<Array<Object>>} Array of created points transactions
+   * @param {Array<Object>} pointsData - Array of points log data
+   * @returns {Promise<Array<Object>>} Array of created points log entries
    * @throws {Error} If bulk creation fails
    */
   async bulkCreate(pointsData) {
     try {
-      const transactions = await this.pointsModel.bulkCreate(
+      const transactions = await this.pointsLogModel.bulkCreate(
         pointsData.map((data) => ({
-          ...data,
-          transaction_date: data.transaction_date || new Date(),
-          created_at: new Date(),
+          student_id: data.student_id,
+          points: data.points,
+          reason: data.reason || null,
+          related_goal_id: data.related_goal_id || null,
+          created_at: data.created_at || new Date(),
         })),
         {
           returning: true,
@@ -700,7 +618,7 @@ export class SequelizePointsRepository extends IPointsRepository {
       return transactions.map((transaction) => transaction.toJSON());
     } catch (error) {
       throw new Error(
-        `Failed to bulk create points transactions: ${error.message}`
+        `Failed to bulk create points log entries: ${error.message}`
       );
     }
   }

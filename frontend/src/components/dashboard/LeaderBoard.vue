@@ -7,33 +7,33 @@
         <ul>
           <li
             v-for="(entry, index) in leaderboard"
-            :key="entry.id"
+            :key="entry.student.id"
             class="text-lg flex justify-between items-center py-2 px-4 rounded-lg hover:bg-gray-100 cursor-pointer"
-            @click="goToGoals(entry.student_id)"
+            @click="goToGoals(entry.student.id)"
           >
             <div class="flex items-center">
               <div class="flex items-center gap-1 rounded-full w-12 me-2">
                 <i
                   class="pi pi-trophy me-2"
                   :class="[
-                    index < 3 ? 'visible' : 'invisible',
-                    index === 0
+                    entry.rank < 4 ? 'visible' : 'invisible',
+                    entry.rank === 1
                       ? 'text-yellow-500' // Gold
-                      : index === 1
+                      : entry.rank === 2
                       ? 'text-gray-400' // Silver
-                      : index === 2
+                      : entry.rank === 3
                       ? 'text-amber-600' // Bronze
                       : 'text-gray-300',
                   ]"
                 ></i>
                 <span class="font-semibold text-neutral-500">{{
-                  index + 1
+                  entry.rank
                 }}</span>
               </div>
-              <span class="font-medium">{{ entry.student_name }} </span>
+              <span class="font-medium">{{ entry.student.name }} </span>
             </div>
             <span>
-              <span class="font-bold">{{ entry.total_points }}</span>
+              <span class="font-bold">{{ entry.points }}</span>
             </span>
           </li>
         </ul>

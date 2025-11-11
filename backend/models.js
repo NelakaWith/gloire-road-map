@@ -183,5 +183,5 @@ export const Attendance = sequelize.define(
 Student.hasMany(Goal, { foreignKey: "student_id" });
 Goal.belongsTo(Student, { foreignKey: "student_id" });
 
-Student.hasMany(Attendance, { foreignKey: "student_id" });
-Attendance.belongsTo(Student, { foreignKey: "student_id" });
+Student.hasMany(Attendance, { foreignKey: "student_id", as: "attendance" });
+Attendance.belongsTo(Student, { foreignKey: "student_id", as: "student" });

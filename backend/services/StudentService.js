@@ -425,9 +425,12 @@ export class StudentService extends IStudentService {
 
       let transactions = [];
       if (includeTransactions) {
-        transactions = await this.pointsRepository.findByStudentId(studentId, {
-          limit,
-        });
+        transactions = await this.pointsRepository.findPointsLogByStudent(
+          studentId,
+          {
+            limit,
+          }
+        );
       }
 
       return {
@@ -635,7 +638,7 @@ export class StudentService extends IStudentService {
           startDate: cutoffDate,
           limit: 1,
         }),
-        this.pointsRepository.findByStudentId(studentId, {
+        this.pointsRepository.findPointsLogByStudent(studentId, {
           startDate: cutoffDate,
           limit: 1,
         }),
@@ -824,9 +827,9 @@ export class StudentService extends IStudentService {
         orderBy: "date",
         orderDirection: "DESC",
       }),
-      this.pointsRepository.findByStudentId(studentId, {
+      this.pointsRepository.findPointsLogByStudent(studentId, {
         limit: 4,
-        orderBy: "transaction_date",
+        orderBy: "created_at",
         orderDirection: "DESC",
       }),
     ]);

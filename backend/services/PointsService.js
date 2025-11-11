@@ -64,19 +64,17 @@ export class PointsService extends IPointsService {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const todayEarnings = await this.pointsRepository.findByStudentId(
+      const todayEarnings = await this.pointsRepository.findPointsLogByStudent(
         pointsData.student_id,
         {
           startDate: today,
           endDate: tomorrow,
-          type: "earned",
         }
       );
 
-      const todayTotal = todayEarnings.reduce(
-        (sum, transaction) => sum + transaction.points,
-        0
-      );
+      const todayTotal = todayEarnings
+        .filter((transaction) => transaction.points > 0)
+        .reduce((sum, transaction) => sum + transaction.points, 0);
 
       if (todayTotal + pointsData.points > maxDailyAward) {
         throw new Error(
@@ -87,10 +85,11 @@ export class PointsService extends IPointsService {
       }
 
       // Create points transaction
-      const transaction = await this.pointsRepository.create({
-        ...pointsData,
-        type: pointsData.type || "earned",
-        transaction_date: new Date(),
+      const transaction = await this.pointsRepository.createPointsLog({
+        student_id: pointsData.student_id,
+        points: pointsData.points,
+        reason: pointsData.reason || null,
+        related_goal_id: pointsData.related_goal_id || null,
       });
 
       // Get updated balance
@@ -149,12 +148,11 @@ export class PointsService extends IPointsService {
       }
 
       // Create redemption transaction
-      const transaction = await this.pointsRepository.create({
+      const transaction = await this.pointsRepository.createPointsLog({
         student_id: redemptionData.student_id,
-        points: redemptionData.points,
-        type: "redeemed",
-        description: redemptionData.description,
-        transaction_date: new Date(),
+        points: -redemptionData.points,
+        reason: redemptionData.description || "Points redeemed",
+        related_goal_id: null,
       });
 
       // Get updated balance
@@ -221,11 +219,11 @@ export class PointsService extends IPointsService {
 
       let recentTransactions = [];
       if (includeHistory) {
-        recentTransactions = await this.pointsRepository.findByStudentId(
+        recentTransactions = await this.pointsRepository.findPointsLogByStudent(
           studentId,
           {
             limit,
-            orderBy: "transaction_date",
+            orderBy: "created_at",
             orderDirection: "DESC",
           }
         );
@@ -280,28 +278,34 @@ export class PointsService extends IPointsService {
       const offset = (page - 1) * limit;
 
       const findOptions = {
-        type,
         startDate,
         endDate,
-        orderBy,
+        orderBy: "created_at",
         orderDirection,
         limit,
         offset,
       };
 
-      const transactions = await this.pointsRepository.findByStudentId(
+      const transactions = await this.pointsRepository.findPointsLogByStudent(
         studentId,
         findOptions
       );
+
+      // Filter by type if provided (client-side filtering)
+      const filteredTransactions = type
+        ? transactions.filter((t) => {
+            if (type === "earned" || type === "bonus") return t.points > 0;
+            if (type === "redeemed" || type === "penalty") return t.points < 0;
+            return true;
+          })
+        : transactions;
+
       const totalCount = await this.pointsRepository.count({
         studentId,
-        type,
-        startDate,
-        endDate,
       });
 
       // Enhance transactions with computed fields
-      const enhancedTransactions = transactions.map((transaction) => ({
+      const enhancedTransactions = filteredTransactions.map((transaction) => ({
         ...transaction,
         category: this._categorizeTransaction(transaction),
         impact: this._calculateTransactionImpact(transaction),
@@ -355,15 +359,15 @@ export class PointsService extends IPointsService {
 
       // Business rules for updates
       const transactionAge =
-        Date.now() - new Date(existingTransaction.transaction_date);
+        Date.now() - new Date(existingTransaction.created_at);
       const maxEditWindow = 24 * 60 * 60 * 1000; // 24 hours
 
       if (transactionAge > maxEditWindow) {
         throw new Error("Cannot edit transactions older than 24 hours");
       }
 
-      if (existingTransaction.type === "redeemed") {
-        throw new Error("Cannot edit redemption transactions");
+      if (existingTransaction.points < 0) {
+        throw new Error("Cannot edit redemption/penalty transactions");
       }
 
       // Perform update
@@ -393,16 +397,15 @@ export class PointsService extends IPointsService {
       }
 
       // Business rules for deletion
-      const transactionAge =
-        Date.now() - new Date(transaction.transaction_date);
+      const transactionAge = Date.now() - new Date(transaction.created_at);
       const maxDeleteWindow = 1 * 60 * 60 * 1000; // 1 hour
 
       if (transactionAge > maxDeleteWindow) {
         throw new Error("Cannot delete transactions older than 1 hour");
       }
 
-      if (transaction.type === "redeemed") {
-        throw new Error("Cannot delete redemption transactions");
+      if (transaction.points < 0) {
+        throw new Error("Cannot delete redemption/penalty transactions");
       }
 
       const deleted = await this.pointsRepository.delete(transactionId);
@@ -538,25 +541,21 @@ export class PointsService extends IPointsService {
       const transactions = [];
 
       // Award base completion points
-      const baseTransaction = await this.pointsRepository.create({
+      const baseTransaction = await this.pointsRepository.createPointsLog({
         student_id: studentId,
-        goal_id: goalId,
+        related_goal_id: goalId,
         points: pointsBreakdown.basePoints,
-        type: "earned",
-        description: "Goal completion points",
-        transaction_date: new Date(),
+        reason: "Goal completion points",
       });
       transactions.push(baseTransaction);
 
       // Award bonus points if completed on time
       if (onTime && pointsBreakdown.bonusPoints > 0) {
-        const bonusTransaction = await this.pointsRepository.create({
+        const bonusTransaction = await this.pointsRepository.createPointsLog({
           student_id: studentId,
-          goal_id: goalId,
+          related_goal_id: goalId,
           points: pointsBreakdown.bonusPoints,
-          type: "bonus",
-          description: "On-time completion bonus",
-          transaction_date: new Date(),
+          reason: "On-time completion bonus",
         });
         transactions.push(bonusTransaction);
       }
@@ -758,24 +757,6 @@ export class PointsService extends IPointsService {
         if (transactionData.points === undefined) {
           errors.push("Points amount is required");
         }
-        if (!transactionData.type) {
-          errors.push("Transaction type is required");
-        }
-        if (!transactionData.description) {
-          errors.push("Description is required");
-        }
-      }
-
-      // Validate transaction type
-      if (
-        transactionData.type &&
-        !["earned", "bonus", "redeemed", "penalty"].includes(
-          transactionData.type
-        )
-      ) {
-        errors.push(
-          "Transaction type must be one of: earned, bonus, redeemed, penalty"
-        );
       }
 
       // Validate points amount
@@ -797,18 +778,6 @@ export class PointsService extends IPointsService {
         transactionData.description.length > 200
       ) {
         errors.push("Description must be 200 characters or less");
-      }
-
-      // Validate transaction date
-      if (transactionData.transaction_date) {
-        const transactionDate = new Date(transactionData.transaction_date);
-        const now = new Date();
-
-        if (isNaN(transactionDate.getTime())) {
-          errors.push("Invalid transaction date format");
-        } else if (transactionDate > now) {
-          errors.push("Transaction date cannot be in the future");
-        }
       }
 
       return {
@@ -919,12 +888,11 @@ export class PointsService extends IPointsService {
         );
       }
 
-      const transaction = await this.pointsRepository.create({
+      const transaction = await this.pointsRepository.createPointsLog({
         student_id: penaltyData.student_id,
-        points: penaltyData.points,
-        type: "penalty",
-        description: penaltyData.description,
-        transaction_date: new Date(),
+        points: -penaltyData.points,
+        reason: penaltyData.description || "Penalty",
+        related_goal_id: null,
       });
 
       const balance = await this.pointsRepository.getStudentBalance(
@@ -1054,13 +1022,20 @@ export class PointsService extends IPointsService {
   }
 
   _categorizeTransaction(transaction) {
-    const categories = {
-      earned: "Achievement",
-      bonus: "Bonus",
-      redeemed: "Redemption",
-      penalty: "Penalty",
-    };
-    return categories[transaction.type] || "Other";
+    // Categorize based on points value and reason field
+    if (transaction.points > 0) {
+      // Positive points = earned or bonus
+      if (transaction.reason && transaction.reason.includes("bonus")) {
+        return "Bonus";
+      }
+      return "Achievement";
+    } else {
+      // Negative points = redeemed or penalty
+      if (transaction.reason && transaction.reason.includes("penalty")) {
+        return "Penalty";
+      }
+      return "Redemption";
+    }
   }
 
   _calculateTransactionImpact(transaction) {
@@ -1087,13 +1062,15 @@ export class PointsService extends IPointsService {
 
   async _calculateEarningRate(studentId) {
     // Calculate points earned per day over last 30 days
-    const recentEarnings = await this.pointsRepository.findByStudentId(
+    const recentEarnings = await this.pointsRepository.findPointsLogByStudent(
       studentId,
       {
-        type: "earned",
         startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
       }
     );
+
+    // Filter for positive points only (earned points)
+    const earnedPoints = recentEarnings.filter((t) => t.points > 0);
 
     return (
       Math.round(
@@ -1130,11 +1107,14 @@ export class PointsService extends IPointsService {
   }
 
   async _calculatePointsTrend(studentId) {
-    const recent = await this.pointsRepository.findByStudentId(studentId, {
-      limit: 10,
-      orderBy: "transaction_date",
-      orderDirection: "DESC",
-    });
+    const recent = await this.pointsRepository.findPointsLogByStudent(
+      studentId,
+      {
+        limit: 10,
+        orderBy: "created_at",
+        orderDirection: "DESC",
+      }
+    );
 
     if (recent.length < 3) return "stable";
 
