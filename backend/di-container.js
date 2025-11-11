@@ -15,6 +15,7 @@ import { SequelizeGoalRepository } from "./repositories/SequelizeGoalRepository.
 import { SequelizeAttendanceRepository } from "./repositories/SequelizeAttendanceRepository.js";
 import { SequelizePointsRepository } from "./repositories/SequelizePointsRepository.js";
 import { SequelizeUserRepository } from "./repositories/SequelizeUserRepository.js";
+import { SequelizeAnalyticsRepository } from "./repositories/SequelizeAnalyticsRepository.js";
 
 // Import services
 import { StudentService } from "./services/StudentService.js";
@@ -22,6 +23,7 @@ import { GoalService } from "./services/GoalService.js";
 import { AttendanceService } from "./services/AttendanceService.js";
 import { PointsService } from "./services/PointsService.js";
 import { AuthService } from "./services/AuthService.js";
+import { AnalyticsService } from "./services/AnalyticsService.js";
 
 /**
  * Dependency Injection Container
@@ -73,6 +75,9 @@ class DIContainer {
 
     // User Repository
     this.repositories.user = new SequelizeUserRepository(User, sequelize);
+
+    // Analytics Repository
+    this.repositories.analytics = new SequelizeAnalyticsRepository(sequelize);
   }
 
   /**
@@ -113,6 +118,9 @@ class DIContainer {
       this.repositories.user,
       process.env.JWT_SECRET
     );
+
+    // Analytics Service
+    this.services.analytics = new AnalyticsService(this.repositories.analytics);
   }
 
   /**

@@ -7,17 +7,12 @@
  */
 
 import express from "express";
-import {
-  getOverview,
-  getCompletions,
-  getThroughput,
-  getBacklog,
-  getOverdue,
-  getTimeToComplete,
-  getByStudent,
-} from "../services/analytics.js";
+import DIContainer from "../di-container.js";
 
 const router = express.Router();
+
+// Get service instance from DI container
+const analyticsService = DIContainer.getService("analytics");
 
 // Helper: parse and validate date strings. Returns ISO date string (YYYY-MM-DD) or null
 function parseDateSafe(value) {
@@ -64,7 +59,10 @@ router.get("/overview", async (req, res) => {
         .status(400)
         .json({ message: "start_date must be <= end_date" });
     }
-    const data = await getOverview({ start_date: start, end_date: end });
+    const data = await analyticsService.getOverview({
+      start_date: start,
+      end_date: end,
+    });
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -103,7 +101,7 @@ router.get("/completions", async (req, res) => {
       req.query.group_by && allowed.has(req.query.group_by)
         ? req.query.group_by
         : "week";
-    const rows = await getCompletions({
+    const rows = await analyticsService.getCompletions({
       start_date: start,
       end_date: end,
       group_by,
@@ -149,7 +147,7 @@ router.get("/by-student", async (req, res) => {
     if (Number.isNaN(offset) || offset < 0) offset = 0;
     if (limit > maxLimit) limit = maxLimit;
 
-    const rows = await getByStudent({
+    const rows = await analyticsService.getByStudent({
       start_date: start,
       end_date: end,
       limit,
@@ -194,7 +192,7 @@ router.get("/throughput", async (req, res) => {
         ? req.query.group_by
         : "month";
 
-    const rows = await getThroughput({
+    const rows = await analyticsService.getThroughput({
       start_date: start,
       end_date: end,
       group_by,
@@ -224,7 +222,7 @@ router.get("/backlog", async (req, res) => {
     if (Number.isNaN(top_n) || top_n < 1) top_n = 10;
     if (top_n > 100) top_n = 100;
 
-    const data = await getBacklog({ as_of, top_n });
+    const data = await analyticsService.getBacklog({ as_of, top_n });
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -249,7 +247,11 @@ router.get("/overdue", async (req, res) => {
     let end = parseDateSafe(req.query.end_date);
     // as_of uses parseDateSafe semantics but can be omitted
     const as_of = parseDateSafe(req.query.as_of) || null;
-    const data = await getOverdue({ start_date: start, end_date: end, as_of });
+    const data = await analyticsService.getOverdue({
+      start_date: start,
+      end_date: end,
+      as_of,
+    });
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -282,7 +284,7 @@ router.get("/time-to-complete", async (req, res) => {
         .status(400)
         .json({ message: "start_date must be <= end_date" });
     }
-    const result = await getTimeToComplete({
+    const result = await analyticsService.getTimeToComplete({
       start_date: start,
       end_date: end,
     });
