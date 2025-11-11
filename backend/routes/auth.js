@@ -6,12 +6,13 @@
  */
 
 import express from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { User } from "../models.js";
+import DIContainer from "../di-container.js";
 import { validate, authSchemas } from "../middleware/validation.js";
 
 const router = express.Router();
+
+// Get service instance from DI container
+const authService = DIContainer.getService("auth");
 
 /**
  * Register admin user (restricted to first user only)
@@ -29,13 +30,16 @@ const router = express.Router();
 
  */
 router.post("/register", validate(authSchemas.register), async (req, res) => {
-  const { userName, email, password } = req.body;
-  const count = await User.count();
-  if (count > 0)
-    return res.status(403).json({ message: "User already exists" });
-  const hash = await bcrypt.hash(password, 10);
-  await User.create({ user_name: userName, email, password_hash: hash });
-  res.json({ message: "User registered" });
+  try {
+    const { userName, email, password } = req.body;
+    const result = await authService.register(userName, email, password);
+    res.json(result);
+  } catch (error) {
+    console.error("Registration error:", error);
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Registration failed" });
+  }
 });
 
 /**
@@ -55,43 +59,51 @@ router.post("/register", validate(authSchemas.register), async (req, res) => {
  * @security Uses bcrypt for password comparison and JWT for token generation
  */
 router.post("/login", validate(authSchemas.login), async (req, res) => {
-  const { userName, password } = req.body;
-  const user = await User.findOne({ where: { user_name: userName } });
-  if (!user)
-    return res.status(401).json({ message: "Invalid Username or password" });
-  const match = await bcrypt.compare(password, user.password_hash);
-  if (!match)
-    return res.status(401).json({ message: "Invalid Username or password" });
-  const token = jwt.sign(
-    { id: user.id, userName: user.user_name, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: "8h" }
-  );
+  try {
+    const { userName, password } = req.body;
+    const result = await authService.login(userName, password);
 
-  // Set httpOnly cookie with JWT token
-  res.cookie("auth_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Use HTTPS in production
-    sameSite: "strict",
-    maxAge: 8 * 60 * 60 * 1000, // 8 hours in milliseconds
-  });
+    // Set httpOnly cookie with JWT token
+    res.cookie("auth_token", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Use HTTPS in production
+      sameSite: "strict",
+      maxAge: 8 * 60 * 60 * 1000, // 8 hours in milliseconds
+    });
 
-  res.json({
-    message: "Login successful",
-    user: { id: user.id, userName: user.user_name, email: user.email },
-  });
+    res.json({
+      message: "Login successful",
+      user: result.user,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Login failed" });
+  }
 });
 
 // Get current user
 router.get("/me", async (req, res) => {
-  const token = req.cookies.auth_token;
-  if (!token)
-    return res.status(401).json({ message: "Invalid Login, Please try again" });
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
-    res.json({ id: user.id, userName: user.userName, email: user.email });
-  } catch {
-    res.status(403).json({ message: "Invalid Login, Please try again" });
+    const token = req.cookies.auth_token;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Invalid Login, Please try again" });
+    }
+
+    const result = await authService.getCurrentUser(token);
+    if (!result.success) {
+      return res.status(result.status || 401).json({ message: result.message });
+    }
+
+    res.json(result.user);
+  } catch (error) {
+    console.error("Get current user error:", error);
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Failed to get user data" });
   }
 });
 
@@ -103,17 +115,23 @@ router.get("/me", async (req, res) => {
  * @returns {Object} Success message
  * @throws {500} Internal server error if cookie clearing fails
  */
-router.post("/logout", (req, res) => {
+router.post("/logout", async (req, res) => {
   try {
+    const token = req.cookies.auth_token;
+    const result = await authService.logout(token);
+
     res.clearCookie("auth_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-    res.json({ message: "Logout successful" });
+
+    res.json({ message: result.message || "Logout successful" });
   } catch (error) {
-    console.error("Error during logout:", error);
-    res.status(500).json({ message: "Failed to logout" });
+    console.error("Logout error:", error);
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Failed to logout" });
   }
 });
 
