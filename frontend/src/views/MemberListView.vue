@@ -79,8 +79,10 @@ const editingStudent = ref(null);
 const editLoading = ref(false);
 
 const fetchStudents = async () => {
-  const res = await axios.get("/api/students");
-  students.value = res.data;
+  const res = await axios.get("/api/students", {
+    params: { limit: 100 },
+  });
+  students.value = Array.isArray(res.data) ? res.data : res.data.students || [];
 };
 
 const editStudent = (student) => {

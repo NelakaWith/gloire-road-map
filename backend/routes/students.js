@@ -24,6 +24,8 @@ const studentService = DIContainer.getService("student");
  * @route GET /api/students
  * @description Retrieves all students with their attendance counts
  * @access Private (requires JWT authentication)
+ * @param {number} [req.query.page=1] - Page number for pagination
+ * @param {number} [req.query.limit=50] - Number of students per page
  * @returns {Array<Object>} Array of student objects with attendance data
  * @returns {number} returns.days_attended - Number of days marked as present
  * @returns {number} returns.total_attendance_records - Total attendance records
@@ -31,8 +33,19 @@ const studentService = DIContainer.getService("student");
  */
 router.get("/", async (req, res) => {
   try {
-    const result = await studentService.getAllStudents({ includeStats: true });
-    res.json(result.students);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const result = await studentService.getAllStudents({
+      includeStats: true,
+      page,
+      limit,
+    });
+
+    res.json({
+      students: result.students,
+      pagination: result.pagination,
+    });
   } catch (error) {
     console.error("Error fetching students:", error);
     res.status(500).json({ message: "Failed to fetch students" });

@@ -126,8 +126,13 @@ const fetchStudentAndGoals = async () => {
     goals.value = [];
     return;
   }
-  const resStudent = await axios.get(`/api/students`);
-  const student = resStudent.data.find((s) => s.id == studentId);
+  const resStudent = await axios.get(`/api/students`, {
+    params: { limit: 100 },
+  });
+  const studentData = Array.isArray(resStudent.data)
+    ? resStudent.data
+    : resStudent.data.students || [];
+  const student = studentData.find((s) => s.id == studentId);
   selectedStudent.value = student;
   if (student) {
     const resGoals = await axios.get(`/api/students/${studentId}/goals`);
