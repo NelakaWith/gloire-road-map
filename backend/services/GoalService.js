@@ -440,7 +440,8 @@ export class GoalService extends IGoalService {
 
         if (isNaN(targetDate.getTime())) {
           errors.push("Invalid target date format");
-        } else if (targetDate < today) {
+        } else if (!isUpdate && targetDate < today) {
+          // Only enforce future dates for new goals
           errors.push("Target date cannot be in the past");
         }
       }

@@ -190,8 +190,7 @@ export const goalSchemas = {
       "string.max": "Goal description cannot exceed 1000 characters",
     }),
 
-    target_date: Joi.date().iso().min("now").allow(null).optional().messages({
-      "date.min": "Target date cannot be in the past",
+    target_date: Joi.date().iso().allow(null).optional().messages({
       "date.format": "Target date must be in ISO format (YYYY-MM-DD)",
     }),
 
