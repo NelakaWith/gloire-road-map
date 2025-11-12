@@ -89,7 +89,7 @@
             <Column field="Student.name" header="Student" sortable>
               <template #body="{ data }">
                 <div class="font-medium">
-                  {{ data.Student?.name || "Unknown" }}
+                  {{ data.student.name || "Unknown" }}
                 </div>
               </template>
             </Column>

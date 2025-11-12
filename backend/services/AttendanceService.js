@@ -162,6 +162,7 @@ export class AttendanceService extends IAttendanceService {
       if (start_date || end_date) {
         const options = {
           dateRange: {},
+          includeStudent: true,
         };
         if (start_date) options.dateRange.start = start_date;
         if (end_date) options.dateRange.end = end_date;
@@ -173,12 +174,16 @@ export class AttendanceService extends IAttendanceService {
 
       // If only filtering by status, get all records and filter
       if (status) {
-        const allRecords = await this.attendanceRepository.findAll();
+        const allRecords = await this.attendanceRepository.findAll({
+          includeStudent: true,
+        });
         return (allRecords || []).filter((r) => r.status === status);
       }
 
       // Return all records
-      const allRecords = await this.attendanceRepository.findAll();
+      const allRecords = await this.attendanceRepository.findAll({
+        includeStudent: true,
+      });
       return allRecords || [];
     } catch (error) {
       throw new Error(`Failed to get attendance records: ${error.message}`);
