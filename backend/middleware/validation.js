@@ -15,7 +15,10 @@ import Joi from "joi";
  */
 export const validate = (schema, property = "body") => {
   return (req, res, next) => {
-    const { error } = schema.validate(req[property], { abortEarly: false });
+    const { error } = schema.validate(req[property], {
+      abortEarly: false,
+      allowUnknown: true,
+    });
 
     if (error) {
       const errors = error.details.map((detail) => ({

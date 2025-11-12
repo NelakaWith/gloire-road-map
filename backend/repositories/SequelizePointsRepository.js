@@ -382,7 +382,7 @@ export class SequelizePointsRepository extends IPointsRepository {
    */
   async getLeaderboard(options = {}) {
     try {
-      const { limit = 10, startDate, endDate } = options;
+      const { limit = 100, startDate, endDate } = options;
       const replacements = { limit };
 
       let dateFilter = "";

@@ -423,7 +423,7 @@ export class PointsService extends IPointsService {
    */
   async getPointsLeaderboard(options = {}) {
     try {
-      const { limit = 10, dateRange = {}, metric = "total_balance" } = options;
+      const { limit = 100, dateRange = {}, metric = "total_balance" } = options;
 
       const leaderboard = await this.pointsRepository.getLeaderboard({
         limit,
