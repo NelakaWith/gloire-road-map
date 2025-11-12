@@ -239,7 +239,7 @@ export class StudentService extends IStudentService {
       }
 
       // Check if student has associated data (business rules)
-      const goalCount = await this.goalRepository.countByStudentId(studentId);
+      const goalCount = await this.goalRepository.countAll({ studentId });
       const attendanceCount = await this.attendanceRepository.count({
         studentId,
       });

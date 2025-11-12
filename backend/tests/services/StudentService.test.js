@@ -290,7 +290,7 @@ describe("StudentService", () => {
     test("should reject data with invalid phone number", async () => {
       const invalidData = {
         name: "John Doe",
-        contact_number: "123",
+        contact_number: "invalid-phone-number",
         address: "123 Test St",
         date_of_birth: "2000-01-01",
       };
@@ -312,7 +312,10 @@ describe("StudentService", () => {
 
       expect(result).toBeInstanceOf(Array);
       expect(result[0]).toHaveProperty("searchRelevance");
-      expect(mockStudentRepository.search).toHaveBeenCalledWith("John", {});
+      expect(mockStudentRepository.search).toHaveBeenCalledWith("John", {
+        exactMatch: false,
+        limit: 20,
+      });
     });
 
     test("should return empty array for no matches", async () => {

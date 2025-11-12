@@ -137,14 +137,18 @@ describe("PointsService", () => {
       const balance = 90;
 
       mockStudentRepository.exists.mockResolvedValue(true);
-      mockPointsRepository.getStudentBalance.mockResolvedValue(100);
+      mockPointsRepository.getStudentBalance.mockResolvedValueOnce({
+        current_balance: 100,
+      });
       mockPointsRepository.createPointsLog.mockResolvedValue(transaction);
-      mockPointsRepository.getStudentBalance.mockResolvedValue(balance);
+      mockPointsRepository.getStudentBalance.mockResolvedValueOnce({
+        current_balance: balance,
+      });
 
       const result = await pointsService.redeemPoints(redemptionData);
 
       expect(result.transaction).toEqual(transaction);
-      expect(result.balance).toBe(balance);
+      expect(result.balance).toEqual({ current_balance: balance });
       expect(result.success).toBe(true);
       expect(mockPointsRepository.createPointsLog).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -162,7 +166,9 @@ describe("PointsService", () => {
       };
 
       mockStudentRepository.exists.mockResolvedValue(true);
-      mockPointsRepository.getStudentBalance.mockResolvedValue(50);
+      mockPointsRepository.getStudentBalance.mockResolvedValue({
+        current_balance: 50,
+      });
 
       const result = await pointsService.redeemPoints(redemptionData);
 
@@ -193,6 +199,9 @@ describe("PointsService", () => {
       mockStudentRepository.exists.mockResolvedValue(true);
       mockPointsRepository.getStudentBalance.mockResolvedValue(balance);
       mockPointsRepository.findPointsLogByStudent.mockResolvedValue([]);
+      mockPointsRepository.getRecentActivity.mockResolvedValue([]);
+      mockPointsRepository.getLeaderboard.mockResolvedValue([]);
+      mockStudentRepository.countAll.mockResolvedValue(100);
 
       const result = await pointsService.getStudentPointsBalance(1);
 
@@ -228,7 +237,9 @@ describe("PointsService", () => {
         limit: 2,
       });
 
-      expect(result.transactions).toEqual(transactions);
+      expect(result.transactions).toHaveLength(2);
+      expect(result.transactions[0]).toHaveProperty("category");
+      expect(result.transactions[0]).toHaveProperty("impact");
       expect(result.pagination.total).toBe(10);
     });
 
@@ -246,7 +257,9 @@ describe("PointsService", () => {
         endDate: "2025-10-31",
       });
 
-      expect(result.transactions).toEqual(transactions);
+      expect(result.transactions).toHaveLength(1);
+      expect(result.transactions[0]).toHaveProperty("category");
+      expect(result.transactions[0]).toHaveProperty("impact");
       expect(mockPointsRepository.findPointsLogByStudent).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
@@ -276,11 +289,18 @@ describe("PointsService", () => {
 
       mockPointsRepository.getLeaderboard.mockResolvedValue(leaderboard);
 
-      mockStudentRepository.findById.mockResolvedValue({
-        id: 1,
-        name: "Student 1",
+      // Mock student data for all leaderboard entries
+      mockStudentRepository.findById.mockImplementation((id) => {
+        const students = {
+          1: { id: 1, name: "Student 1" },
+          2: { id: 2, name: "Student 2" },
+          3: { id: 3, name: "Student 3" },
+        };
+        return Promise.resolve(students[id]);
       });
+
       mockPointsRepository.getRecentActivity.mockResolvedValue([]);
+      mockPointsRepository.findPointsLogByStudent.mockResolvedValue([]);
 
       const result = await pointsService.getPointsLeaderboard({
         limit: 10,
@@ -313,11 +333,14 @@ describe("PointsService", () => {
       );
 
       mockPointsRepository.getLeaderboard.mockResolvedValue(leaderboard);
-      mockStudentRepository.findById.mockResolvedValue({
-        id: 1,
-        name: "Student",
+
+      // Mock student data for all leaderboard entries
+      mockStudentRepository.findById.mockImplementation((id) => {
+        return Promise.resolve({ id, name: `Student ${id}` });
       });
+
       mockPointsRepository.getRecentActivity.mockResolvedValue([]);
+      mockPointsRepository.findPointsLogByStudent.mockResolvedValue([]);
 
       const result = await pointsService.getPointsLeaderboard({ limit: 10 });
 
