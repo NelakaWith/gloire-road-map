@@ -33,3 +33,4 @@ mysql/*.sql
 *.log
 db/seed_data.sql
 security.md
+backend/html
