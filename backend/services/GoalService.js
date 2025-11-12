@@ -261,12 +261,6 @@ export class GoalService extends IGoalService {
       if (!goal) {
         return false;
       }
-
-      // Check if goal can be deleted (business rules)
-      if (goal.is_completed) {
-        throw new Error("Cannot delete completed goals");
-      }
-
       const deleted = await this.goalRepository.delete(goalId);
       return deleted;
     } catch (error) {
