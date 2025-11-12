@@ -593,8 +593,6 @@ export class StudentService extends IStudentService {
 
         if (isNaN(dob.getTime())) {
           errors.push("Invalid date of birth format");
-        } else if (age < 5 || age > 25) {
-          errors.push("Student age must be between 5 and 25 years");
         }
       }
 

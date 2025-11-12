@@ -78,7 +78,11 @@ router.post("/", validate(studentSchemas.create), async (req, res) => {
     res.json({ message: "Student added" });
   } catch (error) {
     console.error("Error creating student:", error);
-    res.status(500).json({ message: "Failed to create student" });
+    res.status(500).json({
+      message: error.message || "Failed to create student",
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 });
 
