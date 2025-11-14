@@ -1,0 +1,16 @@
+# Production Environment Configuration
+# This file defines the production environment settings for GitHub Actions
+
+# Environment URL (optional)
+url: https://roadmap.nelakawithanage.com/
+
+# Required environment variables for deployment
+# These must be set as repository secrets before deployment can proceed
+secrets:
+  - DROPLET_HOST
+  - DROPLET_USER
+  - DROPLET_SSH_KEY
+  - DB_NAME # Production database
+  - DB_USER # Production database user
+  - DB_PASS # Production database password
+  - JWT_SECRET

@@ -1,0 +1,18 @@
+# Demo Environment Configuration
+# This file defines the demo environment settings for GitHub Actions
+
+# Environment URL (optional)
+url: https://roadmap-demo.nelakawithanage.com/
+
+# Required environment variables for deployment
+# These must be set as repository secrets before deployment can proceed
+secrets:
+  - DROPLET_HOST
+  - DROPLET_USER
+  - DROPLET_SSH_KEY
+  - DEMO_DB_NAME # Demo database (separate)
+  - DB_USER
+  - DB_PASS
+  - JWT_SECRET
+# Note: Demo environment uses separate database credentials for complete data isolation
+# but shares the same server infrastructure with different ports and folders
