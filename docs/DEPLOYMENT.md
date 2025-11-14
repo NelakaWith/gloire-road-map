@@ -5,6 +5,7 @@ This project supports deployment to multiple environments using the same GitHub 
 ## Environments
 
 ### Production Environment
+
 - **Domain**: `https://roadmap.nelakawithanage.com/`
 - **Backend Port**: 3005
 - **Frontend Path**: `/var/www/gloire-road-map-live`
@@ -13,6 +14,7 @@ This project supports deployment to multiple environments using the same GitHub 
 - **Triggers**: Tags (`v*`), releases, manual dispatch
 
 ### Demo Environment
+
 - **Domain**: `https://demo.roadmap.nelakawithanage.com/`
 - **Backend Port**: 3007
 - **Frontend Path**: `/var/www/gloire-road-map-demo`
@@ -27,6 +29,7 @@ This project supports deployment to multiple environments using the same GitHub 
 Both production and demo environments are deployed manually using GitHub Actions workflow dispatch:
 
 1. **Production Deployment**:
+
    - Go to GitHub Actions → "Deploy" workflow → "Run workflow"
    - Select "production" environment
    - Or create a git tag: `git tag v1.2.3 && git push origin v1.2.3`
@@ -64,9 +67,11 @@ Use the deployment helper script on the server:
 ## Nginx Configuration
 
 ### Production
+
 Use `nginx_sample.conf` for production configuration.
 
 ### Demo
+
 Use `nginx_demo_sample.conf` for demo configuration.
 
 Both configurations need to be added to your nginx sites and enabled.
@@ -80,7 +85,15 @@ Each environment gets its own `.env` file with appropriate settings:
 
 ## Database
 
-Both environments share the same database but can be configured to use different databases by updating the GitHub secrets.
+Each environment uses its own separate database:
+
+| **Database** | `DB_NAME` | `DEMO_DB_NAME` (separate) |
+| **DB User** | `DB_USER` | `DEMO_DB_USER` (separate) |
+| **DB Password** | `DB_PASS` | `DEMO_DB_PASS` (separate) |
+
+- **Demo**: Uses `DEMO_DB_NAME`, `DEMO_DB_USER`, `DEMO_DB_PASS` secrets
+
+This ensures complete isolation between production and demo data.
 
 ## Monitoring
 
@@ -102,9 +115,46 @@ Both environments share the same database but can be configured to use different
 - Different ports prevent conflicts between environments
 - Separate nginx configurations allow for different SSL certificates if needed
 
+## GitHub Environments Setup
+
+To properly differentiate between production and demo environments in GitHub:
+
+### 1. Create Production Environment
+
+1. Go to your GitHub repository → Settings → Environments
+2. Click "New environment"
+3. Name it `production`
+4. Optionally add environment URL: `https://roadmap.nelakawithanage.com/`
+5. Add any required reviewers or deployment branches if needed
+6. **Required secrets are already configured** in `.github/environments/production.yml`
+
+### 2. Create Demo Environment
+
+1. Click "New environment" again
+2. Name it `demo`
+3. Optionally add environment URL: `https://demo.roadmap.nelakawithanage.com/`
+4. Configure different protection rules if desired (e.g., no reviewers for demo)
+5. **Required secrets are already configured** in `.github/environments/demo.yml`
+
+### Environment Differentiation
+
+| Aspect                 | Production                             | Demo                                        |
+| ---------------------- | -------------------------------------- | ------------------------------------------- |
+| **GitHub Environment** | `production`                           | `demo`                                      |
+| **Domain**             | `roadmap.nelakawithanage.com`          | `demo.roadmap.nelakawithanage.com`          |
+| **Backend Port**       | `3005`                                 | `3007`                                      |
+| **Deploy Folder**      | `~/gloire-road-map`                    | `~/gloire-road-map-demo`                    |
+| **Nginx Folder**       | `/var/www/gloire-road-map-live`        | `/var/www/gloire-road-map-demo`             |
+| **PM2 Process**        | `gloire-road-map-backend`              | `gloire-road-map-backend-demo`              |
+| **CORS Origin**        | `https://roadmap.nelakawithanage.com/` | `https://demo.roadmap.nelakawithanage.com/` |
+| **Database**           | `DB_NAME`                              | `DEMO_DB_NAME` (separate)                   |
+| **DB User**            | `DB_USER`                              | `DEMO_DB_USER` (separate)                   |
+| **DB Password**        | `DB_PASS`                              | `DEMO_DB_PASS` (separate)                   |
+
 ## Next Steps
 
-1. **Update Nginx**: Add the demo config to your server
-2. **DNS Setup**: Point `demo.roadmap.nelakawithanage.com` to your server
-3. **SSL Certificates**: Configure SSL for demo domain
-4. **Test Deployment**: Use manual dispatch in GitHub Actions to test both production and demo environments
+1. **Create GitHub Environments**: Set up production and demo environments in GitHub
+2. **Update Nginx**: Add the demo config to your server
+3. **DNS Setup**: Point `demo.roadmap.nelakawithanage.com` to your server
+4. **SSL Certificates**: Configure SSL for demo domain
+5. **Test Deployment**: Use manual dispatch in GitHub Actions to test both production and demo environments
