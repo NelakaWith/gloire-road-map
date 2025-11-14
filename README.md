@@ -1,4 +1,4 @@
-# 🎯 Gloire Road Map
+# 🧭 Gloire Road Map
 
 > A comprehensive goal tracking and student management platform with real-time analytics and attendance management.
 
@@ -239,4 +239,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-_This project demonstrates modern full-stack development practices, including clean architecture, comprehensive testing, automated deployment, and user-centered design principles._
+> _This project demonstrates modern full-stack development practices, including clean architecture, comprehensive testing, automated deployment, and user-centered design principles._
