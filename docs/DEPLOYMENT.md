@@ -16,7 +16,7 @@ This project supports deployment to multiple environments using the same GitHub 
 ### Demo Environment
 
 - **Domain**: `https://demo.roadmap.nelakawithanage.com/`
-- **Backend Port**: 3007
+- **Backend Port**: 3004
 - **Frontend Path**: `/var/www/gloire-road-map-demo`
 - **Backend Folder**: `~/gloire-road-map-demo`
 - **PM2 Process**: `gloire-road-map-backend-demo`
@@ -81,7 +81,7 @@ Both configurations need to be added to your nginx sites and enabled.
 Each environment gets its own `.env` file with appropriate settings:
 
 - **Production**: `PORT=3005`, `CORS_ORIGIN=https://roadmap.nelakawithanage.com/`
-- **Demo**: `PORT=3007`, `CORS_ORIGIN=https://demo.roadmap.nelakawithanage.com/`
+- **Demo**: `PORT=3004`, `CORS_ORIGIN=https://demo.roadmap.nelakawithanage.com/`
 
 ## Database
 
@@ -143,7 +143,7 @@ To properly differentiate between production and demo environments in GitHub:
 | ---------------------- | -------------------------------------- | ------------------------------------------- |
 | **GitHub Environment** | `production`                           | `demo`                                      |
 | **Domain**             | `roadmap.nelakawithanage.com`          | `roadmap-demo.nelakawithanage.com`          |
-| **Backend Port**       | `3005`                                 | `3007`                                      |
+| **Backend Port**       | `3005`                                 | `3004`                                      |
 | **Deploy Folder**      | `~/gloire-road-map`                    | `~/gloire-road-map-demo`                    |
 | **Nginx Folder**       | `/var/www/gloire-road-map-live`        | `/var/www/gloire-road-map-demo`             |
 | **PM2 Process**        | `gloire-road-map-backend`              | `gloire-road-map-backend-demo`              |

@@ -12,7 +12,7 @@ ACTION=${2:-status}
 if [ "$ENVIRONMENT" = "demo" ]; then
     DEPLOY_FOLDER="gloire-road-map-demo"
     NGINX_FOLDER="/var/www/gloire-road-map-demo"
-    BACKEND_PORT="3007"
+    BACKEND_PORT="3004"
     PM2_NAME="gloire-road-map-backend-demo"
     DOMAIN="demo.roadmap.nelakawithanage.com"
 else
