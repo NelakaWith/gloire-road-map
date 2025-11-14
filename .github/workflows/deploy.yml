@@ -56,7 +56,7 @@ jobs:
         with:
           script: |
             try {
-              const ref = process.env.DEPLOY_TAG || github.sha;
+              const ref = process.env.DEPLOY_TAG || context.sha;
               console.log('Creating deployment for ref:', ref);
               const response = await github.rest.repos.createDeployment({
                 owner: context.repo.owner,
