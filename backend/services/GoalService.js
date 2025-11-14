@@ -228,8 +228,8 @@ export class GoalService extends IGoalService {
       // Award points for completion
       const pointsAwarded = await this.pointsRepository.awardGoalPoints(
         goal.student_id,
-        goalId,
         2, // Base points for completion
+        goalId,
         onTime
       );
 

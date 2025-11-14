@@ -81,6 +81,22 @@ router.patch(
       const { title, description, target_date, is_completed, completed_at } =
         req.body;
 
+      // If marking as completed, check if goal is already completed first
+      if (is_completed === true) {
+        const existingGoal = await goalService.getGoalById(id);
+        if (!existingGoal) {
+          return res.status(404).json({ message: "Goal not found" });
+        }
+
+        // Only call completeGoal if the goal is not already completed
+        if (!existingGoal.is_completed) {
+          const result = await goalService.completeGoal(id);
+          return res.json(result);
+        }
+        // If already completed, fall through to regular update
+      }
+
+      // Regular update for all other cases
       const updated = await goalService.updateGoal(id, {
         title,
         description,

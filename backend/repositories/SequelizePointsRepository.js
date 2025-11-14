@@ -513,22 +513,25 @@ export class SequelizePointsRepository extends IPointsRepository {
   }
 
   /**
-   * Award points to a student for completing a goal
+   * Award points for goal completion
    * @async
    * @param {number} studentId - Student ID
-   * @param {number} pointsToAward - Points to award
+   * @param {number} basePoints - Base points for completion
    * @param {number} goalId - Goal ID that was completed
-   * @returns {Promise<Object>} Created points log entry
+   * @param {boolean} [onTime=false] - Whether goal was completed on time
+   * @returns {Promise<Array<Object>>} Array of created points log entries
    * @throws {Error} If operation fails
    */
-  async awardGoalPoints(studentId, pointsToAward, goalId) {
+  async awardGoalPoints(studentId, basePoints, goalId, onTime = false) {
     try {
-      return await this.createPointsLog({
+      const totalPoints = basePoints + (onTime ? 1 : 0); // Add 1 bonus point for on-time completion
+      const pointsLog = await this.createPointsLog({
         student_id: studentId,
-        points: pointsToAward,
+        points: totalPoints,
         reason: "Goal completion",
         related_goal_id: goalId,
       });
+      return [pointsLog]; // Return as array for consistency
     } catch (error) {
       throw new Error(`Failed to award goal points: ${error.message}`);
     }
