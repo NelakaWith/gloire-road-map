@@ -2,7 +2,7 @@
 # This file defines the demo environment settings for GitHub Actions
 
 # Environment URL (optional)
-url: https://demo.roadmap.nelakawithanage.com/
+url: https://roadmap-demo.nelakawithanage.com/
 
 # Required environment variables for deployment
 # These must be set as repository secrets before deployment can proceed
