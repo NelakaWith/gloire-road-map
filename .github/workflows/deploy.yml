@@ -169,7 +169,7 @@ jobs:
             if [ "${{ env.DEPLOY_ENV }}" = "demo" ]; then
               DEPLOY_FOLDER="gloire-road-map-demo"
               NGINX_FOLDER="/var/www/gloire-road-map-demo"
-              BACKEND_PORT="3007"
+              BACKEND_PORT="3004"
               CORS_ORIGIN="https://demo.roadmap.nelakawithanage.com/"
               PM2_NAME="gloire-road-map-backend-demo"
             else
