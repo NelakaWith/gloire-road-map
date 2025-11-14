@@ -72,7 +72,7 @@ Use `nginx_sample_prod.conf` for production configuration.
 
 ### Demo
 
-Use `nginx_demo_sample.conf` for demo configuration.
+Use `nginx_sample_demo.conf` for demo configuration.
 
 Both configurations need to be added to your nginx sites and enabled.
 
@@ -86,10 +86,11 @@ Each environment gets its own `.env` file with appropriate settings:
 ## Database
 
 Each environment uses its own separate database:
-
+| Aspect | Production | Demo |
+|-----------------|----------------|---------------------------|
 | **Database** | `DB_NAME` | `DEMO_DB_NAME` (separate) |
-| **DB User** | `DB_USER` | `DEMO_DB_USER` (separate) |
-| **DB Password** | `DB_PASS` | `DEMO_DB_PASS` (separate) |
+| **DB User** | `DB_USER` | `DB_USER` |
+| **DB Password** | `DB_PASS` | `DB_PASS` |
 
 - **Demo**: Uses `DEMO_DB_NAME`, `DEMO_DB_USER`, `DEMO_DB_PASS` secrets
 
