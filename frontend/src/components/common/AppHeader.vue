@@ -3,7 +3,7 @@
     <Menubar>
       <template #start>
         <div class="nav-brand">
-          <h1 class="brand-title">Gloire Road Map</h1>
+          <h1 class="brand-title">🧭 RoadMap</h1>
         </div>
       </template>
       <template #end>

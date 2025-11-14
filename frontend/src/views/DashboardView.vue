@@ -1,8 +1,8 @@
 <template>
   <div class="dashboard">
     <div class="dashboard-header">
-      <h1 class="dashboard-title">Dashboard</h1>
-      <p class="dashboard-subtitle">Welcome back!</p>
+      <h1 class="dashboard-title">Welcome back!</h1>
+      <p class="dashboard-subtitle">“Win the morning, win the day.”</p>
     </div>
     <LeaderBoard />
   </div>
@@ -26,7 +26,7 @@ import LeaderBoard from "../components/dashboard/LeaderBoard.vue";
 }
 
 .dashboard-subtitle {
-  @apply text-lg text-gray-600;
+  @apply text-neutral-500;
 }
 
 .dashboard-grid {
