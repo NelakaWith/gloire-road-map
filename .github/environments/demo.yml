@@ -10,9 +10,10 @@ secrets:
   - DROPLET_HOST
   - DROPLET_USER
   - DROPLET_SSH_KEY
+  - DB_NAME # Production database
+  - DB_USER # Shared database user
+  - DB_PASS # Shared database password
   - DEMO_DB_NAME # Demo database (separate)
-  - DB_USER
-  - DB_PASS
   - JWT_SECRET
-# Note: Demo environment uses separate database credentials for complete data isolation
-# but shares the same server infrastructure with different ports and folders
+# Note: Demo environment uses separate database name for data isolation
+# but shares the same database user/password and server infrastructure
