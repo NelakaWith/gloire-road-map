@@ -6,39 +6,44 @@
 echo "=== GitHub Environments Setup Verification ==="
 echo ""
 
-# Check if environment files exist
-echo "Checking environment configuration files:"
+# Check if environment configuration files exist
+echo "Checking GitHub Actions environment configuration files:"
 if [ -f ".github/environments/production.yml" ]; then
-    echo "✅ Production environment config found"
+    echo "✅ Production environment config found (.github/environments/production.yml)"
     if grep -q "secrets:" ".github/environments/production.yml"; then
-        echo "   ✅ Required secrets configured"
+        echo "   ✅ Required secrets declared in config"
     else
-        echo "   ❌ Required secrets not configured"
+        echo "   ❌ Required secrets not declared in config"
     fi
 else
-    echo "❌ Production environment config missing"
+    echo "❌ Production environment config missing (.github/environments/production.yml)"
 fi
 
 if [ -f ".github/environments/demo.yml" ]; then
-    echo "✅ Demo environment config found"
+    echo "✅ Demo environment config found (.github/environments/demo.yml)"
     if grep -q "secrets:" ".github/environments/demo.yml"; then
-        echo "   ✅ Required secrets configured"
+        echo "   ✅ Required secrets declared in config"
     else
-        echo "   ❌ Required secrets not configured"
+        echo "   ❌ Required secrets not declared in config"
     fi
 else
-    echo "❌ Demo environment config missing"
+    echo "❌ Demo environment config missing (.github/environments/demo.yml)"
 fi
 
 echo ""
+echo "⚠️  IMPORTANT: These files declare REQUIRED secrets, but do NOT contain actual secret values."
+echo "   Actual secret values must be set in GitHub repository settings → Secrets and variables → Actions"
+echo ""
+
 echo "Next steps to complete setup:"
 echo "1. Go to GitHub repository → Settings → Environments"
-echo "2. Create 'production' environment"
-echo "3. Create 'demo' environment"
-echo "4. Configure required secrets in repository settings"
+echo "2. Create 'production' environment (will use .github/environments/production.yml)"
+echo "3. Create 'demo' environment (will use .github/environments/demo.yml)"
+echo "4. Configure required secrets in repository settings → Secrets and variables → Actions"
 echo "5. Test deployment workflow"
 echo ""
-echo "Required GitHub Secrets:"
+
+echo "Required GitHub Repository Secrets (set in Settings → Secrets and variables → Actions):"
 echo "- DROPLET_HOST: Your server IP"
 echo "- DROPLET_USER: SSH username"
 echo "- DROPLET_SSH_KEY: Private SSH key"

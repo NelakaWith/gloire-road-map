@@ -1,5 +1,22 @@
 # GitHub Secrets Setup Guide
 
+## Understanding Environment Files vs Secrets
+
+### Environment Configuration Files (`.github/environments/*.yml`)
+
+These files **declare which secrets are required** for each environment:
+
+- `.github/environments/production.yml` - Declares secrets needed for production
+- `.github/environments/demo.yml` - Declares secrets needed for demo
+- **These files do NOT contain actual secret values** - they just list requirements
+
+### Repository Secrets (GitHub Settings)
+
+The actual secret values are stored in **GitHub repository secrets**:
+
+- Location: Repository → Settings → Secrets and variables → Actions
+- These contain the real values used during deployment
+
 ## Repository Secrets (Global)
 
 These secrets are available to all environments:
@@ -22,8 +39,8 @@ Set these in repository settings → Secrets and variables → Actions:
 Set these in repository settings → Secrets and variables → Actions:
 
 - `DEMO_DB_NAME` - Demo database name (separate)
-- `DEMO_DB_USER` - Demo database username (separate)
-- `DEMO_DB_PASS` - Demo database password (separate)
+- `DB_USER` - Demo database username (separate)
+- `DB_PASS` - Demo database password (separate)
 
 ## How It Works
 
