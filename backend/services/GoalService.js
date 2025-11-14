@@ -1,11 +1,12 @@
 /**
  * @fileoverview Goal Service Implementation
- * @description Concrete implementation of IGoalService providing business logic operations
- * for goal management. Handles goal validation, completion tracking, analytics, and
- * integration with points system.
+ * @description Service layer for goal-related business logic and operations.
+ * Handles goal creation, updates, completion, analytics, and validation.
  * @author @NelakaWith
  * @version 1.0.0
  */
+
+import { POINTS } from "../config/pointsConfig.js";
 
 import { IGoalService } from "../interfaces/services/IGoalService.js";
 
@@ -228,7 +229,7 @@ export class GoalService extends IGoalService {
       // Award points for completion
       const pointsAwarded = await this.pointsRepository.awardGoalPoints(
         goal.student_id,
-        2, // Base points for completion
+        POINTS.GOAL_COMPLETION_BASE, // Base points for completion
         goalId,
         onTime
       );

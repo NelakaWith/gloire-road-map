@@ -7,6 +7,7 @@
  */
 
 import Sequelize, { Op } from "sequelize";
+import { POINTS } from "../config/pointsConfig.js";
 import { IPointsRepository } from "../interfaces/repositories/IPointsRepository.js";
 
 /**
@@ -524,7 +525,8 @@ export class SequelizePointsRepository extends IPointsRepository {
    */
   async awardGoalPoints(studentId, basePoints, goalId, onTime = false) {
     try {
-      const totalPoints = basePoints + (onTime ? 1 : 0); // Add 1 bonus point for on-time completion
+      const totalPoints =
+        basePoints + (onTime ? POINTS.GOAL_COMPLETION_BONUS : 0); // Add bonus point for on-time completion
       const pointsLog = await this.createPointsLog({
         student_id: studentId,
         points: totalPoints,

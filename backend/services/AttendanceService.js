@@ -8,6 +8,7 @@
  */
 
 import { IAttendanceService } from "../interfaces/services/IAttendanceService.js";
+import { POINTS } from "../config/pointsConfig.js";
 
 /**
  * Concrete Attendance Service Implementation
@@ -73,7 +74,7 @@ export class AttendanceService extends IAttendanceService {
       if (attendanceData.status === "present") {
         await this.pointsRepository.createPointsLog({
           student_id: attendanceData.student_id,
-          points: 1,
+          points: POINTS.ATTENDANCE_PRESENT,
           reason: "Daily attendance bonus",
           related_goal_id: null,
         });
@@ -82,7 +83,8 @@ export class AttendanceService extends IAttendanceService {
       return {
         attendance,
         validation: validationResult,
-        pointsAwarded: attendanceData.status === "present" ? 1 : 0,
+        pointsAwarded:
+          attendanceData.status === "present" ? POINTS.ATTENDANCE_PRESENT : 0,
         success: true,
       };
     } catch (error) {
