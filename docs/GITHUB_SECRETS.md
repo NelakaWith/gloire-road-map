@@ -38,9 +38,7 @@ Set these in repository settings → Secrets and variables → Actions:
 
 Set these in repository settings → Secrets and variables → Actions:
 
-- `DEMO_DB_NAME` - Demo database name (separate)
-- `DB_USER` - Demo database username (separate)
-- `DB_PASS` - Demo database password (separate)
+- `DEMO_DB_NAME` - Demo database name (separate database, shared user/password)
 
 ## How It Works
 

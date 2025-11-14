@@ -86,15 +86,11 @@ Each environment gets its own `.env` file with appropriate settings:
 ## Database
 
 Each environment uses its own separate database:
-| Aspect | Production | Demo |
-|-----------------|----------------|---------------------------|
-| **Database** | `DB_NAME` | `DEMO_DB_NAME` (separate) |
-| **DB User** | `DB_USER` | `DB_USER` |
-| **DB Password** | `DB_PASS` | `DB_PASS` |
 
-- **Demo**: Uses `DEMO_DB_NAME`, `DEMO_DB_USER`, `DEMO_DB_PASS` secrets
+- **Production**: Uses `DB_NAME` with `DB_USER`/`DB_PASS`
+- **Demo**: Uses `DEMO_DB_NAME` with same `DB_USER`/`DB_PASS` (separate database, shared credentials)
 
-This ensures complete isolation between production and demo data.
+This provides data isolation while using the same database user account.
 
 ## Monitoring
 
@@ -149,8 +145,8 @@ To properly differentiate between production and demo environments in GitHub:
 | **PM2 Process**        | `gloire-road-map-backend`              | `gloire-road-map-backend-demo`              |
 | **CORS Origin**        | `https://roadmap.nelakawithanage.com/` | `https://roadmap-demo.nelakawithanage.com/` |
 | **Database**           | `DB_NAME`                              | `DEMO_DB_NAME` (separate)                   |
-| **DB User**            | `DB_USER`                              |                                             |
-| **DB Password**        | `DB_PASS`                              |                                             |
+| **DB User**            | `DB_USER` (shared)                     | `DB_USER` (shared)                          |
+| **DB Password**        | `DB_PASS` (shared)                     | `DB_PASS` (shared)                          |
 
 ## Next Steps
 

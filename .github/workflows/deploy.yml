@@ -197,8 +197,8 @@ jobs:
             # Database configuration
             DB_HOST=127.0.0.1
             DB_NAME="${{ env.DEPLOY_ENV == 'demo' && secrets.DEMO_DB_NAME || secrets.DB_NAME }}"
-            DB_USER="${{ env.DEPLOY_ENV == 'demo' && secrets.DEMO_DB_USER || secrets.DB_USER }}"
-            DB_PASSWORD="${{ env.DEPLOY_ENV == 'demo' && secrets.DEMO_DB_PASS || secrets.DB_PASS }}"
+            DB_USER="${{ secrets.DB_USER }}"
+            DB_PASSWORD="${{ secrets.DB_PASS }}"
 
             # JWT secret for authentication
             JWT_SECRET="${{ secrets.JWT_SECRET }}"
