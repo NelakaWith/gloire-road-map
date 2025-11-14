@@ -68,7 +68,7 @@ Use the deployment helper script on the server:
 
 ### Production
 
-Use `nginx_sample.conf` for production configuration.
+Use `nginx_sample_prod.conf` for production configuration.
 
 ### Demo
 
@@ -141,15 +141,15 @@ To properly differentiate between production and demo environments in GitHub:
 | Aspect                 | Production                             | Demo                                        |
 | ---------------------- | -------------------------------------- | ------------------------------------------- |
 | **GitHub Environment** | `production`                           | `demo`                                      |
-| **Domain**             | `roadmap.nelakawithanage.com`          | `demo.roadmap.nelakawithanage.com`          |
+| **Domain**             | `roadmap.nelakawithanage.com`          | `roadmap-demo.nelakawithanage.com`          |
 | **Backend Port**       | `3005`                                 | `3007`                                      |
 | **Deploy Folder**      | `~/gloire-road-map`                    | `~/gloire-road-map-demo`                    |
 | **Nginx Folder**       | `/var/www/gloire-road-map-live`        | `/var/www/gloire-road-map-demo`             |
 | **PM2 Process**        | `gloire-road-map-backend`              | `gloire-road-map-backend-demo`              |
-| **CORS Origin**        | `https://roadmap.nelakawithanage.com/` | `https://demo.roadmap.nelakawithanage.com/` |
+| **CORS Origin**        | `https://roadmap.nelakawithanage.com/` | `https://roadmap-demo.nelakawithanage.com/` |
 | **Database**           | `DB_NAME`                              | `DEMO_DB_NAME` (separate)                   |
-| **DB User**            | `DB_USER`                              | `DEMO_DB_USER` (separate)                   |
-| **DB Password**        | `DB_PASS`                              | `DEMO_DB_PASS` (separate)                   |
+| **DB User**            | `DB_USER`                              |                                             |
+| **DB Password**        | `DB_PASS`                              |                                             |
 
 ## Next Steps
 
