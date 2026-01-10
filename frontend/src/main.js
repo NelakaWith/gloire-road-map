@@ -8,6 +8,7 @@ import "./assets/styles/main.scss";
 import App from "./App.vue";
 import router from "./router";
 import registerPrime from "./plugins/prime-components";
+import { setupAxiosInterceptors } from "./utils/axiosConfig";
 
 const app = createApp(App);
 app.use(PrimeVue, {
@@ -25,6 +26,9 @@ app.use(pinia);
 app.use(router);
 // register primevue components globally
 registerPrime(app);
+
+// Setup axios interceptors for global error handling
+setupAxiosInterceptors();
 
 // Validate saved token on app startup (call /me) so UI stays in sync after refresh
 import { useAuthStore } from "./store/auth";

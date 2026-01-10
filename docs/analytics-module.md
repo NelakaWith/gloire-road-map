@@ -179,5 +179,3 @@ Implementing items 1–4 gives the biggest immediate ROI for the dashboard MVP. 
 - Priority: MVP — focus on overview + weekly time-series + top students
 
 ---
-
-If you want, I can: add the non-destructive migration file to `db/`, scaffold the `AnalyticsView.vue` in the frontend, or implement `/api/analytics/by-student` next. Which should I do next?
