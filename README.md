@@ -191,6 +191,17 @@ Innovative attendance marking system that allows:
    - Backend API: http://localhost:3000
    - API Documentation: http://localhost:3000/api-docs
 
+## 🎭 Demo Environment
+
+Try out the application with demo credentials:
+
+**Demo User Credentials:**
+
+- Username: `demo`
+- Password: `demo123`
+
+> **Note**: The demo user has full access to explore all features including goal management, analytics, and attendance tracking. Demo data is periodically reset to maintain a clean testing environment.
+
 ### Testing
 
 ```bash
