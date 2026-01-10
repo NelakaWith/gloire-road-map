@@ -10,7 +10,7 @@
           <i class="pi pi-info-circle text-yellow-500"></i>
         </div>
         <div class="ml-3">
-          <p class="text-sm font-medium">Demo Environment</p>
+          <p class="text-sm font-medium">This is a Demo Environment</p>
           <p class="text-sm mt-1">
             Username: <strong>demo</strong><br />
             Password: <strong>demo123</strong>
@@ -81,7 +81,13 @@ const router = useRouter();
 const auth = useAuthStore();
 
 const isDemo = computed(() => {
-  return window.location.hostname.includes("demo");
+  // Show demo banner in demo environments, localhost, or development mode
+  return (
+    window.location.hostname.includes("demo") ||
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    import.meta.env.DEV
+  );
 });
 
 const initialValues = {
