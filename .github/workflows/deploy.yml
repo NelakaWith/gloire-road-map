@@ -215,12 +215,24 @@ jobs:
             echo "Creating frontend .env.production..."
             if [ "${{ env.DEPLOY_ENV }}" = "demo" ]; then
               echo "VITE_SHOW_DEMO_BANNER=true" > .env.production
+              echo "Demo banner enabled for this build"
             else
               echo "VITE_SHOW_DEMO_BANNER=false" > .env.production
+              echo "Demo banner disabled for this build"
             fi
 
+            # Verify .env.production content
+            echo "Content of .env.production:"
+            cat .env.production
+
             npm install
-            npm run build
+
+            # Build with explicit environment variable to ensure it's picked up
+            if [ "${{ env.DEPLOY_ENV }}" = "demo" ]; then
+              VITE_SHOW_DEMO_BANNER=true npm run build
+            else
+              VITE_SHOW_DEMO_BANNER=false npm run build
+            fi
 
             # Copy frontend build directly to nginx directory
             if sudo -n true 2>/dev/null; then
