@@ -3,11 +3,21 @@
  * @description Entry point for the Gloire Road Map backend API server.
  * Configures middleware, routes, database connection, and starts the HTTP server.
  * @author Gloire Road Map Team
- * @version 1.0.0
  */
 
 import express from "express";
 import cors from "cors";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+// Read version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, "package.json"), "utf8")
+);
+const VERSION = packageJson.version;
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
@@ -111,7 +121,7 @@ app.use(
 app.get("/", (req, res) => {
   res.json({
     name: "Gloire Road Map API",
-    version: "1.0.0",
+    version: VERSION,
     description: "Student management and goal tracking system",
   });
 });
