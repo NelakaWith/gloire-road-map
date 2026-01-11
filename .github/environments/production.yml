@@ -2,7 +2,10 @@
 # This file defines the production environment settings for GitHub Actions
 
 # Environment URL (optional)
-url: https://roadmap.nelakawithanage.com/
+url: https://roadmap.nelaka.xyz/
+
+# Frontend Configuration
+# VITE_SHOW_DEMO_BANNER: Automatically set to 'false' for production environment in deploy.yml
 
 # Required environment variables for deployment
 # These must be set as repository secrets before deployment can proceed

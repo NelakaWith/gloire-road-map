@@ -112,5 +112,3 @@ This document lists high-impact features you can add to the project to make it s
 - A "How it was built" section in README describing implementation highlights.
 
 ---
-
-If you want, I can scaffold one of the features now. Tell me which feature to start with and I will implement the first slice and push changes to the repo.

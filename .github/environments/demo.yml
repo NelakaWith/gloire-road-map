@@ -2,7 +2,10 @@
 # This file defines the demo environment settings for GitHub Actions
 
 # Environment URL (optional)
-url: https://roadmap-demo.nelakawithanage.com/
+url: https://roadmap-demo.nelaka.xyz/
+
+# Frontend Configuration
+# VITE_SHOW_DEMO_BANNER: Automatically set to 'true' for demo environment in deploy.yml
 
 # Required environment variables for deployment
 # These must be set as repository secrets before deployment can proceed
