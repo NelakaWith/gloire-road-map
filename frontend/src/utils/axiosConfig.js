@@ -4,18 +4,16 @@
  */
 
 import axios from "axios";
-import { useToast } from "primevue/usetoast";
 
 /**
  * Setup axios interceptors for global error handling
  * @description Configures response interceptor to handle common HTTP errors like rate limiting (429)
+ * @param {Object} toast - PrimeVue toast instance from useToast() composable
  */
-export function setupAxiosInterceptors() {
+export function setupAxiosInterceptors(toast) {
   axios.interceptors.response.use(
     (response) => response,
     (error) => {
-      const toast = useToast();
-
       if (error.response?.status === 429) {
         // Too Many Requests - Rate Limited
         const retryAfter = error.response.data?.retryAfter || "a few minutes";
