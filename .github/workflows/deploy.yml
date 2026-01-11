@@ -112,6 +112,8 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
+        env:
+          VITE_SHOW_DEMO_BANNER: ${{ env.DEPLOY_ENV == 'demo' && 'true' || 'false' }}
         run: |
           npm install
           npm run build
@@ -208,6 +210,15 @@ jobs:
             pm2 restart $PM2_NAME || pm2 start server.js --name $PM2_NAME
 
             cd ~/$DEPLOY_FOLDER/frontend
+
+            # Create .env.production for frontend build
+            echo "Creating frontend .env.production..."
+            if [ "${{ env.DEPLOY_ENV }}" = "demo" ]; then
+              echo "VITE_SHOW_DEMO_BANNER=true" > .env.production
+            else
+              echo "VITE_SHOW_DEMO_BANNER=false" > .env.production
+            fi
+
             npm install
             npm run build
 

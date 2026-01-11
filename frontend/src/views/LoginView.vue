@@ -3,18 +3,29 @@
     <!-- Demo Banner -->
     <div
       v-if="isDemo"
-      class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded"
+      class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded"
     >
-      <div class="flex">
+      <div class="flex items-start">
         <div class="flex-shrink-0">
-          <i class="pi pi-info-circle text-yellow-500"></i>
+          <i class="pi pi-info-circle text-blue-500"></i>
         </div>
-        <div class="ml-3">
-          <p class="text-sm font-medium">This is a Demo Environment</p>
-          <p class="text-sm mt-1">
-            Username: <strong>demo</strong><br />
-            Password: <strong>demo123</strong>
-          </p>
+        <div class="ml-3 flex-1">
+          <p class="text-sm font-medium">Demo Environment</p>
+          <p class="text-sm mt-1">Click below to view demo credentials</p>
+          <button
+            @click="showCredentials = !showCredentials"
+            class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800 underline focus:outline-none"
+            type="button"
+          >
+            {{ showCredentials ? "Hide" : "Show" }} Demo Credentials
+          </button>
+          <div
+            v-if="showCredentials"
+            class="mt-2 text-sm bg-blue-100 p-2 rounded"
+          >
+            <p><strong>Username:</strong> demo</p>
+            <p><strong>Password:</strong> demo123</p>
+          </div>
         </div>
       </div>
     </div>
@@ -77,17 +88,14 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "../store/auth";
 
 const error = ref("");
+const showCredentials = ref(false);
 const router = useRouter();
 const auth = useAuthStore();
 
 const isDemo = computed(() => {
-  // Show demo banner in demo environments, localhost, or development mode
-  return (
-    window.location.hostname.includes("demo") ||
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1" ||
-    import.meta.env.DEV
-  );
+  // Only show demo banner when explicitly enabled via environment variable
+  // This prevents accidental credential exposure on unintended domains
+  return import.meta.env.VITE_SHOW_DEMO_BANNER === "true";
 });
 
 const initialValues = {
