@@ -2,16 +2,16 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "./store/auth";
 
 // Layouts
-import AuthLayout from "./layouts/AuthLayout.vue";
-import MainLayout from "./layouts/MainLayout.vue";
+const AuthLayout = () => import("./layouts/AuthLayout.vue");
+const MainLayout = () => import("./layouts/MainLayout.vue");
 
 // Views
-import LoginView from "./views/LoginView.vue";
-import DashboardView from "./views/DashboardView.vue";
-import StudentListView from "./views/MemberListView.vue";
-import GoalListView from "./views/GoalListView.vue";
-import AnalyticsView from "./views/AnalyticsView.vue";
-import AttendanceView from "./views/AttendanceView.vue";
+const LoginView = () => import("./views/LoginView.vue");
+const DashboardView = () => import("./views/DashboardView.vue");
+const StudentListView = () => import("./views/MemberListView.vue");
+const GoalListView = () => import("./views/GoalListView.vue");
+const AnalyticsView = () => import("./views/AnalyticsView.vue");
+const AttendanceView = () => import("./views/AttendanceView.vue");
 
 const routes = [
   // Auth routes with AuthLayout
