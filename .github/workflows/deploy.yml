@@ -117,7 +117,7 @@ jobs:
           npm run build
 
       - name: Clone repository on droplet
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DROPLET_HOST }}
           username: ${{ secrets.DROPLET_USER }}
@@ -159,7 +159,7 @@ jobs:
             cat package.json | grep '"version"' || echo "No package.json found"
 
       - name: Run deploy script on droplet
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DROPLET_HOST }}
           username: ${{ secrets.DROPLET_USER }}
