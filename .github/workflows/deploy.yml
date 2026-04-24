@@ -26,7 +26,7 @@ jobs:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     env:
       DEPLOY_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name) || '' }}
-      DEPLOY_ENV: ${{ github.event.inputs.environment || 'production' }}
+      DEPLOY_ENV: ${{ github.event.inputs.environment || 'demo' }}
     steps:
       - name: Determine DEPLOY_TAG from latest release (when triggered by Release workflow)
         if: ${{ github.event_name == 'workflow_run' }}
