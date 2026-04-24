@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Determine DEPLOY_TAG from latest release (when triggered by Release workflow)
         if: ${{ github.event_name == 'workflow_run' }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
           script: |
             // Query the repository for the most recent release and export its tag
@@ -48,7 +48,7 @@ jobs:
 
       - name: Create GitHub Deployment
         id: create_deployment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
           script: |
             try {
@@ -254,7 +254,7 @@ jobs:
 
       - name: Mark deployment as successful
         if: ${{ success() && steps.create_deployment.outputs.result != '' }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         env:
           DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
         with:
@@ -282,7 +282,7 @@ jobs:
 
       - name: Mark deployment as failed
         if: ${{ failure() && steps.create_deployment.outputs.result != '' }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         env:
           DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.result }}
         with:
