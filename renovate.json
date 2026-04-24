@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":separateMajorReleases",
+    ":combinePatchMinorReleases",
+    ":ignoreUnstable"
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true
+    }
+  ],
+  "separateMinorPatch": false,
+  "npm": {
+    "fileMatch": [
+      "package.json",
+      "frontend/package.json",
+      "backend/package.json"
+    ]
+  },
+  "commitMessagePrefix": "chore(deps): "
+}
