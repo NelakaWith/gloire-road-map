@@ -115,7 +115,7 @@ jobs:
         env:
           VITE_SHOW_DEMO_BANNER: ${{ env.DEPLOY_ENV == 'demo' && 'true' || 'false' }}
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Clone repository on droplet
