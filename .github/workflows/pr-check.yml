@@ -29,9 +29,14 @@ jobs:
         id: check_skip
         run: |
           PR_TITLE=$(jq -r .pull_request.title "$GITHUB_EVENT_PATH")
+          PR_USER=$(jq -r .pull_request.user.login "$GITHUB_EVENT_PATH")
           SKIP_TOKEN='[skip pr-check]'
           echo "PR title: $PR_TITLE"
-          if echo "$PR_TITLE" | grep -Fq "$SKIP_TOKEN"; then
+          echo "PR user: $PR_USER"
+          if [[ "$PR_USER" == "renovate[bot]" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "PR opened by renovate[bot]; skipping commitlint checks."
+          elif echo "$PR_TITLE" | grep -Fq "$SKIP_TOKEN"; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skip token found in PR title; skipping commitlint checks."
           else
