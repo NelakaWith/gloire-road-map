@@ -3,6 +3,8 @@
 > A comprehensive goal tracking and student management platform with real-time analytics and attendance management.
 
 [![CI/CD](https://github.com/NelakaWith/gloire-road-map/actions/workflows/deploy.yml/badge.svg)](https://github.com/NelakaWith/gloire-road-map/actions)
+![Version](https://img.shields.io/github/v/release/NelakaWith/gloire-road-map?label=version)
+[![Vite](https://img.shields.io/badge/Vite-5.2-646CFF?logo=vite)](https://vitejs.dev/)
 ![Vue 3](https://img.shields.io/badge/Vue.js-3.4-green)
 ![Node.js](https://img.shields.io/badge/Node.js-Express-blue)
 ![MySQL](https://img.shields.io/badge/Database-MySQL-orange)
